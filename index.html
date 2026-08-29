@@ -4,38 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#141416">
-<title>Ofischi | Premium Office Furniture</title>
+<title>Ofischi Premium</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
-html,body,#root{margin:0;min-height:100%;width:100%}
+html,body,#root{margin:0;padding:0;width:100%;min-height:100%}
 body{background:#141416}
+button,input{font-family:inherit}
+button{cursor:pointer}
 ::-webkit-scrollbar{display:none}
 
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(6px)}
-  to{opacity:1;transform:translateY(0)}
+from{opacity:0;transform:translateY(6px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 @keyframes pulseGlow{
-  0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}
-  50%{box-shadow:0 0 0 9px rgba(255,255,255,0)}
+0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.25)}
+50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}
 }
 
 @keyframes popSave{
-  0%{transform:scale(1)}
-  40%{transform:scale(1.07)}
-  100%{transform:scale(1)}
+0%{transform:scale(1)}
+40%{transform:scale(1.05)}
+100%{transform:scale(1)}
 }
-
-input[type=color]{padding:0}
-button{touch-action:manipulation}
 </style>
 </head>
 
@@ -43,48 +41,64 @@ button{touch-action:manipulation}
 
 <div id="root"></div>
 
-<script type="text/babel">
+<script>
 
-const {useState,useEffect,useRef}=React;
+const {
+  useState,
+  useEffect,
+  useRef
+}=React;
 
 /* =========================================================
    SUPABASE
    ========================================================= */
 
-const SUPABASE_URL="https://irudfkepeocdcmocyvpi.supabase.co";
+const SUPABASE_URL =
+"https://irudfkepeocdcmocyvpi.supabase.co";
 
-const SUPABASE_KEY="sb_publishable_RS0kurqUR1cEE-lHBAdZDA_SRgH-m5X";
+const SUPABASE_ANON_KEY =
+"sb_publishable_RS0kurqUR1cEE-lHBAdZDA_SRgH-m5X";
 
-const supabase=window.supabase.createClient(
+const supabase =
+window.supabase.createClient(
   SUPABASE_URL,
-  SUPABASE_KEY
+  SUPABASE_ANON_KEY
 );
 
 /* =========================================================
-   AYARLAR
+   SABİT AYARLAR
    ========================================================= */
 
-const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const SITE_ID = 1;
 
-const LANGS=[
-  {c:"tr",n:"Turkish"},
+const LANGS = [
+  {c:"tr",n:"Türkçe"},
   {c:"en",n:"English"},
-  {c:"ar",n:"Arabic"}
+  {c:"ar",n:"العربية"}
 ];
 
-const CURR=[
+const CURR = [
   {c:"try",s:"₺"},
   {c:"usd",s:"$"},
   {c:"eur",s:"€"}
 ];
 
-const CONTACT={
+const CONTACT = {
   tr:"Fiyat için iletişime geçin",
   en:"Contact for price",
   ar:"تواصل معنا للسعر"
 };
 
-const tf=(tr,en,ar)=>({tr,en,ar});
+const tf=(tr,en,ar)=>({
+  tr:tr||"",
+  en:en||"",
+  ar:ar||""
+});
+
+const uid=()=>(
+  Math.random().toString(36).slice(2,9)+
+  Date.now().toString(36)
+);
 
 /* =========================================================
    TEMALAR
@@ -189,242 +203,241 @@ const CATS=[
    VARSAYILAN VERİ
    ========================================================= */
 
-const defData=()=>({
+function defaultData(){
 
-  siteName:tf(
-    "Ofischi Premium",
-    "Ofischi Premium",
-    "أوفيشي بريميوم"
-  ),
+  return {
 
-  subtitle:tf(
-    "Premium Ofis Mobilyaları",
-    "Premium Office Furniture",
-    "أثاث مكتبي فاخر"
-  ),
+    siteName:tf(
+      "Ofischi Premium",
+      "Ofischi Premium",
+      "أوفيشي بريميوم"
+    ),
 
-  eyebrow:tf(
-    "İNEGÖL ÜRETİM",
-    "MADE IN İNEGÖL",
-    "صناعة إينيغول"
-  ),
+    subtitle:tf(
+      "Premium Ofis Mobilyaları",
+      "Premium Office Furniture",
+      "أثاث مكتبي فاخر"
+    ),
 
-  phone:"+90 500 000 00 00",
+    eyebrow:tf(
+      "İNEGÖL ÜRETİM",
+      "MADE IN İNEGÖL",
+      "صناعة إينيغول"
+    ),
 
-  pin:"1234",
+    phone:"+90 500 000 00 00",
 
-  rates:{
-    usd:34,
-    eur:37
-  },
+    pin:"1234",
 
-  logo:{
-    src:null,
-    size:110,
-    position:"left"
-  },
+    rates:{
+      usd:34,
+      eur:37
+    },
 
-  theme:{
-    ...THEMES[0]
-  },
+    logo:{
+      src:null,
+      size:110,
+      position:"left"
+    },
 
-  cardImgSize:170,
+    theme:{
+      ...THEMES[0],
+      bgImage:null
+    },
 
-  categories:CATS.map(([tr,en,ar])=>({
+    cardImgSize:170,
 
-    id:uid(),
-
-    name:tf(tr,en,ar),
-
-    items:[{
+    categories:CATS.map(x=>({
 
       id:uid(),
 
       name:tf(
-        tr+" Modeli",
-        en+" Model",
-        ar+" موديل"
+        x[0],
+        x[1],
+        x[2]
       ),
 
-      desc:tf(
-        "Özellikleri düzenlemek için yönetim panelini kullanın",
-        "Use the admin panel to edit specs",
-        "استخدم لوحة الإدارة لتعديل المواصفات"
-      ),
+      items:[]
 
-      dims:"",
-
-      price:{
-        amount:null,
-        contactOnly:true
-      },
-
-      image:null
-
-    }]
-
-  }))
-
-});
-
-/* =========================================================
-   VERİ GÜVENLİK / EKSİK ALAN TAMAMLAMA
-   ========================================================= */
-
-function deepMergeDefaults(d){
-
-  const base=defData();
-
-  if(!d||typeof d!=="object"){
-    return base;
-  }
-
-  return {
-
-    ...base,
-    ...d,
-
-    siteName:{
-      ...base.siteName,
-      ...(d.siteName||{})
-    },
-
-    subtitle:{
-      ...base.subtitle,
-      ...(d.subtitle||{})
-    },
-
-    eyebrow:{
-      ...base.eyebrow,
-      ...(d.eyebrow||{})
-    },
-
-    rates:{
-      ...base.rates,
-      ...(d.rates||{})
-    },
-
-    logo:{
-      ...base.logo,
-      ...(d.logo||{})
-    },
-
-    theme:{
-      ...base.theme,
-      ...(d.theme||{})
-    },
-
-    categories:Array.isArray(d.categories)
-
-      ? d.categories.map(c=>({
-
-          ...c,
-
-          name:{
-            tr:"",
-            en:"",
-            ar:"",
-            ...(c.name||{})
-          },
-
-          items:Array.isArray(c.items)
-
-            ? c.items.map(it=>({
-
-                ...it,
-
-                name:{
-                  tr:"",
-                  en:"",
-                  ar:"",
-                  ...(it.name||{})
-                },
-
-                desc:{
-                  tr:"",
-                  en:"",
-                  ar:"",
-                  ...(it.desc||{})
-                },
-
-                price:{
-                  amount:null,
-                  contactOnly:true,
-                  ...(it.price||{})
-                }
-
-              }))
-
-            :[]
-
-        }))
-
-      :base.categories
+    }))
 
   };
 
 }
 
 /* =========================================================
-   GÖRSEL BOYUTLANDIRMA
+   VERİYİ GÜVENLİ HALE GETİR
    ========================================================= */
 
-function resizeImg(file,maxW=700,q=.78){
+function normalizeData(input){
 
-  return new Promise((res,rej)=>{
+  const base=defaultData();
 
-    const r=new FileReader();
+  if(!input || typeof input!=="object"){
+    return base;
+  }
 
-    r.onload=e=>{
+  const result={
+    ...base,
+    ...input
+  };
+
+  result.siteName={
+    ...base.siteName,
+    ...(input.siteName||{})
+  };
+
+  result.subtitle={
+    ...base.subtitle,
+    ...(input.subtitle||{})
+  };
+
+  result.eyebrow={
+    ...base.eyebrow,
+    ...(input.eyebrow||{})
+  };
+
+  result.rates={
+    ...base.rates,
+    ...(input.rates||{})
+  };
+
+  result.logo={
+    ...base.logo,
+    ...(input.logo||{})
+  };
+
+  result.theme={
+    ...base.theme,
+    ...(input.theme||{})
+  };
+
+  if(Array.isArray(input.categories)){
+
+    result.categories=input.categories.map(c=>({
+
+      ...c,
+
+      id:c.id||uid(),
+
+      name:{
+        tr:"",
+        en:"",
+        ar:"",
+        ...(c.name||{})
+      },
+
+      items:Array.isArray(c.items)
+
+      ?c.items.map(it=>({
+
+          ...it,
+
+          id:it.id||uid(),
+
+          name:{
+            tr:"",
+            en:"",
+            ar:"",
+            ...(it.name||{})
+          },
+
+          desc:{
+            tr:"",
+            en:"",
+            ar:"",
+            ...(it.desc||{})
+          },
+
+          dims:it.dims||"",
+
+          price:{
+            amount:null,
+            contactOnly:true,
+            ...(it.price||{})
+          },
+
+          image:it.image||null
+
+        }))
+
+      :[]
+
+    }));
+
+  }
+
+  return result;
+}
+
+/* =========================================================
+   GÖRSEL SIKIŞTIRMA
+   ========================================================= */
+
+function resizeImg(
+  file,
+  maxW=900,
+  quality=.8
+){
+
+  return new Promise((resolve,reject)=>{
+
+    const reader=new FileReader();
+
+    reader.onload=e=>{
 
       const img=new Image();
 
       img.onload=()=>{
 
-        let w=img.width;
-        let h=img.height;
+        let width=img.width;
+        let height=img.height;
 
-        if(w>maxW){
+        if(width>maxW){
 
-          h=Math.round(
-            h*(maxW/w)
+          height=Math.round(
+            height*(maxW/width)
           );
 
-          w=maxW;
+          width=maxW;
 
         }
 
-        const c=document.createElement("canvas");
+        const canvas=
+          document.createElement("canvas");
 
-        c.width=w;
-        c.height=h;
+        canvas.width=width;
+        canvas.height=height;
 
-        c.getContext("2d").drawImage(
+        const ctx=
+          canvas.getContext("2d");
+
+        ctx.drawImage(
           img,
           0,
           0,
-          w,
-          h
+          width,
+          height
         );
 
-        res(
-          c.toDataURL(
+        resolve(
+          canvas.toDataURL(
             "image/jpeg",
-            q
+            quality
           )
         );
 
       };
 
-      img.onerror=rej;
+      img.onerror=reject;
 
       img.src=e.target.result;
 
     };
 
-    r.onerror=rej;
+    reader.onerror=reject;
 
-    r.readAsDataURL(file);
+    reader.readAsDataURL(file);
 
   });
 
@@ -438,7 +451,7 @@ function formatPrice(
   price,
   currency,
   rates,
-  uiLang
+  lang
 ){
 
   if(
@@ -449,29 +462,28 @@ function formatPrice(
     price.amount===undefined
   ){
 
-    return CONTACT[uiLang]||CONTACT.tr;
+    return CONTACT[lang]||CONTACT.tr;
 
   }
 
-  let amt=Number(price.amount);
+  let amount=Number(price.amount);
 
   if(currency==="usd"){
-    amt/=rates.usd||1;
+    amount/=Number(rates.usd)||1;
   }
 
   if(currency==="eur"){
-    amt/=rates.eur||1;
+    amount/=Number(rates.eur)||1;
   }
 
   const curr=
-    CURR.find(c=>c.c===currency)
-    ||CURR[0];
+    CURR.find(x=>x.c===currency)||CURR[0];
 
   const decimals=
     currency==="try"?0:2;
 
   return curr.s+
-    amt.toLocaleString(
+    amount.toLocaleString(
       "tr-TR",
       {
         minimumFractionDigits:decimals,
@@ -482,39 +494,37 @@ function formatPrice(
 }
 
 /* =========================================================
-   ICON
+   SVG ICON
    ========================================================= */
 
-const Icon=({
-  name,
-  size=18,
-  className=""
-})=>{
+function Icon({
+  type,
+  size=18
+}){
 
-  const p={
+  const common={
     width:size,
     height:size,
     viewBox:"0 0 24 24",
     fill:"none",
     stroke:"currentColor",
-    strokeWidth:"2",
+    strokeWidth:2,
     strokeLinecap:"round",
-    strokeLinejoin:"round",
-    className
+    strokeLinejoin:"round"
   };
 
-  const paths={
+  const icons={
 
     settings:
       <>
         <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-2.4v-.09a1.7 1.7 0 0 0-1.03-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.55-1.03H6V11.6h.09A1.7 1.7 0 0 0 7.64 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 1.7-1.7.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.55V5h2.4v.09A1.7 1.7 0 0 0 15.34 6.64a1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 18.6 10a1.7 1.7 0 0 0 1.55 1.03H20v2.4h-.09A1.7 1.7 0 0 0 18.36 15z"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 1.7-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1.1 1.6v.1h-2.4v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-1.7-1.7.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1.1H6v-2.4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1L9 6.7l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 12 5.5v-.1h2.4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.7 1.7-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1.1h.1V14h-.1a1.7 1.7 0 0 0-1.6 1z"/>
       </>,
 
     x:
       <>
-        <path d="m6 6 12 12"/>
-        <path d="M18 6 6 18"/>
+        <path d="M6 6l12 12"/>
+        <path d="M18 6L6 18"/>
       </>,
 
     plus:
@@ -569,71 +579,20 @@ const Icon=({
       <path d="m5 12 4 4L19 6"/>,
 
     phone:
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.07 5.18 2 2 0 0 1 5.05 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"/>,
-
-    ruler:
-      <>
-        <path d="M21.3 8.7 8.7 21.3a2.4 2.4 0 0 1-3.4 0l-2.6-2.6a2.4 2.4 0 0 1 0-3.4L15.3 2.7a2.4 2.4 0 0 1 3.4 0l2.6 2.6a2.4 2.4 0 0 1 0 3.4Z"/>
-        <path d="m7 14 3 3M10 11l3 3M13 8l3 3"/>
-      </>,
-
-    reset:
-      <>
-        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/>
-        <path d="M3 3v5h5"/>
-      </>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.07 5.18 2 2 0 0 1 5.05 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z"/>
 
   };
 
-  return(
-    <svg {...p}>
-      {paths[name]||null}
-    </svg>
+  return React.createElement(
+    "svg",
+    common,
+    icons[type]
   );
 
-};
+}
 
 /* =========================================================
-   LABEL / COLOR
-   ========================================================= */
-
-const Lbl=({
-  children,
-  busy
-})=>(
-  <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1">
-    {children}
-    {busy&&
-      <span className="animate-spin text-amber-500">
-        ◌
-      </span>
-    }
-  </span>
-);
-
-const Color=({
-  label,
-  value,
-  onChange
-})=>(
-  <label className="flex items-center justify-between mb-2">
-
-    <span className="text-xs text-neutral-400">
-      {label}
-    </span>
-
-    <input
-      type="color"
-      value={value}
-      onChange={e=>onChange(e.target.value)}
-      className="w-8 h-8 rounded-md border border-neutral-700 bg-transparent cursor-pointer"
-    />
-
-  </label>
-);
-
-/* =========================================================
-   ANA UYGULAMA
+   APP
    ========================================================= */
 
 function App(){
@@ -646,7 +605,7 @@ function App(){
 
   const [saved,setSaved]=useState(false);
 
-  const [toast,setToast]=useState(null);
+  const [toast,setToast]=useState("");
 
   const [panelOpen,setPanelOpen]=useState(false);
 
@@ -656,25 +615,21 @@ function App(){
 
   const [pinInput,setPinInput]=useState("");
 
-  const [pinErr,setPinErr]=useState(false);
+  const [pinError,setPinError]=useState(false);
 
   const [tab,setTab]=useState("genel");
 
-  const [activeCat,setActiveCat]=useState(null);
-
-  const [openCat,setOpenCat]=useState(null);
+  const [editLang,setEditLang]=useState("tr");
 
   const [uiLang,setUiLang]=useState("tr");
 
   const [uiCurrency,setUiCurrency]=useState("try");
 
-  const [editLang,setEditLang]=useState("tr");
+  const [activeCat,setActiveCat]=useState(null);
 
-  const [busy,setBusy]=useState(null);
+  const [openCat,setOpenCat]=useState(null);
 
-  const [logoPreview,setLogoPreview]=useState(null);
-
-  const [bgPreview,setBgPreview]=useState(null);
+  const [busy,setBusy]=useState(false);
 
   const logoRef=useRef(null);
 
@@ -682,83 +637,107 @@ function App(){
 
   const itemRefs=useRef({});
 
-  const dataRef=useRef(null);
+  /* =======================================================
+     TOAST
+     ======================================================= */
 
-  useEffect(()=>{
-    dataRef.current=data;
-  },[data]);
+  const showToast=message=>{
+
+    setToast(message);
+
+    setTimeout(()=>{
+      setToast("");
+    },2500);
+
+  };
 
   /* =======================================================
-     FONT
+     SUPABASE'DEN VERİ OKU
      ======================================================= */
 
   useEffect(()=>{
 
-    const link=document.createElement("link");
+    async function load(){
 
-    link.rel="stylesheet";
-
-    link.href=
-      "https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;600;700;800&display=swap";
-
-    document.head.appendChild(link);
-
-    return()=>{
-      document.head.removeChild(link);
-    };
-
-  },[]);
-
-  /* =======================================================
-     SUPABASE'DEN VERİ ÇEK
-     ======================================================= */
-
-  useEffect(()=>{
-
-    (async()=>{
+      setLoading(true);
 
       try{
 
-        const {
-          data:row,
-          error
-        }=await supabase
-          .from("site_data")
-          .select("data")
-          .eq("id",1)
-          .single();
+        const response=
+          await supabase
+            .from("site_data")
+            .select("id,data,updated_at")
+            .eq("id",SITE_ID)
+            .maybeSingle();
 
-        if(error){
-          throw error;
+        if(response.error){
+          throw response.error;
         }
 
-        const d=deepMergeDefaults(row.data);
+        let loaded;
 
-        setData(d);
+        if(response.data && response.data.data){
+
+          loaded=
+            normalizeData(
+              response.data.data
+            );
+
+        }else{
+
+          /*
+           * Kayıt hiç yoksa varsayılan veri oluştur.
+           * Mevcut kayıt varsa ASLA üzerine yazma.
+           */
+
+          loaded=defaultData();
+
+          const insertResult=
+            await supabase
+              .from("site_data")
+              .insert({
+                id:SITE_ID,
+                data:loaded
+              });
+
+          if(insertResult.error){
+            console.error(
+              "İlk kayıt oluşturulamadı:",
+              insertResult.error
+            );
+          }
+
+        }
+
+        setData(loaded);
 
         setActiveCat(
-          d.categories?.[0]?.id||null
+          loaded.categories?.[0]?.id||null
         );
 
-      }catch(e){
+      }catch(error){
 
-        console.error(e);
+        console.error(
+          "Supabase okuma hatası:",
+          error
+        );
 
-        const d=defData();
+        /*
+         * Hata olduğunda ekrandaki mevcut
+         * veriyi silmek yerine varsayılanı göster.
+         */
 
-        setData(d);
+        const fallback=defaultData();
+
+        setData(fallback);
 
         setActiveCat(
-          d.categories?.[0]?.id||null
+          fallback.categories[0].id
         );
 
-        setToast(
-          "Veritabanı okunamadı; başlangıç verisi açıldı"
+        showToast(
+          "Supabase bağlantısı kontrol edilmeli"
         );
-
-        setTimeout(()=>{
-          setToast(null);
-        },3500);
 
       }finally{
 
@@ -766,29 +745,66 @@ function App(){
 
       }
 
-    })();
+    }
+
+    load();
 
   },[]);
 
   /* =======================================================
-     TOAST
+     VERİ SET
      ======================================================= */
 
-  const toastMsg=m=>{
+  function updateData(callback){
 
-    setToast(m);
+    setData(old=>{
 
-    setTimeout(()=>{
-      setToast(null);
-    },2200);
+      const copy=
+        structuredClone(old);
 
-  };
+      const result=
+        callback(copy);
+
+      return result||copy;
+
+    });
+
+  }
+
+  function setPath(path,value){
+
+    updateData(data=>{
+
+      let obj=data;
+
+      for(
+        let i=0;
+        i<path.length-1;
+        i++
+      ){
+
+        if(
+          obj[path[i]]===undefined||
+          obj[path[i]]===null
+        ){
+          obj[path[i]]={};
+        }
+
+        obj=obj[path[i]];
+
+      }
+
+      obj[path[path.length-1]]=value;
+
+    });
+
+  }
 
   /* =======================================================
-     MERKEZİ KAYDET
+     SUPABASE'E KAYDET
      ======================================================= */
 
-  const save=async()=>{
+  async function save(){
 
     if(!data){
       return;
@@ -798,123 +814,112 @@ function App(){
 
     try{
 
-      const {
-        error
-      }=await supabase
-        .from("site_data")
-        .upsert(
-          {
-            id:1,
-            data:data,
-            updated_at:new Date().toISOString()
-          },
-          {
-            onConflict:"id"
-          }
-        );
+      /*
+       * Önce mevcut kaydı kontrol et.
+       * Böylece yanlışlıkla kategorileri boşaltmayız.
+       */
 
-      if(error){
-        throw error;
+      const check=
+        await supabase
+          .from("site_data")
+          .select("id,data")
+          .eq("id",SITE_ID)
+          .maybeSingle();
+
+      if(check.error){
+        throw check.error;
       }
 
-      setSaving(false);
+      /*
+       * Güvenlik:
+       * Ekrandaki kategoriler boşsa ve DB'de kategoriler
+       * varsa DB'deki kategorileri silme.
+       */
+
+      let dataToSave=
+        structuredClone(data);
+
+      const oldCategories=
+        check.data?.data?.categories;
+
+      if(
+        Array.isArray(oldCategories)&&
+        oldCategories.length>0&&
+        (!Array.isArray(dataToSave.categories)||
+         dataToSave.categories.length===0)
+      ){
+
+        dataToSave.categories=
+          structuredClone(oldCategories);
+
+        setData(prev=>({
+          ...prev,
+          categories:
+            structuredClone(oldCategories)
+        }));
+
+      }
+
+      const result=
+        await supabase
+          .from("site_data")
+          .upsert(
+            {
+              id:SITE_ID,
+              data:dataToSave,
+              updated_at:new Date().toISOString()
+            },
+            {
+              onConflict:"id"
+            }
+          );
+
+      if(result.error){
+        throw result.error;
+      }
+
+      setData(
+        normalizeData(dataToSave)
+      );
 
       setSaved(true);
 
-      toastMsg(
-        "Merkezi olarak kaydedildi"
+      showToast(
+        "Başarıyla kaydedildi"
       );
 
       setTimeout(()=>{
 
         setSaved(false);
-
         setPanelOpen(false);
 
-        setOpenCat(null);
+      },900);
 
-      },750);
+    }catch(error){
 
-    }catch(e){
+      console.error(
+        "KAYDETME HATASI:",
+        error
+      );
 
-      console.error(e);
+      showToast(
+        "Kaydedilemedi: "+
+        (error.message||"Supabase hatası")
+      );
+
+    }finally{
 
       setSaving(false);
 
-      toastMsg(
-        "Kaydetme başarısız: "+
-        (e.message||"Supabase hatası")
-      );
-
     }
 
-  };
-
-  /* =======================================================
-     GENEL SETTER
-     ======================================================= */
-
-  const t=f=>(
-    f&&
-    (
-      f[uiLang]||
-      f.tr||
-      f.en||
-      f.ar
-    )
-  )||"";
-
-  const set=(path,val)=>{
-
-    setData(p=>{
-
-      const n=structuredClone(p);
-
-      let o=n;
-
-      for(
-        let i=0;
-        i<path.length-1;
-        i++
-      ){
-        o=o[path[i]];
-      }
-
-      o[path[path.length-1]]=val;
-
-      return n;
-
-    });
-
-  };
-
-  /* =======================================================
-     TEMA
-     ======================================================= */
-
-  const applyPreset=p=>{
-
-    setData(d=>({
-
-      ...d,
-
-      theme:{
-        bg:p.bg,
-        card:p.card,
-        accent:p.accent,
-        text:p.text,
-        bgImage:d.theme.bgImage
-      }
-
-    }));
-
-  };
+  }
 
   /* =======================================================
      ADMİN
      ======================================================= */
 
-  const openAdmin=()=>{
+  function openAdmin(){
 
     if(unlocked){
 
@@ -924,19 +929,19 @@ function App(){
 
       setPinInput("");
 
-      setPinErr(false);
+      setPinError(false);
 
       setPinModal(true);
 
     }
 
-  };
+  }
 
-  const tryUnlock=()=>{
+  function tryUnlock(){
 
     if(
       pinInput===
-      (data.pin||"1234")
+      String(data.pin||"1234")
     ){
 
       setUnlocked(true);
@@ -947,19 +952,19 @@ function App(){
 
     }else{
 
-      setPinErr(true);
+      setPinError(true);
 
     }
 
-  };
+  }
 
   /* =======================================================
-     KATEGORİLER
+     KATEGORİ
      ======================================================= */
 
-  const addCat=()=>{
+  function addCategory(){
 
-    const c={
+    const category={
 
       id:uid(),
 
@@ -973,118 +978,125 @@ function App(){
 
     };
 
-    setData(p=>({
+    updateData(data=>{
 
-      ...p,
-
-      categories:[
-        ...p.categories,
-        c
-      ]
-
-    }));
-
-    setActiveCat(c.id);
-
-  };
-
-  const delCat=id=>{
-
-    const rem=
-      data.categories.filter(
-        c=>c.id!==id
+      data.categories.push(
+        category
       );
 
-    setData(p=>({
-      ...p,
-      categories:rem
-    }));
+    });
+
+    setActiveCat(
+      category.id
+    );
+
+    setOpenCat(
+      category.id
+    );
+
+  }
+
+  function deleteCategory(id){
+
+    if(
+      !confirm(
+        "Bu kategori ve içindeki ürünler silinsin mi?"
+      )
+    ){
+      return;
+    }
+
+    updateData(data=>{
+
+      data.categories=
+        data.categories.filter(
+          c=>c.id!==id
+        );
+
+    });
 
     if(activeCat===id){
 
+      const remaining=
+        data.categories.filter(
+          c=>c.id!==id
+        );
+
       setActiveCat(
-        rem[0]?.id||null
+        remaining[0]?.id||null
       );
 
     }
 
-  };
+  }
 
-  const moveCat=(id,dir)=>{
+  function moveCategory(id,direction){
 
-    setData(p=>{
+    updateData(data=>{
 
-      const i=
-        p.categories.findIndex(
+      const index=
+        data.categories.findIndex(
           c=>c.id===id
         );
 
-      const j=i+dir;
+      const target=
+        index+direction;
 
       if(
-        j<0||
-        j>=p.categories.length
+        index<0||
+        target<0||
+        target>=data.categories.length
       ){
-        return p;
+        return;
       }
 
-      const c=[
-        ...p.categories
-      ];
-
       [
-        c[i],
-        c[j]
+        data.categories[index],
+        data.categories[target]
       ]=[
-        c[j],
-        c[i]
+        data.categories[target],
+        data.categories[index]
       ];
-
-      return{
-        ...p,
-        categories:c
-      };
 
     });
 
-  };
+  }
 
-  const renameCat=(id,val)=>{
+  function renameCategory(
+    id,
+    value
+  ){
 
-    setData(p=>({
+    updateData(data=>{
 
-      ...p,
+      const c=
+        data.categories.find(
+          x=>x.id===id
+        );
 
-      categories:
-        p.categories.map(c=>
-          c.id===id
-          ?{
-              ...c,
-              name:{
-                ...c.name,
-                [editLang]:val
-              }
-            }
-          :c
-        )
+      if(c){
 
-    }));
+        c.name[editLang]=value;
 
-  };
+      }
+
+    });
+
+  }
 
   /* =======================================================
-     ÜRÜNLER
+     ÜRÜN
      ======================================================= */
 
-  const addItem=catId=>{
+  function addItem(categoryId){
 
-    const it={
+    const item={
 
       id:uid(),
 
       name:tf(
         "Yeni Ürün",
-        "New Item",
+        "New Product",
         "منتج جديد"
       ),
 
@@ -1105,328 +1117,419 @@ function App(){
 
     };
 
-    setData(p=>({
+    updateData(data=>{
 
-      ...p,
+      const category=
+        data.categories.find(
+          c=>c.id===categoryId
+        );
 
-      categories:
-        p.categories.map(c=>
-          c.id===catId
-          ?{
-              ...c,
-              items:[
-                ...c.items,
-                it
-              ]
-            }
-          :c
-        )
+      if(category){
 
-    }));
+        category.items.push(
+          item
+        );
 
-  };
+      }
 
-  const updItem=(
-    catId,
-    id,
+    });
+
+  }
+
+  function updateItem(
+    categoryId,
+    itemId,
     field,
-    val
-  )=>{
+    value
+  ){
 
-    const trans=
-      field==="name"||
-      field==="desc";
+    updateData(data=>{
 
-    setData(p=>({
+      const category=
+        data.categories.find(
+          c=>c.id===categoryId
+        );
 
-      ...p,
+      if(!category){
+        return;
+      }
 
-      categories:
-        p.categories.map(c=>
+      const item=
+        category.items.find(
+          i=>i.id===itemId
+        );
 
-          c.id!==catId
+      if(!item){
+        return;
+      }
 
-          ?c
+      if(
+        field==="name"||
+        field==="desc"
+      ){
 
-          :{
+        item[field][editLang]=
+          value;
 
-              ...c,
+      }else{
 
-              items:
-                c.items.map(it=>
+        item[field]=value;
 
-                  it.id!==id
+      }
 
-                  ?it
+    });
 
-                  :{
+  }
 
-                      ...it,
-
-                      [field]:
-                        trans
-                        ?{
-                            ...it[field],
-                            [editLang]:val
-                          }
-                        :val
-
-                    }
-
-                )
-
-            }
-
-        )
-
-    }));
-
-  };
-
-  const updPrice=(
-    catId,
-    id,
+  function updatePrice(
+    categoryId,
+    itemId,
     patch
-  )=>{
+  ){
 
-    setData(p=>({
+    updateData(data=>{
 
-      ...p,
+      const category=
+        data.categories.find(
+          c=>c.id===categoryId
+        );
 
-      categories:
-        p.categories.map(c=>
+      if(!category){
+        return;
+      }
 
-          c.id!==catId
+      const item=
+        category.items.find(
+          i=>i.id===itemId
+        );
 
-          ?c
+      if(!item){
+        return;
+      }
 
-          :{
+      item.price={
+        ...item.price,
+        ...patch
+      };
 
-              ...c,
+    });
 
-              items:
-                c.items.map(it=>
+  }
 
-                  it.id!==id
+  function deleteItem(
+    categoryId,
+    itemId
+  ){
 
-                  ?it
+    if(
+      !confirm(
+        "Bu ürün silinsin mi?"
+      )
+    ){
+      return;
+    }
 
-                  :{
+    updateData(data=>{
 
-                      ...it,
+      const category=
+        data.categories.find(
+          c=>c.id===categoryId
+        );
 
-                      price:{
-                        ...it.price,
-                        ...patch
-                      }
+      if(category){
 
-                    }
+        category.items=
+          category.items.filter(
+            i=>i.id!==itemId
+          );
 
-                )
+      }
 
-            }
+    });
 
-        )
+  }
 
-    }));
+  function moveItem(
+    categoryId,
+    itemId,
+    direction
+  ){
 
-  };
+    updateData(data=>{
 
-  const delItem=(
-    catId,
-    id
-  )=>{
+      const category=
+        data.categories.find(
+          c=>c.id===categoryId
+        );
 
-    setData(p=>({
+      if(!category){
+        return;
+      }
 
-      ...p,
+      const index=
+        category.items.findIndex(
+          i=>i.id===itemId
+        );
 
-      categories:
-        p.categories.map(c=>
+      const target=
+        index+direction;
 
-          c.id!==catId
+      if(
+        index<0||
+        target<0||
+        target>=category.items.length
+      ){
+        return;
+      }
 
-          ?c
+      [
+        category.items[index],
+        category.items[target]
+      ]=[
+        category.items[target],
+        category.items[index]
+      ];
 
-          :{
+    });
 
-              ...c,
-
-              items:
-                c.items.filter(
-                  it=>it.id!==id
-                )
-
-            }
-
-        )
-
-    }));
-
-  };
-
-  const moveItem=(
-    catId,
-    id,
-    dir
-  )=>{
-
-    setData(p=>({
-
-      ...p,
-
-      categories:
-        p.categories.map(c=>{
-
-          if(c.id!==catId){
-            return c;
-          }
-
-          const i=
-            c.items.findIndex(
-              x=>x.id===id
-            );
-
-          const j=i+dir;
-
-          if(
-            j<0||
-            j>=c.items.length
-          ){
-            return c;
-          }
-
-          const arr=[
-            ...c.items
-          ];
-
-          [
-            arr[i],
-            arr[j]
-          ]=[
-            arr[j],
-            arr[i]
-          ];
-
-          return{
-            ...c,
-            items:arr
-          };
-
-        })
-
-    }));
-
-  };
+  }
 
   /* =======================================================
      LOGO
      ======================================================= */
 
-  const upLogo=async e=>{
+  async function uploadLogo(event){
 
-    const f=e.target.files?.[0];
+    const file=
+      event.target.files?.[0];
 
-    if(!f){
+    if(!file){
       return;
     }
 
-    const src=
-      await resizeImg(
-        f,
-        500,
-        .88
+    setBusy(true);
+
+    try{
+
+      const src=
+        await resizeImg(
+          file,
+          600,
+          .9
+        );
+
+      setPath(
+        ["logo","src"],
+        src
       );
 
-    set(
-      ["logo","src"],
-      src
-    );
+      showToast(
+        "Logo eklendi"
+      );
 
-    setLogoPreview(src);
+    }catch(error){
 
-  };
+      console.error(error);
+
+      showToast(
+        "Logo yüklenemedi"
+      );
+
+    }finally{
+
+      setBusy(false);
+
+    }
+
+  }
 
   /* =======================================================
      ARKA PLAN
      ======================================================= */
 
-  const upBg=async e=>{
+  async function uploadBackground(event){
 
-    const f=e.target.files?.[0];
+    const file=
+      event.target.files?.[0];
 
-    if(!f){
+    if(!file){
       return;
     }
 
-    const src=
-      await resizeImg(
-        f,
-        1400,
-        .72
+    setBusy(true);
+
+    try{
+
+      const src=
+        await resizeImg(
+          file,
+          1400,
+          .72
+        );
+
+      setPath(
+        ["theme","bgImage"],
+        src
       );
 
-    set(
-      ["theme","bgImage"],
-      src
-    );
+      showToast(
+        "Arka plan eklendi"
+      );
 
-    setBgPreview(src);
+    }catch(error){
 
-  };
+      console.error(error);
+
+      showToast(
+        "Görsel yüklenemedi"
+      );
+
+    }finally{
+
+      setBusy(false);
+
+    }
+
+  }
 
   /* =======================================================
      ÜRÜN GÖRSELİ
      ======================================================= */
 
-  const upItemImg=async(
-    catId,
-    id,
-    e
-  )=>{
+  async function uploadItemImage(
+    categoryId,
+    itemId,
+    event
+  ){
 
-    const f=e.target.files?.[0];
+    const file=
+      event.target.files?.[0];
 
-    if(!f){
+    if(!file){
       return;
     }
 
-    const src=
-      await resizeImg(
-        f,
-        900,
-        .78
+    setBusy(true);
+
+    try{
+
+      const src=
+        await resizeImg(
+          file,
+          1000,
+          .8
+        );
+
+      updateItem(
+        categoryId,
+        itemId,
+        "image",
+        src
       );
 
-    updItem(
-      catId,
-      id,
-      "image",
-      src
-    );
+      showToast(
+        "Ürün görseli eklendi"
+      );
 
-  };
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "Görsel yüklenemedi"
+      );
+
+    }finally{
+
+      setBusy(false);
+
+    }
+
+  }
 
   /* =======================================================
-     YÜKLENİYOR
+     RESET
      ======================================================= */
 
-  if(
-    loading||
-    !data
-  ){
+  function resetDefault(){
 
-    return(
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 text-neutral-500">
-        Yükleniyor…
-      </div>
+    if(
+      !confirm(
+        "Tüm ayarlar varsayılana döndürülsün mü? Mevcut ürünler silinebilir."
+      )
+    ){
+      return;
+    }
+
+    const d=
+      defaultData();
+
+    setData(d);
+
+    setActiveCat(
+      d.categories[0]?.id||null
+    );
+
+    showToast(
+      "Varsayılan ayarlar yüklendi. Kaydet'e basın."
     );
 
   }
 
   /* =======================================================
-     AKTİF KATEGORİ
+     LOADING
      ======================================================= */
+
+  if(loading){
+
+    return(
+
+      <div
+        className="min-h-screen flex items-center justify-center bg-neutral-950 text-neutral-400"
+        style={{
+          fontFamily:"Inter,sans-serif"
+        }}
+      >
+        Veriler yükleniyor…
+      </div>
+
+    );
+
+  }
+
+  if(!data){
+
+    return(
+
+      <div
+        className="min-h-screen flex items-center justify-center bg-neutral-950 text-red-400"
+      >
+        Veri yüklenemedi.
+      </div>
+
+    );
+
+  }
+
+  /* =======================================================
+     DİL
+     ======================================================= */
+
+  function translateField(field){
+
+    if(!field){
+      return "";
+    }
+
+    return(
+      field[uiLang]||
+      field.tr||
+      field.en||
+      field.ar||
+      ""
+    );
+
+  }
 
   const activeCategory=
     data.categories.find(
@@ -1434,22 +1537,24 @@ function App(){
     )||
     data.categories[0];
 
-  const isRtl=
+  const isArabic=
     uiLang==="ar";
 
-  const hFont=
-    isRtl
+  const headingFont=
+    isArabic
     ?"'Cairo',sans-serif"
     :"'Outfit',sans-serif";
 
-  const bFont=
-    isRtl
+  const bodyFont=
+    isArabic
     ?"'Cairo',sans-serif"
     :"'Inter',sans-serif";
 
   const initial=
     (
-      t(data.siteName)||
+      translateField(
+        data.siteName
+      )||
       "O"
     )
     .trim()
@@ -1457,23 +1562,26 @@ function App(){
     .toUpperCase();
 
   /* =======================================================
-     RENDER
+     UI
      ======================================================= */
 
   return(
 
     <div
-      dir={isRtl?"rtl":"ltr"}
-      className="min-h-screen w-full"
+      dir={isArabic?"rtl":"ltr"}
       style={{
+
+        minHeight:"100vh",
 
         backgroundColor:
           data.theme.bg,
 
         backgroundImage:
           data.theme.bgImage
-          ?`linear-gradient(${data.theme.bg}cc,${data.theme.bg}f5),url(${data.theme.bgImage})`
-          :undefined,
+          ?
+          `linear-gradient(${data.theme.bg}cc,${data.theme.bg}f5),url(${data.theme.bgImage})`
+          :
+          undefined,
 
         backgroundSize:"cover",
 
@@ -1483,84 +1591,74 @@ function App(){
 
         color:data.theme.text,
 
-        fontFamily:bFont
+        fontFamily:bodyFont
 
       }}
     >
 
-      {/* =================================================
-          DİL + PARA BİRİMİ
-      ================================================= */}
+      {/* ===================================================
+          DİL / PARA
+      =================================================== */}
 
       <div
-        className="fixed top-4 z-30 flex flex-col items-end gap-1.5"
+        className="fixed top-4 z-30 flex flex-col gap-1.5"
         style={{
           insetInlineEnd:16
         }}
       >
 
-        <div className="flex gap-1 bg-black/15 backdrop-blur rounded-full p-1">
+        <div className="flex gap-1 bg-black/20 backdrop-blur-md rounded-full p-1">
 
-          {LANGS.map(l=>(
+          {LANGS.map(lang=>(
 
             <button
-              key={l.c}
+              key={lang.c}
               onClick={()=>
-                setUiLang(l.c)
+                setUiLang(lang.c)
               }
               className="px-2.5 py-1 rounded-full text-[11px] font-bold"
               style={{
                 backgroundColor:
-                  uiLang===l.c
+                  uiLang===lang.c
                   ?data.theme.accent
                   :"transparent",
 
                 color:
-                  uiLang===l.c
-                  ?" #fff"
-                  :data.theme.text,
-
-                opacity:
-                  uiLang===l.c
-                  ?1
-                  :.55
+                  uiLang===lang.c
+                  ?"white"
+                  :data.theme.text
               }}
             >
-              {l.c.toUpperCase()}
+              {lang.c.toUpperCase()}
             </button>
 
           ))}
 
         </div>
 
-        <div className="flex gap-1 bg-black/15 backdrop-blur rounded-full p-1">
+        <div className="flex gap-1 bg-black/20 backdrop-blur-md rounded-full p-1">
 
-          {CURR.map(c=>(
+          {CURR.map(currency=>(
 
             <button
-              key={c.c}
+              key={currency.c}
               onClick={()=>
-                setUiCurrency(c.c)
+                setUiCurrency(currency.c)
               }
               className="px-2.5 py-1 rounded-full text-[11px] font-bold"
               style={{
                 backgroundColor:
-                  uiCurrency===c.c
+                  uiCurrency===currency.c
                   ?data.theme.accent
                   :"transparent",
 
                 color:
-                  uiCurrency===c.c
-                  ?" #fff"
-                  :data.theme.text,
-
-                opacity:
-                  uiCurrency===c.c
-                  ?1
-                  :.55
+                  uiCurrency===currency.c
+                  ?"white"
+                  :data.theme.text
               }}
             >
-              {c.s}
+              {currency.s}
             </button>
 
           ))}
@@ -1569,16 +1667,16 @@ function App(){
 
       </div>
 
-      {/* =================================================
+      {/* ===================================================
           HEADER
-      ================================================= */}
+      =================================================== */}
 
-      <div className="px-6 pt-14 pb-8 flex flex-col items-center text-center">
+      <header className="px-6 pt-14 pb-8">
 
         <div
           style={{
-            display:"flex",
             width:"100%",
+            display:"flex",
             justifyContent:
               data.logo.position==="left"
               ?"flex-start"
@@ -1586,100 +1684,109 @@ function App(){
               data.logo.position==="right"
               ?"flex-end"
               :"center",
-            marginBottom:16
+            marginBottom:18
           }}
         >
 
           {data.logo.src
 
-            ?
+          ?
 
-            <img
-              src={data.logo.src}
-              alt="Ofischi logo"
-              style={{
-                width:data.logo.size,
-                height:"auto",
-                maxHeight:data.logo.size,
-                objectFit:"contain"
-              }}
-            />
+          <img
+            src={data.logo.src}
+            alt="Ofischi"
+            style={{
+              width:data.logo.size,
+              maxWidth:"70vw",
+              height:"auto",
+              maxHeight:data.logo.size,
+              objectFit:"contain",
+              display:"block"
+            }}
+          />
 
-            :
+          :
 
-            <div
-              style={{
-                width:data.logo.size,
-                height:data.logo.size,
-                borderRadius:18,
-                display:"flex",
-                alignItems:"center",
-                justifyContent:"center",
-                fontFamily:hFont,
-                fontWeight:700,
-                fontSize:data.logo.size*.4,
-                color:data.theme.accent
-              }}
-            >
-              {initial}
-            </div>
+          <div
+            style={{
+              width:data.logo.size,
+              height:data.logo.size,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center",
+              color:data.theme.accent,
+              fontSize:data.logo.size*.42,
+              fontWeight:800,
+              fontFamily:headingFont
+            }}
+          >
+            {initial}
+          </div>
 
           }
 
         </div>
 
-        <p
-          className="text-[11px] font-bold tracking-[0.25em] mb-2"
-          style={{
-            color:data.theme.accent
-          }}
-        >
-          {t(data.eyebrow)}
-        </p>
+        <div className="text-center">
 
-        <h1
-          className="text-3xl font-bold leading-tight"
-          style={{
-            fontFamily:hFont
-          }}
-        >
-          {t(data.siteName)}
-        </h1>
-
-        <p className="text-sm opacity-60 mt-2">
-          {t(data.subtitle)}
-        </p>
-
-        {data.phone&&(
-
-          <a
-            href={
-              "tel:"+
-              data.phone.replace(/\s/g,"")
-            }
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+          <div
+            className="text-[11px] font-bold tracking-[.25em] mb-2"
             style={{
-              backgroundColor:data.theme.accent,
-              color:"#fff"
+              color:data.theme.accent
             }}
           >
-            <Icon
-              name="phone"
-              size={15}
-            />
-            {data.phone}
-          </a>
+            {translateField(data.eyebrow)}
+          </div>
 
-        )}
+          <h1
+            className="text-3xl font-bold leading-tight"
+            style={{
+              fontFamily:headingFont
+            }}
+          >
+            {translateField(data.siteName)}
+          </h1>
 
-      </div>
+          <p className="text-sm opacity-60 mt-2">
+            {translateField(data.subtitle)}
+          </p>
 
-      {/* =================================================
+          {data.phone&&(
+
+            <a
+              href={
+                "tel:"+
+                data.phone.replace(/\s/g,"")
+              }
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+              style={{
+                backgroundColor:
+                  data.theme.accent,
+                color:"white"
+              }}
+            >
+
+              <Icon
+                type="phone"
+                size={15}
+              />
+
+              {data.phone}
+
+            </a>
+
+          )}
+
+        </div>
+
+      </header>
+
+      {/* ===================================================
           KATEGORİLER
-      ================================================= */}
+      =================================================== */}
 
       <div
-        className="px-4 sticky top-0 z-20 pt-3 pb-2"
+        className="sticky top-0 z-20 px-4 pt-3 pb-2"
         style={{
           backgroundColor:data.theme.bg
         }}
@@ -1692,41 +1799,34 @@ function App(){
           }}
         >
 
-          {data.categories.map(c=>{
+          {data.categories.map(category=>{
 
             const active=
-              activeCat===c.id;
+              category.id===activeCat;
 
             return(
 
               <button
-                key={c.id}
+                key={category.id}
                 onClick={()=>
-                  setActiveCat(c.id)
+                  setActiveCat(category.id)
                 }
                 className="flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap"
                 style={{
-
-                  fontFamily:hFont,
+                  fontFamily:headingFont,
 
                   backgroundColor:
                     active
                     ?data.theme.accent
-                    :data.theme.accent+"14",
+                    :data.theme.accent+"18",
 
                   color:
                     active
-                    ?" #fff"
-                    :data.theme.text,
-
-                  opacity:
-                    active
-                    ?1
-                    :.75
-
+                    ?"white"
+                    :data.theme.text
                 }}
               >
-                {t(c.name)}
+                {translateField(category.name)}
               </button>
 
             );
@@ -1737,83 +1837,72 @@ function App(){
 
       </div>
 
-      {/* =================================================
+      {/* ===================================================
           ÜRÜNLER
-      ================================================= */}
+      =================================================== */}
 
-      <div
-        className="px-4 pt-4 pb-28 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
+      <main
+        className="px-4 pt-4 pb-28 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
         style={{
           animation:"fadeIn .3s ease"
         }}
       >
 
-        {(
-          !activeCategory||
-          activeCategory.items.length===0
-        )&&(
+        {(!activeCategory||
+          activeCategory.items.length===0)&&(
 
-          <p className="col-span-full text-center opacity-40 text-sm py-14">
+          <div className="col-span-full text-center py-16 opacity-50">
 
-            {
+            {uiLang==="ar"
+              ?"لا توجد منتجات بعد."
+              :
               uiLang==="en"
               ?"No products yet."
-              :
-              uiLang==="ar"
-              ?"لا توجد منتجات بعد."
               :
               "Henüz ürün eklenmedi."
             }
 
-          </p>
+          </div>
 
         )}
 
-        {activeCategory?.items.map(it=>(
+        {activeCategory?.items.map(item=>(
 
-          <div
-            key={it.id}
+          <article
+            key={item.id}
             className="rounded-xl overflow-hidden"
             style={{
               backgroundColor:data.theme.card,
               boxShadow:
-                "0 2px 12px rgba(0,0,0,.10)"
+                "0 3px 15px rgba(0,0,0,.12)"
             }}
           >
 
             <div
               style={{
                 height:data.cardImgSize,
-
                 backgroundColor:
-                  data.theme.accent+"14",
-
+                  data.theme.accent+"12",
                 backgroundImage:
-                  it.image
-                  ?`url(${it.image})`
+                  item.image
+                  ?`url(${item.image})`
                   :undefined,
-
                 backgroundSize:"cover",
-
                 backgroundPosition:"center",
-
                 display:
-                  it.image
+                  item.image
                   ?"block"
                   :"flex",
-
                 alignItems:"center",
-
                 justifyContent:"center"
               }}
             >
 
-              {!it.image&&(
+              {!item.image&&(
 
                 <Icon
-                  name="image"
-                  size={24}
-                  className="opacity-30"
+                  type="image"
+                  size={25}
                 />
 
               )}
@@ -1822,101 +1911,92 @@ function App(){
 
             <div className="p-3">
 
-              <p
+              <div
                 className="font-semibold text-sm leading-tight"
                 style={{
-                  fontFamily:hFont
+                  fontFamily:headingFont
                 }}
               >
-                {t(it.name)}
-              </p>
+                {translateField(item.name)}
+              </div>
 
-              {t(it.desc)&&(
+              {translateField(item.desc)&&(
 
-                <p className="text-[11.5px] opacity-55 mt-1 leading-snug">
-                  {t(it.desc)}
-                </p>
-
-              )}
-
-              {it.dims&&(
-
-                <p className="text-[11px] opacity-50 mt-1 flex items-center gap-1">
-
-                  <Icon
-                    name="ruler"
-                    size={11}
-                  />
-
-                  {it.dims}
-
-                </p>
+                <div className="text-[11.5px] opacity-55 mt-1 leading-snug">
+                  {translateField(item.desc)}
+                </div>
 
               )}
 
-              <p
+              {item.dims&&(
+
+                <div className="text-[11px] opacity-50 mt-1">
+                  {item.dims}
+                </div>
+
+              )}
+
+              <div
                 className="text-[12.5px] font-bold mt-2"
                 style={{
                   color:data.theme.accent
                 }}
               >
                 {formatPrice(
-                  it.price,
+                  item.price,
                   uiCurrency,
                   data.rates,
                   uiLang
                 )}
-              </p>
+              </div>
 
             </div>
 
-          </div>
+          </article>
 
         ))}
 
-      </div>
+      </main>
 
-      {/* =================================================
+      {/* ===================================================
           ADMİN BUTONU
-      ================================================= */}
+      =================================================== */}
 
       <button
         onClick={openAdmin}
-        className="fixed bottom-5 z-30 rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-5 z-30 rounded-full shadow-xl flex items-center justify-center"
         style={{
           insetInlineEnd:18,
-          width:50,
-          height:50,
+          width:52,
+          height:52,
           backgroundColor:data.theme.text,
           color:data.theme.bg
         }}
-        title="Yönetim Paneli"
       >
 
         <Icon
-          name="settings"
-          size={19}
+          type="settings"
+          size={20}
         />
 
       </button>
 
-      {/* =================================================
+      {/* ===================================================
           TOAST
-      ================================================= */}
+      =================================================== */}
 
       {toast&&(
 
         <div
-          className="fixed bottom-24 z-40 bg-neutral-900 text-white text-sm px-4 py-2 rounded-lg shadow-xl flex items-center gap-2"
+          className="fixed bottom-24 z-[60] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
           style={{
             insetInlineEnd:18
           }}
         >
 
           <Icon
-            name="check"
-            size={14}
-            className="text-emerald-400"
+            type="check"
+            size={15}
           />
 
           {toast}
@@ -1925,64 +2005,67 @@ function App(){
 
       )}
 
-      {/* =================================================
-          PIN MODAL
-      ================================================= */}
+      {/* ===================================================
+          PIN
+      =================================================== */}
 
       {pinModal&&(
 
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
 
-          <div className="bg-neutral-950 border border-neutral-800 rounded-2xl p-6 w-full max-w-xs">
+          <div className="w-full max-w-xs bg-neutral-950 border border-neutral-800 rounded-2xl p-6">
 
-            <div className="flex items-center gap-2 mb-3 text-neutral-100">
+            <div className="flex items-center gap-2 mb-4 text-white">
 
               <Icon
-                name="lock"
-                size={17}
-                className="text-amber-500"
+                type="lock"
+                size={18}
               />
 
-              <h2 className="font-semibold">
+              <h2 className="font-bold">
                 Yönetim Girişi
               </h2>
 
             </div>
 
             <input
+              autoFocus
               type="password"
               inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength="8"
+              maxLength={8}
               value={pinInput}
               onChange={e=>{
 
                 setPinInput(
-                  e.target.value.replace(/\D/g,"")
+                  e.target.value.replace(
+                    /\D/g,
+                    ""
+                  )
                 );
 
-                setPinErr(false);
+                setPinError(false);
 
               }}
-              onKeyDown={e=>
-                e.key==="Enter"&&tryUnlock()
-              }
-              className="w-full border border-neutral-700 bg-neutral-900 text-neutral-100 rounded-lg px-3 py-2 text-sm mb-2 outline-none tracking-widest"
+              onKeyDown={e=>{
+                if(e.key==="Enter"){
+                  tryUnlock();
+                }
+              }}
               placeholder="PIN"
-              autoFocus
+              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-3 outline-none tracking-[.3em]"
             />
 
-            {pinErr&&(
+            {pinError&&(
 
-              <p className="text-xs text-red-400 mb-2">
+              <div className="text-xs text-red-400 mt-2">
                 Hatalı PIN.
-              </p>
+              </div>
 
             )}
 
-            <p className="text-[11px] text-neutral-500 mb-4">
-              Varsayılan: 1234
-            </p>
+            <div className="text-[11px] text-neutral-500 mt-2 mb-4">
+              Varsayılan PIN: 1234
+            </div>
 
             <div className="flex gap-2">
 
@@ -1990,14 +2073,18 @@ function App(){
                 onClick={()=>
                   setPinModal(false)
                 }
-                className="flex-1 py-2 rounded-lg text-sm bg-neutral-800 text-neutral-300"
+                className="flex-1 py-2.5 bg-neutral-800 rounded-lg text-sm text-neutral-300"
               >
                 Vazgeç
               </button>
 
               <button
                 onClick={tryUnlock}
-                className="flex-1 py-2 rounded-lg text-sm bg-amber-500 text-neutral-950 font-semibold"
+                className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
+                style={{
+                  backgroundColor:
+                    data.theme.accent
+                }}
               >
                 Giriş Yap
               </button>
@@ -2010,30 +2097,30 @@ function App(){
 
       )}
 
-      {/* =================================================
+      {/* ===================================================
           YÖNETİM PANELİ
-      ================================================= */}
+      =================================================== */}
 
       {panelOpen&&unlocked&&(
 
         <div className="fixed inset-0 z-40 flex justify-end">
 
           <div
-            className="flex-1"
+            className="flex-1 bg-black/20"
             onClick={()=>
               setPanelOpen(false)
             }
           />
 
-          <div className="w-full sm:w-[400px] h-full bg-neutral-950 text-neutral-100 overflow-y-auto shadow-2xl border-l border-neutral-800">
+          <aside className="w-full sm:w-[420px] h-full bg-neutral-950 text-white overflow-y-auto shadow-2xl">
 
-            {/* PANEL HEADER */}
+            {/* PANEL BAŞLIK */}
 
-            <div className="sticky top-0 bg-neutral-950 z-10 px-5 pt-5 pb-3 border-b border-neutral-800">
+            <div className="sticky top-0 z-20 bg-neutral-950 border-b border-neutral-800 px-5 pt-5 pb-3">
 
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
 
-                <h2 className="font-bold text-[15px]">
+                <h2 className="font-bold text-[16px]">
                   Yönetim Paneli
                 </h2>
 
@@ -2041,66 +2128,60 @@ function App(){
                   onClick={()=>
                     setPanelOpen(false)
                   }
-                  className="text-neutral-500 hover:text-white"
+                  className="text-neutral-500"
                 >
                   <Icon
-                    name="x"
-                    size={20}
+                    type="x"
+                    size={21}
                   />
                 </button>
 
               </div>
 
-              <p className="text-[10px] uppercase tracking-wide text-neutral-500 mb-1">
+              <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
                 Düzenleme Dili
-              </p>
+              </div>
 
-              <div className="flex gap-1.5 bg-neutral-900 p-1 rounded-xl mb-3">
+              <div className="flex gap-1 bg-neutral-900 rounded-xl p-1 mb-3">
 
-                {LANGS.map(l=>(
+                {LANGS.map(lang=>(
 
                   <button
-                    key={l.c}
+                    key={lang.c}
                     onClick={()=>
-                      setEditLang(l.c)
+                      setEditLang(lang.c)
                     }
-                    className="flex-1 py-1.5 rounded-lg text-xs font-bold"
+                    className="flex-1 py-2 rounded-lg text-xs font-bold"
                     style={{
                       backgroundColor:
-                        editLang===l.c
+                        editLang===lang.c
                         ?data.theme.accent
                         :"transparent",
-
                       color:
-                        editLang===l.c
-                        ?" #fff"
-                        :"#a3a3a3"
+                        editLang===lang.c
+                        ?"white"
+                        :"#999"
                     }}
                   >
-                    {l.c.toUpperCase()}
+                    {lang.c.toUpperCase()}
                   </button>
 
                 ))}
 
               </div>
 
-              <div className="flex gap-1.5 bg-neutral-900 p-1 rounded-xl">
+              <div className="flex gap-1 bg-neutral-900 rounded-xl p-1">
 
                 <button
                   onClick={()=>
                     setTab("genel")
                   }
-                  className="flex-1 py-2 rounded-lg text-[13px] font-semibold"
+                  className="flex-1 py-2 rounded-lg text-sm font-semibold"
                   style={{
                     backgroundColor:
                       tab==="genel"
                       ?data.theme.accent
-                      :"transparent",
-
-                    color:
-                      tab==="genel"
-                      ?" #fff"
-                      :"#a3a3a3"
+                      :"transparent"
                   }}
                 >
                   Genel
@@ -2110,17 +2191,12 @@ function App(){
                   onClick={()=>
                     setTab("icerik")
                   }
-                  className="flex-1 py-2 rounded-lg text-[13px] font-semibold"
+                  className="flex-1 py-2 rounded-lg text-sm font-semibold"
                   style={{
                     backgroundColor:
                       tab==="icerik"
                       ?data.theme.accent
-                      :"transparent",
-
-                    color:
-                      tab==="icerik"
-                      ?" #fff"
-                      :"#a3a3a3"
+                      :"transparent"
                   }}
                 >
                   Ürün Kataloğu
@@ -2142,10 +2218,10 @@ function App(){
 
                 <div>
 
-                  <label className="block mb-3">
+                  <label className="block mb-4">
 
                     <Lbl>
-                      Mağaza Adı ({editLang.toUpperCase()})
+                      Mağaza Adı
                     </Lbl>
 
                     <input
@@ -2153,7 +2229,7 @@ function App(){
                         data.siteName[editLang]||""
                       }
                       onChange={e=>
-                        set(
+                        setPath(
                           [
                             "siteName",
                             editLang
@@ -2161,15 +2237,16 @@ function App(){
                           e.target.value
                         )
                       }
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                      className="field"
+                      style={fieldStyle}
                     />
 
                   </label>
 
-                  <label className="block mb-3">
+                  <label className="block mb-4">
 
                     <Lbl>
-                      Üst Etiket ({editLang.toUpperCase()})
+                      Üst Etiket
                     </Lbl>
 
                     <input
@@ -2177,7 +2254,7 @@ function App(){
                         data.eyebrow[editLang]||""
                       }
                       onChange={e=>
-                        set(
+                        setPath(
                           [
                             "eyebrow",
                             editLang
@@ -2185,15 +2262,15 @@ function App(){
                           e.target.value
                         )
                       }
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                      style={fieldStyle}
                     />
 
                   </label>
 
-                  <label className="block mb-3">
+                  <label className="block mb-4">
 
                     <Lbl>
-                      Alt Başlık ({editLang.toUpperCase()})
+                      Alt Başlık
                     </Lbl>
 
                     <input
@@ -2201,7 +2278,7 @@ function App(){
                         data.subtitle[editLang]||""
                       }
                       onChange={e=>
-                        set(
+                        setPath(
                           [
                             "subtitle",
                             editLang
@@ -2209,7 +2286,7 @@ function App(){
                           e.target.value
                         )
                       }
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                      style={fieldStyle}
                     />
 
                   </label>
@@ -2221,48 +2298,51 @@ function App(){
                     </Lbl>
 
                     <input
-                      value={
-                        data.phone||""
-                      }
+                      value={data.phone||""}
                       onChange={e=>
-                        set(
+                        setPath(
                           ["phone"],
                           e.target.value
                         )
                       }
                       placeholder="+90 5xx xxx xx xx"
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                      style={fieldStyle}
                     />
 
                   </label>
 
-                  <div className="h-px bg-neutral-800 my-4"/>
+                  <div className="h-px bg-neutral-800 my-5"/>
 
-                  {/* DÖVİZ */}
-
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
                     Döviz Kurları
-                  </p>
+                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="grid grid-cols-2 gap-2 mb-5">
 
                     <label>
 
                       <Lbl>
-                        1 USD = ? TL
+                        1 USD = TL
                       </Lbl>
 
                       <input
                         type="number"
                         step=".01"
-                        value={data.rates.usd}
+                        value={
+                          data.rates.usd
+                        }
                         onChange={e=>
-                          set(
-                            ["rates","usd"],
-                            Number(e.target.value)||0
+                          setPath(
+                            [
+                              "rates",
+                              "usd"
+                            ],
+                            Number(
+                              e.target.value
+                            )||0
                           )
                         }
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                        style={fieldStyle}
                       />
 
                     </label>
@@ -2270,103 +2350,119 @@ function App(){
                     <label>
 
                       <Lbl>
-                        1 EUR = ? TL
+                        1 EUR = TL
                       </Lbl>
 
                       <input
                         type="number"
                         step=".01"
-                        value={data.rates.eur}
+                        value={
+                          data.rates.eur
+                        }
                         onChange={e=>
-                          set(
-                            ["rates","eur"],
-                            Number(e.target.value)||0
+                          setPath(
+                            [
+                              "rates",
+                              "eur"
+                            ],
+                            Number(
+                              e.target.value
+                            )||0
                           )
                         }
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none"
+                        style={fieldStyle}
                       />
 
                     </label>
 
                   </div>
 
-                  <div className="h-px bg-neutral-800 my-4"/>
+                  <div className="h-px bg-neutral-800 my-5"/>
 
                   {/* LOGO */}
 
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
                     Logo
-                  </p>
+                  </div>
+
+                  <div className="bg-neutral-900 rounded-xl p-3 mb-3 flex justify-center">
+
+                    {data.logo.src
+
+                    ?
+
+                    <img
+                      src={data.logo.src}
+                      style={{
+                        maxWidth:"100%",
+                        maxHeight:100,
+                        objectFit:"contain"
+                      }}
+                    />
+
+                    :
+
+                    <div className="text-xs text-neutral-500 py-6">
+                      Logo eklenmedi
+                    </div>
+
+                    }
+
+                  </div>
 
                   <div className="flex gap-2 mb-3">
 
                     <button
                       onClick={()=>
-                        logoRef.current.click()
+                        logoRef.current?.click()
                       }
-                      className="flex-1 flex items-center justify-center gap-1 bg-neutral-900 border border-neutral-700 rounded-lg py-2 text-xs"
+                      className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
-                      <Icon
-                        name="upload"
-                        size={13}
-                      />
-                      PNG / Görsel Yükle
-                    </button>
 
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      ref={logoRef}
-                      className="hidden"
-                      onChange={upLogo}
-                    />
+                      <Icon
+                        type="upload"
+                        size={14}
+                      />
+
+                      PNG Logo Yükle
+
+                    </button>
 
                     {data.logo.src&&(
 
                       <button
-                        onClick={()=>{
-
-                          set(
+                        onClick={()=>
+                          setPath(
                             ["logo","src"],
                             null
-                          );
-
-                          setLogoPreview(null);
-
-                        }}
-                        className="px-3 bg-neutral-900 border border-neutral-700 rounded-lg"
+                          )
+                        }
+                        className="px-3 bg-red-950 text-red-400 rounded-lg"
                       >
+
                         <Icon
-                          name="trash"
+                          type="trash"
                           size={14}
                         />
+
                       </button>
 
                     )}
 
+                    <input
+                      ref={logoRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={uploadLogo}
+                    />
+
                   </div>
 
-                  {data.logo.src&&(
-
-                    <div className="mb-3 rounded-lg bg-neutral-900 p-3 flex justify-center">
-
-                      <img
-                        src={data.logo.src}
-                        style={{
-                          maxWidth:"100%",
-                          maxHeight:90,
-                          objectFit:"contain"
-                        }}
-                      />
-
-                    </div>
-
-                  )}
-
-                  <label className="block mb-3">
+                  <label className="block mb-4">
 
                     <Lbl>
-                      Boyut — {data.logo.size}px
+                      Logo Boyutu — {data.logo.size}px
                     </Lbl>
 
                     <input
@@ -2375,9 +2471,11 @@ function App(){
                       max="260"
                       value={data.logo.size}
                       onChange={e=>
-                        set(
+                        setPath(
                           ["logo","size"],
-                          +e.target.value
+                          Number(
+                            e.target.value
+                          )
                         )
                       }
                       className="w-full"
@@ -2385,88 +2483,88 @@ function App(){
 
                   </label>
 
-                  <label className="block mb-4">
+                  <Lbl>
+                    Logo Konumu
+                  </Lbl>
 
-                    <Lbl>
-                      Konum
-                    </Lbl>
+                  <div className="flex gap-2 mb-5">
 
-                    <div className="flex gap-2">
+                    {[
+                      ["left","Sol"],
+                      ["center","Orta"],
+                      ["right","Sağ"]
+                    ].map(([value,label])=>(
 
-                      {[
-                        "left",
-                        "center",
-                        "right"
-                      ].map(p=>(
+                      <button
+                        key={value}
+                        onClick={()=>
+                          setPath(
+                            [
+                              "logo",
+                              "position"
+                            ],
+                            value
+                          )
+                        }
+                        className="flex-1 py-2 rounded-lg text-xs"
+                        style={{
+                          backgroundColor:
+                            data.logo.position===value
+                            ?data.theme.accent
+                            :"#1c1917"
+                        }}
+                      >
+                        {label}
+                      </button>
 
-                        <button
-                          key={p}
-                          onClick={()=>
-                            set(
-                              ["logo","position"],
-                              p
-                            )
-                          }
-                          className="flex-1 py-1.5 rounded-lg text-xs font-medium"
-                          style={{
-                            backgroundColor:
-                              data.logo.position===p
-                              ?data.theme.accent
-                              :"#1c1917",
+                    ))}
 
-                            color:
-                              data.logo.position===p
-                              ?" #fff"
-                              :"#d4d4d4"
-                          }}
-                        >
-                          {
-                            p==="left"
-                            ?"Sol"
-                            :
-                            p==="center"
-                            ?"Orta"
-                            :"Sağ"
-                          }
-                        </button>
+                  </div>
 
-                      ))}
-
-                    </div>
-
-                  </label>
-
-                  <div className="h-px bg-neutral-800 my-4"/>
+                  <div className="h-px bg-neutral-800 my-5"/>
 
                   {/* TEMA */}
 
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2">
-                    Tema
-                  </p>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
+                    Hazır Temalar
+                  </div>
 
-                  <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="grid grid-cols-3 gap-2 mb-5">
 
-                    {THEMES.map(th=>(
+                    {THEMES.map(theme=>(
 
                       <button
-                        key={th.id}
-                        onClick={()=>
-                          applyPreset(th)
-                        }
-                        className="rounded-xl overflow-hidden border-2"
+                        key={theme.id}
+                        onClick={()=>{
+
+                          updateData(data=>{
+
+                            data.theme={
+                              ...data.theme,
+                              bg:theme.bg,
+                              card:theme.card,
+                              accent:theme.accent,
+                              text:theme.text
+                            };
+
+                          });
+
+                        }}
+                        className="overflow-hidden rounded-xl border-2"
                         style={{
                           borderColor:
-                            data.theme.accent===th.accent&&
-                            data.theme.bg===th.bg
-                            ?th.accent
+                            data.theme.bg===theme.bg&&
+                            data.theme.accent===theme.accent
+                            ?theme.accent
                             :"#292524"
                         }}
                       >
 
                         <div
                           style={{
-                            backgroundColor:th.bg,
-                            height:34,
+                            height:35,
+                            backgroundColor:
+                              theme.bg,
                             display:"flex",
                             alignItems:"center",
                             justifyContent:"center"
@@ -2475,17 +2573,18 @@ function App(){
 
                           <span
                             style={{
-                              width:14,
-                              height:14,
-                              borderRadius:999,
-                              backgroundColor:th.accent
+                              width:15,
+                              height:15,
+                              borderRadius:"50%",
+                              backgroundColor:
+                                theme.accent
                             }}
                           />
 
                         </div>
 
-                        <div className="bg-neutral-900 text-center py-1 text-[9px] font-medium">
-                          {th.name}
+                        <div className="bg-neutral-900 py-1 text-[9px]">
+                          {theme.name}
                         </div>
 
                       </button>
@@ -2494,116 +2593,139 @@ function App(){
 
                   </div>
 
-                  <Color
-                    label="Arka plan"
+                  <Lbl>
+                    Arka Plan Rengi
+                  </Lbl>
+
+                  <input
+                    type="color"
                     value={data.theme.bg}
-                    onChange={v=>
-                      set(
+                    onChange={e=>
+                      setPath(
                         ["theme","bg"],
-                        v
+                        e.target.value
                       )
                     }
+                    className="w-full h-9 mb-3"
                   />
 
-                  <Color
-                    label="Kart rengi"
+                  <Lbl>
+                    Kart Rengi
+                  </Lbl>
+
+                  <input
+                    type="color"
                     value={data.theme.card}
-                    onChange={v=>
-                      set(
+                    onChange={e=>
+                      setPath(
                         ["theme","card"],
-                        v
+                        e.target.value
                       )
                     }
+                    className="w-full h-9 mb-3"
                   />
 
-                  <Color
-                    label="Vurgu rengi"
+                  <Lbl>
+                    Vurgu Rengi
+                  </Lbl>
+
+                  <input
+                    type="color"
                     value={data.theme.accent}
-                    onChange={v=>
-                      set(
+                    onChange={e=>
+                      setPath(
                         ["theme","accent"],
-                        v
+                        e.target.value
                       )
                     }
+                    className="w-full h-9 mb-3"
                   />
 
-                  <Color
-                    label="Yazı rengi"
+                  <Lbl>
+                    Yazı Rengi
+                  </Lbl>
+
+                  <input
+                    type="color"
                     value={data.theme.text}
-                    onChange={v=>
-                      set(
+                    onChange={e=>
+                      setPath(
                         ["theme","text"],
-                        v
+                        e.target.value
                       )
                     }
+                    className="w-full h-9 mb-4"
                   />
 
-                  {/* ARKA PLAN GÖRSELİ */}
-
-                  <div className="flex gap-2 mt-2 mb-4">
+                  <div className="flex gap-2 mb-5">
 
                     <button
                       onClick={()=>
-                        bgRef.current.click()
+                        bgRef.current?.click()
                       }
-                      className="flex-1 flex items-center justify-center gap-1 bg-neutral-900 border border-neutral-700 rounded-lg py-2 text-xs"
+                      className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5"
                     >
 
                       <Icon
-                        name="upload"
-                        size={13}
+                        type="upload"
+                        size={14}
                       />
 
                       Arka Plan Görseli
 
                     </button>
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      ref={bgRef}
-                      className="hidden"
-                      onChange={upBg}
-                    />
-
                     {data.theme.bgImage&&(
 
                       <button
                         onClick={()=>
-                          set(
-                            ["theme","bgImage"],
+                          setPath(
+                            [
+                              "theme",
+                              "bgImage"
+                            ],
                             null
                           )
                         }
-                        className="px-3 bg-neutral-900 border border-neutral-700 rounded-lg"
+                        className="px-3 bg-red-950 text-red-400 rounded-lg"
                       >
                         <Icon
-                          name="trash"
+                          type="trash"
                           size={14}
                         />
                       </button>
 
                     )}
 
+                    <input
+                      ref={bgRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={
+                        uploadBackground
+                      }
+                    />
+
                   </div>
 
-                  {/* ÜRÜN GÖRSEL BOYUTU */}
-
-                  <label className="block mb-3">
+                  <label className="block mb-4">
 
                     <Lbl>
-                      Ürün görsel boyutu — {data.cardImgSize}px
+                      Ürün Görsel Yüksekliği — {data.cardImgSize}px
                     </Lbl>
 
                     <input
                       type="range"
                       min="90"
-                      max="260"
+                      max="300"
                       value={data.cardImgSize}
                       onChange={e=>
-                        set(
+                        setPath(
                           ["cardImgSize"],
-                          +e.target.value
+                          Number(
+                            e.target.value
+                          )
                         )
                       }
                       className="w-full"
@@ -2611,9 +2733,7 @@ function App(){
 
                   </label>
 
-                  {/* PIN */}
-
-                  <label className="block mb-3">
+                  <label className="block mb-5">
 
                     <Lbl>
                       Yönetim PIN
@@ -2624,48 +2744,27 @@ function App(){
                       inputMode="numeric"
                       maxLength="8"
                       onChange={e=>
-                        set(
+                        setPath(
                           ["pin"],
-                          e.target.value.replace(/\D/g,"")
+                          e.target.value.replace(
+                            /\D/g,
+                            ""
+                          )
                         )
                       }
-                      className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm outline-none tracking-widest"
+                      style={{
+                        ...fieldStyle,
+                        letterSpacing:".3em"
+                      }}
                     />
 
                   </label>
 
-                  {/* RESET */}
-
                   <button
-                    onClick={()=>{
-
-                      if(
-                        confirm(
-                          "Varsayılana dönülsün mü?"
-                        )
-                      ){
-
-                        const d=defData();
-
-                        setData(d);
-
-                        setActiveCat(
-                          d.categories[0].id
-                        );
-
-                      }
-
-                    }}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs bg-neutral-900 border border-neutral-700 text-neutral-400"
+                    onClick={resetDefault}
+                    className="w-full py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-neutral-400"
                   >
-
-                    <Icon
-                      name="reset"
-                      size={13}
-                    />
-
-                    Varsayılana Sıfırla
-
+                    Varsayılan Ayarlara Dön
                   </button>
 
                 </div>
@@ -2673,7 +2772,7 @@ function App(){
               )}
 
               {/* =================================================
-                  ÜRÜN KATALOĞU
+                  KATALOG
               ================================================= */}
 
               {tab==="icerik"&&(
@@ -2681,16 +2780,17 @@ function App(){
                 <div>
 
                   <button
-                    onClick={addCat}
-                    className="w-full flex items-center justify-center gap-1.5 mb-3 py-2.5 rounded-lg text-sm font-semibold text-white"
+                    onClick={addCategory}
+                    className="w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
                     style={{
-                      backgroundColor:data.theme.accent
+                      backgroundColor:
+                        data.theme.accent
                     }}
                   >
 
                     <Icon
-                      name="plus"
-                      size={16}
+                      type="plus"
+                      size={17}
                     />
 
                     Yeni Kategori
@@ -2698,75 +2798,79 @@ function App(){
                   </button>
 
                   {data.categories.map(
-                    (c,ci)=>(
+                    (category,index)=>(
 
                       <div
-                        key={c.id}
-                        className="mb-3 bg-neutral-900 rounded-xl border border-neutral-800"
+                        key={category.id}
+                        className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hidden"
                       >
 
-                        <div className="flex items-center gap-1.5 p-2">
+                        <div className="p-2 flex items-center gap-1.5">
 
-                          <div className="flex-1">
-
-                            <input
-                              value={
-                                c.name[editLang]||""
-                              }
-                              onChange={e=>
-                                renameCat(
-                                  c.id,
-                                  e.target.value
-                                )
-                              }
-                              className="w-full bg-neutral-800 rounded-lg px-2.5 py-1.5 text-sm outline-none"
-                            />
-
-                          </div>
+                          <input
+                            value={
+                              category.name[
+                                editLang
+                              ]||""
+                            }
+                            onChange={e=>
+                              renameCategory(
+                                category.id,
+                                e.target.value
+                              )
+                            }
+                            style={{
+                              ...fieldStyle,
+                              padding:"9px 10px",
+                              fontSize:13
+                            }}
+                          />
 
                           <button
                             onClick={()=>
-                              moveCat(
-                                c.id,
+                              moveCategory(
+                                category.id,
                                 -1
                               )
                             }
-                            disabled={ci===0}
-                            className="p-1.5 bg-neutral-800 rounded-lg disabled:opacity-30"
+                            disabled={index===0}
+                            className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
                           >
                             <Icon
-                              name="up"
+                              type="up"
                               size={14}
                             />
                           </button>
 
                           <button
                             onClick={()=>
-                              moveCat(
-                                c.id,
+                              moveCategory(
+                                category.id,
                                 1
                               )
                             }
                             disabled={
-                              ci===
+                              index===
                               data.categories.length-1
                             }
-                            className="p-1.5 bg-neutral-800 rounded-lg disabled:opacity-30"
+                            className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
                           >
                             <Icon
-                              name="down"
+                              type="down"
                               size={14}
                             />
                           </button>
 
                           <button
                             onClick={()=>
-                              delCat(c.id)
+                              deleteCategory(
+                                category.id
+                              )
                             }
-                            className="p-1.5 bg-red-950 rounded-lg text-red-400"
+                            className="p-2 bg-red-950 text-red-400 rounded-lg"
                           >
                             <Icon
-                              name="trash"
+                              type="trash"
                               size={14}
                             />
                           </button>
@@ -2774,15 +2878,17 @@ function App(){
                           <button
                             onClick={()=>
                               setOpenCat(
-                                openCat===c.id
+                                openCat===
+                                category.id
                                 ?null
-                                :c.id
+                                :category.id
                               )
                             }
-                            className="p-1.5 bg-neutral-800 rounded-lg text-[11px] px-2 font-medium"
+                            className="px-2.5 py-2 bg-neutral-800 rounded-lg text-[11px] whitespace-nowrap"
                           >
                             {
-                              openCat===c.id
+                              openCat===
+                              category.id
                               ?"Kapat"
                               :"Ürünler"
                             }
@@ -2790,43 +2896,42 @@ function App(){
 
                         </div>
 
-                        {openCat===c.id&&(
+                        {openCat===category.id&&(
 
-                          <div className="p-2 pt-0 space-y-2">
+                          <div className="p-2 pt-0">
 
-                            {c.items.map(
-                              (it,ii)=>(
+                            {category.items.map(
+                              (item,itemIndex)=>(
 
                                 <div
-                                  key={it.id}
-                                  className="bg-neutral-800 rounded-lg p-2.5"
+                                  key={item.id}
+                                  className="bg-neutral-800 rounded-xl p-3 mb-2"
                                 >
 
                                   <div className="flex gap-2 mb-2">
 
                                     <div
                                       onClick={()=>
-                                        itemRefs.current[it.id]?.click()
+                                        itemRefs.current[
+                                          item.id
+                                        ]?.click()
                                       }
-                                      className="w-14 h-14 rounded-md bg-neutral-700 flex items-center justify-center overflow-hidden cursor-pointer flex-shrink-0"
+                                      className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center"
                                       style={{
                                         backgroundImage:
-                                          it.image
-                                          ?`url(${it.image})`
+                                          item.image
+                                          ?`url(${item.image})`
                                           :undefined,
-
                                         backgroundSize:"cover",
-
                                         backgroundPosition:"center"
                                       }}
                                     >
 
-                                      {!it.image&&(
+                                      {!item.image&&(
 
                                         <Icon
-                                          name="image"
-                                          size={16}
-                                          className="opacity-40"
+                                          type="image"
+                                          size={18}
                                         />
 
                                       )}
@@ -2837,54 +2942,63 @@ function App(){
                                       type="file"
                                       accept="image/*"
                                       className="hidden"
-                                      ref={el=>
-                                        itemRefs.current[it.id]=el
+                                      ref={element=>
+                                        itemRefs.current[
+                                          item.id
+                                        ]=element
                                       }
                                       onChange={e=>
-                                        upItemImg(
-                                          c.id,
-                                          it.id,
+                                        uploadItemImage(
+                                          category.id,
+                                          item.id,
                                           e
                                         )
                                       }
                                     />
 
-                                    <div className="flex-1 space-y-1.5">
+                                    <div className="flex-1">
 
                                       <input
                                         value={
-                                          it.name[editLang]||""
+                                          item.name[
+                                            editLang
+                                          ]||""
                                         }
                                         onChange={e=>
-                                          updItem(
-                                            c.id,
-                                            it.id,
+                                          updateItem(
+                                            category.id,
+                                            item.id,
                                             "name",
                                             e.target.value
                                           )
                                         }
-                                        placeholder={
-                                          "Ürün adı ("+
-                                          editLang.toUpperCase()+
-                                          ")"
-                                        }
-                                        className="w-full bg-neutral-900 rounded-md px-2 py-1.5 text-xs outline-none"
+                                        placeholder="Ürün adı"
+                                        style={{
+                                          ...fieldStyle,
+                                          padding:"8px 9px",
+                                          fontSize:12,
+                                          marginBottom:6
+                                        }}
                                       />
 
                                       <input
                                         value={
-                                          it.dims||""
+                                          item.dims||""
                                         }
                                         onChange={e=>
-                                          updItem(
-                                            c.id,
-                                            it.id,
+                                          updateItem(
+                                            category.id,
+                                            item.id,
                                             "dims",
                                             e.target.value
                                           )
                                         }
-                                        placeholder="Ölçüler (örn: 200x90x75 cm)"
-                                        className="w-full bg-neutral-900 rounded-md px-2 py-1.5 text-xs outline-none"
+                                        placeholder="Ölçüler: 200x90x75 cm"
+                                        style={{
+                                          ...fieldStyle,
+                                          padding:"8px 9px",
+                                          fontSize:12
+                                        }}
                                       />
 
                                     </div>
@@ -2893,38 +3007,41 @@ function App(){
 
                                   <input
                                     value={
-                                      it.desc[editLang]||""
+                                      item.desc[
+                                        editLang
+                                      ]||""
                                     }
                                     onChange={e=>
-                                      updItem(
-                                        c.id,
-                                        it.id,
+                                      updateItem(
+                                        category.id,
+                                        item.id,
                                         "desc",
                                         e.target.value
                                       )
                                     }
-                                    placeholder={
-                                      "Özellikler ("+
-                                      editLang.toUpperCase()+
-                                      ")"
-                                    }
-                                    className="w-full bg-neutral-900 rounded-md px-2 py-1.5 text-xs outline-none mb-2"
+                                    placeholder="Ürün özellikleri"
+                                    style={{
+                                      ...fieldStyle,
+                                      padding:"8px 9px",
+                                      fontSize:12,
+                                      marginBottom:8
+                                    }}
                                   />
 
-                                  <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex gap-2 items-center mb-2">
 
                                     <input
                                       type="number"
                                       disabled={
-                                        it.price.contactOnly
+                                        item.price.contactOnly
                                       }
                                       value={
-                                        it.price.amount??""
+                                        item.price.amount??""
                                       }
                                       onChange={e=>
-                                        updPrice(
-                                          c.id,
-                                          it.id,
+                                        updatePrice(
+                                          category.id,
+                                          item.id,
                                           {
                                             amount:
                                               e.target.value===""
@@ -2935,21 +3052,29 @@ function App(){
                                           }
                                         )
                                       }
-                                      placeholder="Fiyat (TL)"
-                                      className="flex-1 bg-neutral-900 rounded-md px-2 py-1.5 text-xs outline-none disabled:opacity-40"
+                                      placeholder="Fiyat TL"
+                                      style={{
+                                        ...fieldStyle,
+                                        padding:"8px 9px",
+                                        fontSize:12,
+                                        opacity:
+                                          item.price.contactOnly
+                                          ?.4
+                                          :1
+                                      }}
                                     />
 
-                                    <label className="flex items-center gap-1 text-[10px] text-neutral-400 whitespace-nowrap">
+                                    <label className="flex items-center gap-1.5 text-[10px] text-neutral-400 whitespace-nowrap">
 
                                       <input
                                         type="checkbox"
                                         checked={
-                                          !!it.price.contactOnly
+                                          !!item.price.contactOnly
                                         }
                                         onChange={e=>
-                                          updPrice(
-                                            c.id,
-                                            it.id,
+                                          updatePrice(
+                                            category.id,
+                                            item.id,
                                             {
                                               contactOnly:
                                                 e.target.checked
@@ -2964,20 +3089,20 @@ function App(){
 
                                   </div>
 
-                                  <div className="flex gap-1 justify-end">
+                                  <div className="flex justify-end gap-1">
 
-                                    {it.image&&(
+                                    {item.image&&(
 
                                       <button
                                         onClick={()=>
-                                          updItem(
-                                            c.id,
-                                            it.id,
+                                          updateItem(
+                                            category.id,
+                                            item.id,
                                             "image",
                                             null
                                           )
                                         }
-                                        className="text-[10px] px-2 py-1 bg-neutral-700 rounded"
+                                        className="px-2 py-1 bg-neutral-700 rounded text-[10px]"
                                       >
                                         Görseli Sil
                                       </button>
@@ -2987,16 +3112,18 @@ function App(){
                                     <button
                                       onClick={()=>
                                         moveItem(
-                                          c.id,
-                                          it.id,
+                                          category.id,
+                                          item.id,
                                           -1
                                         )
                                       }
-                                      disabled={ii===0}
-                                      className="p-1 bg-neutral-700 rounded disabled:opacity-30"
+                                      disabled={
+                                        itemIndex===0
+                                      }
+                                      className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
                                     >
                                       <Icon
-                                        name="up"
+                                        type="up"
                                         size={12}
                                       />
                                     </button>
@@ -3004,34 +3131,34 @@ function App(){
                                     <button
                                       onClick={()=>
                                         moveItem(
-                                          c.id,
-                                          it.id,
+                                          category.id,
+                                          item.id,
                                           1
                                         )
                                       }
                                       disabled={
-                                        ii===
-                                        c.items.length-1
+                                        itemIndex===
+                                        category.items.length-1
                                       }
-                                      className="p-1 bg-neutral-700 rounded disabled:opacity-30"
+                                      className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
                                     >
                                       <Icon
-                                        name="down"
+                                        type="down"
                                         size={12}
                                       />
                                     </button>
 
                                     <button
                                       onClick={()=>
-                                        delItem(
-                                          c.id,
-                                          it.id
+                                        deleteItem(
+                                          category.id,
+                                          item.id
                                         )
                                       }
-                                      className="p-1 bg-red-950 rounded text-red-400"
+                                      className="p-1.5 bg-red-950 text-red-400 rounded"
                                     >
                                       <Icon
-                                        name="trash"
+                                        type="trash"
                                         size={12}
                                       />
                                     </button>
@@ -3045,14 +3172,16 @@ function App(){
 
                             <button
                               onClick={()=>
-                                addItem(c.id)
+                                addItem(
+                                  category.id
+                                )
                               }
-                              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium bg-neutral-700"
+                              className="w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
                             >
 
                               <Icon
-                                name="plus"
-                                size={13}
+                                type="plus"
+                                size={14}
                               />
 
                               Ürün Ekle
@@ -3083,7 +3212,7 @@ function App(){
               <button
                 onClick={save}
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white"
+                className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
                 style={{
                   backgroundColor:
                     saved
@@ -3095,8 +3224,8 @@ function App(){
                     ?"popSave .5s ease"
                     :
                     saving
-                    ?undefined
-                    :"pulseGlow 2.2s ease-in-out infinite"
+                    ?"none"
+                    :"pulseGlow 2.2s infinite"
                 }}
               >
 
@@ -3105,34 +3234,32 @@ function App(){
                   ?
 
                   <Icon
-                    name="check"
+                    type="check"
                     size={17}
                   />
 
                   :
 
                   <Icon
-                    name="save"
-                    size={16}
+                    type="save"
+                    size={17}
                   />
 
                 }
 
-                {
-                  saved
+                {saved
                   ?"Kaydedildi!"
                   :
                   saving
-                  ?"Kaydediliyor…"
-                  :
-                  "Kaydet ve Kapat"
+                  ?"Kaydediliyor..."
+                  :"Kaydet ve Kapat"
                 }
 
               </button>
 
             </div>
 
-          </div>
+          </aside>
 
         </div>
 
@@ -3140,6 +3267,40 @@ function App(){
 
     </div>
 
+  );
+
+}
+
+/* =========================================================
+   YARDIMCI STİLLER
+   ========================================================= */
+
+const fieldStyle={
+  width:"100%",
+  background:"#171717",
+  border:"1px solid #404040",
+  color:"#f5f5f5",
+  borderRadius:"8px",
+  padding:"10px 12px",
+  outline:"none",
+  fontSize:"13px"
+};
+
+function Lbl({children}){
+
+  return React.createElement(
+    "div",
+    {
+      style:{
+        color:"#737373",
+        fontSize:"10px",
+        fontWeight:700,
+        letterSpacing:".08em",
+        textTransform:"uppercase",
+        marginBottom:"5px"
+      }
+    },
+    children
   );
 
 }
@@ -3153,7 +3314,7 @@ ReactDOM
     document.getElementById("root")
   )
   .render(
-    <App/>
+    React.createElement(App)
   );
 
 </script>
