@@ -40,6 +40,10 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      cursor: not-allowed;
+    }
+
     ::-webkit-scrollbar {
       display: none;
     }
@@ -100,6 +104,28 @@
       user-select: none;
       -webkit-user-select: none;
     }
+
+    .image-loading {
+      background:
+        linear-gradient(
+          90deg,
+          rgba(255,255,255,.04),
+          rgba(255,255,255,.10),
+          rgba(255,255,255,.04)
+        );
+      background-size: 200% 100%;
+      animation: imageShimmer 1.2s infinite;
+    }
+
+    @keyframes imageShimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
   </style>
 </head>
 
@@ -112,7 +138,8 @@
 const {
   useState,
   useEffect,
-  useRef
+  useRef,
+  useCallback
 } = React;
 
 
@@ -129,10 +156,20 @@ const SUPABASE_ANON_KEY =
 const supabase =
   window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    }
   );
 
 const SITE_ID = 1;
+
+const STORAGE_BUCKET =
+  "catalog-images";
 
 
 /* =========================================================
@@ -186,10 +223,12 @@ const tf = (tr, en, ar) => ({
 
 
 const uid = () => {
+
   return (
     Math.random().toString(36).slice(2, 10) +
     Date.now().toString(36)
   );
+
 };
 
 
@@ -381,7 +420,8 @@ function defaultData() {
 
     cardImgSize: 170,
 
-    categories: createDefaultCategories()
+    categories:
+      createDefaultCategories()
 
   };
 
@@ -394,11 +434,18 @@ function defaultData() {
 
 function normalizeData(input) {
 
-  const base = defaultData();
+  const base =
+    defaultData();
 
-  if (!input || typeof input !== "object") {
+  if (
+    !input ||
+    typeof input !== "object"
+  ) {
+
     return base;
+
   }
+
 
   const result = {
     ...base,
@@ -442,14 +489,6 @@ function normalizeData(input) {
   };
 
 
-  /*
-   * Kategoriler gerçekten boşsa varsayılan
-   * 9 kategori oluştur.
-   *
-   * Böylece yanlışlıkla [] kayıt edilmişse
-   * site tamamen boş kalmaz.
-   */
-
   if (
     !Array.isArray(input.categories) ||
     input.categories.length === 0
@@ -461,69 +500,81 @@ function normalizeData(input) {
   } else {
 
     result.categories =
-      input.categories.map((category) => {
+      input.categories.map(
+        (category) => {
 
-        return {
+          return {
 
-          ...category,
+            ...category,
 
-          id: category.id || uid(),
+            id:
+              category.id ||
+              uid(),
 
-          name: {
-            tr: "",
-            en: "",
-            ar: "",
-            ...(category.name || {})
-          },
+            name: {
+              tr: "",
+              en: "",
+              ar: "",
+              ...(category.name || {})
+            },
 
-          items:
-            Array.isArray(category.items)
+            items:
+              Array.isArray(
+                category.items
+              )
 
-            ?
+                ?
 
-            category.items.map((item) => {
+                category.items.map(
+                  (item) => {
 
-              return {
+                    return {
 
-                ...item,
+                      ...item,
 
-                id: item.id || uid(),
+                      id:
+                        item.id ||
+                        uid(),
 
-                name: {
-                  tr: "",
-                  en: "",
-                  ar: "",
-                  ...(item.name || {})
-                },
+                      name: {
+                        tr: "",
+                        en: "",
+                        ar: "",
+                        ...(item.name || {})
+                      },
 
-                desc: {
-                  tr: "",
-                  en: "",
-                  ar: "",
-                  ...(item.desc || {})
-                },
+                      desc: {
+                        tr: "",
+                        en: "",
+                        ar: "",
+                        ...(item.desc || {})
+                      },
 
-                dims: item.dims || "",
+                      dims:
+                        item.dims || "",
 
-                price: {
-                  amount: null,
-                  contactOnly: true,
-                  ...(item.price || {})
-                },
+                      price: {
+                        amount: null,
+                        contactOnly: true,
+                        ...(item.price || {})
+                      },
 
-                image: item.image || null
+                      image:
+                        item.image || null
 
-              };
+                    };
 
-            })
+                  }
+                )
 
-            :
+                :
 
-            []
+                []
 
-        };
+          };
 
-      });
+        }
+      );
 
   }
 
@@ -534,82 +585,527 @@ function normalizeData(input) {
 
 
 /* =========================================================
-   GÖRSEL SIKIŞTIRMA
+   BASE64 → BLOB
+   ========================================================= */
+
+function dataUrlToBlob(
+  dataUrl
+) {
+
+  const parts =
+    dataUrl.split(",");
+
+  const meta =
+    parts[0] || "";
+
+  const data =
+    parts[1] || "";
+
+  const mimeMatch =
+    meta.match(
+      /data:([^;]+)/
+    );
+
+  const mime =
+    mimeMatch
+      ? mimeMatch[1]
+      : "image/jpeg";
+
+  const binary =
+    atob(data);
+
+  const len =
+    binary.length;
+
+  const bytes =
+    new Uint8Array(len);
+
+  for (
+    let i = 0;
+    i < len;
+    i++
+  ) {
+
+    bytes[i] =
+      binary.charCodeAt(i);
+
+  }
+
+  return new Blob(
+    [bytes],
+    {
+      type: mime
+    }
+  );
+
+}
+
+
+/* =========================================================
+   GÖRSEL SIKIŞTIRME
    ========================================================= */
 
 function resizeImg(
   file,
   maxWidth = 1000,
-  quality = 0.80
+  quality = 0.78
 ) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (resolve, reject) => {
 
-    const reader =
-      new FileReader();
+      const reader =
+        new FileReader();
 
-    reader.onload = (event) => {
+      reader.onload =
+        (event) => {
 
-      const img =
-        new Image();
+          const img =
+            new Image();
 
-      img.onload = () => {
+          img.onload =
+            () => {
 
-        let width = img.width;
-        let height = img.height;
+              let width =
+                img.width;
 
-        if (width > maxWidth) {
+              let height =
+                img.height;
 
-          height =
-            Math.round(
-              height *
-              (maxWidth / width)
-            );
 
-          width = maxWidth;
+              if (
+                width >
+                maxWidth
+              ) {
+
+                height =
+                  Math.round(
+                    height *
+                    (
+                      maxWidth /
+                      width
+                    )
+                  );
+
+                width =
+                  maxWidth;
+
+              }
+
+
+              const canvas =
+                document.createElement(
+                  "canvas"
+                );
+
+
+              canvas.width =
+                width;
+
+              canvas.height =
+                height;
+
+
+              const ctx =
+                canvas.getContext(
+                  "2d",
+                  {
+                    alpha: false
+                  }
+                );
+
+
+              ctx.drawImage(
+                img,
+                0,
+                0,
+                width,
+                height
+              );
+
+
+              resolve(
+                canvas.toDataURL(
+                  "image/jpeg",
+                  quality
+                )
+              );
+
+            };
+
+
+          img.onerror =
+            reject;
+
+
+          img.src =
+            event.target.result;
+
+        };
+
+
+      reader.onerror =
+        reject;
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   STORAGE DOSYA ADI
+   ========================================================= */
+
+function storagePath(
+  type,
+  id
+) {
+
+  return (
+    SITE_ID +
+    "/" +
+    type +
+    "/" +
+    id +
+    "-" +
+    Date.now() +
+    ".jpg"
+  );
+
+}
+
+
+/* =========================================================
+   STORAGE'A YÜKLE
+   ========================================================= */
+
+async function uploadBlobToStorage(
+  blob,
+  path
+) {
+
+  const result =
+    await supabase.storage
+      .from(
+        STORAGE_BUCKET
+      )
+      .upload(
+        path,
+        blob,
+        {
+          contentType:
+            "image/jpeg",
+
+          cacheControl:
+            "31536000",
+
+          upsert:
+            false
+        }
+      );
+
+
+  if (result.error) {
+    throw result.error;
+  }
+
+
+  const publicResult =
+    supabase.storage
+      .from(
+        STORAGE_BUCKET
+      )
+      .getPublicUrl(
+        path
+      );
+
+
+  return (
+    publicResult
+      ?.data
+      ?.publicUrl ||
+    null
+  );
+
+}
+
+
+/* =========================================================
+   FOTOĞRAF URL Mİ?
+   ========================================================= */
+
+function isRemoteImage(
+  value
+) {
+
+  if (
+    typeof value !== "string"
+  ) {
+
+    return false;
+
+  }
+
+
+  return (
+    value.startsWith(
+      "http://"
+    ) ||
+    value.startsWith(
+      "https://"
+    ) ||
+    value.startsWith(
+      "/"
+    ) ||
+    value.startsWith(
+      "./"
+    )
+  );
+
+}
+
+
+/* =========================================================
+   ESKİ BASE64 FOTOĞRAFLARI STORAGE'A TAŞI
+   ========================================================= */
+
+async function migrateOldImages(
+  originalData,
+  onProgress
+) {
+
+  const copy =
+    normalizeData(
+      originalData
+    );
+
+
+  const tasks = [];
+
+
+  if (
+    typeof copy.logo?.src ===
+      "string" &&
+    copy.logo.src.startsWith(
+      "data:image/"
+    )
+  ) {
+
+    tasks.push({
+      type: "logo",
+      id: "logo",
+      value:
+        copy.logo.src
+    });
+
+  }
+
+
+  if (
+    typeof copy.theme?.bgImage ===
+      "string" &&
+    copy.theme.bgImage.startsWith(
+      "data:image/"
+    )
+  ) {
+
+    tasks.push({
+      type: "background",
+      id: "background",
+      value:
+        copy.theme.bgImage
+    });
+
+  }
+
+
+  copy.categories.forEach(
+    (category) => {
+
+      category.items.forEach(
+        (item) => {
+
+          if (
+            typeof item.image ===
+              "string" &&
+            item.image.startsWith(
+              "data:image/"
+            )
+          ) {
+
+            tasks.push({
+              type: "product",
+              id: item.id,
+              value:
+                item.image,
+              categoryId:
+                category.id
+            });
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+
+  if (
+    tasks.length === 0
+  ) {
+
+    return {
+      data: copy,
+      migrated: 0
+    };
+
+  }
+
+
+  let completed = 0;
+
+
+  /*
+   * Aynı anda en fazla 3 fotoğraf.
+   * Böylece telefon ve bağlantı boğulmaz.
+   */
+
+  const concurrency = 3;
+
+
+  async function worker() {
+
+    while (true) {
+
+      const task =
+        tasks.shift();
+
+      if (!task) {
+        break;
+      }
+
+
+      try {
+
+        const blob =
+          dataUrlToBlob(
+            task.value
+          );
+
+
+        const path =
+          storagePath(
+            task.type,
+            task.id
+          );
+
+
+        const url =
+          await uploadBlobToStorage(
+            blob,
+            path
+          );
+
+
+        if (task.type === "logo") {
+
+          copy.logo.src =
+            url;
 
         }
 
-        const canvas =
-          document.createElement(
-            "canvas"
+
+        else if (
+          task.type ===
+          "background"
+        ) {
+
+          copy.theme.bgImage =
+            url;
+
+        }
+
+
+        else {
+
+          const category =
+            copy.categories.find(
+              (x) =>
+                x.id ===
+                task.categoryId
+            );
+
+
+          const item =
+            category?.items.find(
+              (x) =>
+                x.id ===
+                task.id
+            );
+
+
+          if (item) {
+
+            item.image =
+              url;
+
+          }
+
+        }
+
+
+        completed++;
+
+
+        if (onProgress) {
+
+          onProgress(
+            completed,
+            completed +
+              tasks.length
           );
 
-        canvas.width = width;
-        canvas.height = height;
+        }
 
-        const ctx =
-          canvas.getContext("2d");
+      } catch (error) {
 
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          width,
-          height
+        console.error(
+          "Fotoğraf taşıma hatası:",
+          error
         );
 
-        resolve(
-          canvas.toDataURL(
-            "image/jpeg",
-            quality
+      }
+
+    }
+
+  }
+
+
+  await Promise.all(
+    Array.from(
+      {
+        length:
+          Math.min(
+            concurrency,
+            tasks.length
           )
-        );
+      },
+      worker
+    )
+  );
 
-      };
 
-      img.onerror = reject;
-
-      img.src =
-        event.target.result;
-
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsDataURL(file);
-
-  });
+  return {
+    data: copy,
+    migrated: completed
+  };
 
 }
 
@@ -642,31 +1138,47 @@ function formatPrice(
 
 
   let amount =
-    Number(price.amount);
+    Number(
+      price.amount
+    );
 
 
-  if (currency === "usd") {
+  if (
+    currency === "usd"
+  ) {
 
     amount =
       amount /
-      (Number(rates.usd) || 1);
+      (
+        Number(
+          rates.usd
+        ) || 1
+      );
 
   }
 
 
-  if (currency === "eur") {
+  if (
+    currency === "eur"
+  ) {
 
     amount =
       amount /
-      (Number(rates.eur) || 1);
+      (
+        Number(
+          rates.eur
+        ) || 1
+      );
 
   }
 
 
   const current =
     CURR.find(
-      (x) => x.c === currency
-    ) || CURR[0];
+      (x) =>
+        x.c === currency
+    ) ||
+    CURR[0];
 
 
   const decimals =
@@ -716,7 +1228,9 @@ function Icon({
   let content = null;
 
 
-  if (type === "settings") {
+  if (
+    type === "settings"
+  ) {
 
     content = (
       <>
@@ -993,6 +1507,14 @@ function App() {
   const [busy, setBusy] =
     useState(false);
 
+  const [migration, setMigration] =
+    useState({
+      active: false,
+      current: 0,
+      total: 0
+    });
+
+
   const logoRef =
     useRef(null);
 
@@ -1007,13 +1529,18 @@ function App() {
      TOAST
      ======================================================= */
 
-  function showToast(message) {
+  function showToast(
+    message
+  ) {
 
     setToast(message);
 
-    setTimeout(() => {
-      setToast("");
-    }, 3000);
+    setTimeout(
+      () => {
+        setToast("");
+      },
+      3000
+    );
 
   }
 
@@ -1022,136 +1549,444 @@ function App() {
      SUPABASE'DEN VERİ OKU
      ======================================================= */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    async function loadData() {
-
-      try {
-
-        const result =
-          await supabase
-            .from("site_data")
-            .select("*")
-            .eq("id", SITE_ID)
-            .maybeSingle();
+      let cancelled =
+        false;
 
 
-        if (result.error) {
-          throw result.error;
-        }
+      async function loadData() {
+
+        try {
+
+          const result =
+            await supabase
+              .from("site_data")
+              .select(
+                "data"
+              )
+              .eq(
+                "id",
+                SITE_ID
+              )
+              .maybeSingle();
 
 
-        let loadedData;
+          if (
+            result.error
+          ) {
+
+            throw result.error;
+
+          }
 
 
-        if (
-          result.data &&
-          result.data.data
-        ) {
+          let loadedData;
 
-          loadedData =
-            normalizeData(
-              result.data.data
+
+          if (
+            result.data &&
+            result.data.data
+          ) {
+
+            loadedData =
+              normalizeData(
+                result.data.data
+              );
+
+          } else {
+
+            loadedData =
+              defaultData();
+
+
+            const insert =
+              await supabase
+                .from(
+                  "site_data"
+                )
+                .insert({
+                  id:
+                    SITE_ID,
+
+                  data:
+                    loadedData,
+
+                  updated_at:
+                    new Date()
+                      .toISOString()
+                });
+
+
+            if (
+              insert.error &&
+              insert.error.code !==
+                "23505"
+            ) {
+
+              console.error(
+                "İlk veri oluşturulamadı:",
+                insert.error
+              );
+
+            }
+
+          }
+
+
+          if (cancelled) {
+            return;
+          }
+
+
+          setData(
+            loadedData
+          );
+
+
+          setActiveCat(
+            loadedData
+              .categories?.[0]?.id ||
+            null
+          );
+
+
+          /*
+           * Eski Base64 fotoğrafları
+           * arka planda Storage'a taşı.
+           */
+
+          const hasOldImages =
+            containsBase64Images(
+              loadedData
             );
 
-        } else {
 
-          loadedData =
+          if (
+            hasOldImages
+          ) {
+
+            setMigration({
+              active: true,
+              current: 0,
+              total: countBase64Images(
+                loadedData
+              )
+            });
+
+
+            try {
+
+              const migrated =
+                await migrateOldImages(
+                  loadedData,
+                  (
+                    current,
+                    total
+                  ) => {
+
+                    if (
+                      cancelled
+                    ) {
+                      return;
+                    }
+
+                    setMigration({
+                      active: true,
+                      current,
+                      total
+                    });
+
+                  }
+                );
+
+
+              if (
+                cancelled
+              ) {
+                return;
+              }
+
+
+              setData(
+                migrated.data
+              );
+
+
+              if (
+                migrated.migrated >
+                0
+              ) {
+
+                /*
+                 * Fotoğraflar Storage'a taşındı.
+                 * Artık sadece URL'leri kaydediyoruz.
+                 */
+
+                const result =
+                  await supabase
+                    .from(
+                      "site_data"
+                    )
+                    .upsert(
+                      {
+                        id:
+                          SITE_ID,
+
+                        data:
+                          migrated.data,
+
+                        updated_at:
+                          new Date()
+                            .toISOString()
+                      },
+                      {
+                        onConflict:
+                          "id"
+                      }
+                    );
+
+
+                if (
+                  result.error
+                ) {
+
+                  console.error(
+                    "Fotoğraf taşıma kaydı:",
+                    result.error
+                  );
+
+                  showToast(
+                    "Fotoğraflar taşındı fakat kayıt tamamlanamadı."
+                  );
+
+                } else {
+
+                  showToast(
+                    migrated.migrated +
+                    " fotoğraf optimize edildi"
+                  );
+
+                }
+
+              }
+
+            } catch (migrationError) {
+
+              console.error(
+                "Fotoğraf migrasyon hatası:",
+                migrationError
+              );
+
+              showToast(
+                "Eski fotoğrafların optimizasyonunda hata oluştu."
+              );
+
+            } finally {
+
+              if (
+                !cancelled
+              ) {
+
+                setMigration({
+                  active: false,
+                  current: 0,
+                  total: 0
+                });
+
+              }
+
+            }
+
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            "SUPABASE OKUMA HATASI:",
+            error
+          );
+
+
+          if (
+            cancelled
+          ) {
+            return;
+          }
+
+
+          const fallback =
             defaultData();
 
 
-          const insert =
-            await supabase
-              .from("site_data")
-              .insert({
-
-                id: SITE_ID,
-
-                data: loadedData,
-
-                updated_at:
-                  new Date().toISOString()
-
-              });
+          setData(
+            fallback
+          );
 
 
-          if (insert.error) {
+          setActiveCat(
+            fallback
+              .categories?.[0]?.id ||
+            null
+          );
 
-            console.error(
-              "İlk veri oluşturulamadı:",
-              insert.error
+
+          showToast(
+            "Veritabanı bağlantısı kontrol edilmeli"
+          );
+
+        } finally {
+
+          if (
+            !cancelled
+          ) {
+
+            setLoading(
+              false
             );
 
           }
 
         }
 
-
-        setData(loadedData);
-
-
-        setActiveCat(
-          loadedData.categories?.[0]?.id ||
-          null
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "SUPABASE OKUMA HATASI:",
-          error
-        );
-
-
-        const fallback =
-          defaultData();
-
-
-        setData(fallback);
-
-
-        setActiveCat(
-          fallback.categories?.[0]?.id ||
-          null
-        );
-
-
-        showToast(
-          "Veritabanı bağlantısı kontrol edilmeli"
-        );
-
-
-      } finally {
-
-        setLoading(false);
-
       }
+
+
+      loadData();
+
+
+      return () => {
+
+        cancelled =
+          true;
+
+      };
+
+    },
+    []
+  );
+
+
+  /* =======================================================
+     BASE64 KONTROL
+     ======================================================= */
+
+  function countBase64Images(
+    source
+  ) {
+
+    let count = 0;
+
+
+    if (
+      source?.logo?.src
+        ?.startsWith(
+          "data:image/"
+        )
+    ) {
+
+      count++;
 
     }
 
 
-    loadData();
+    if (
+      source?.theme?.bgImage
+        ?.startsWith(
+          "data:image/"
+        )
+    ) {
 
-  }, []);
+      count++;
+
+    }
+
+
+    source?.categories?.forEach(
+      (category) => {
+
+        category.items?.forEach(
+          (item) => {
+
+            if (
+              item.image
+                ?.startsWith(
+                  "data:image/"
+                )
+            ) {
+
+              count++;
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+    return count;
+
+  }
+
+
+  function containsBase64Images(
+    source
+  ) {
+
+    return (
+      countBase64Images(
+        source
+      ) > 0
+    );
+
+  }
 
 
   /* =======================================================
      VERİ DEĞİŞTİR
      ======================================================= */
 
-  function updateData(callback) {
+  function updateData(
+    callback
+  ) {
 
-    setData((previous) => {
+    setData(
+      (previous) => {
 
-      const copy =
-        structuredClone(previous);
+        if (!previous) {
+          return previous;
+        }
 
-      callback(copy);
 
-      return copy;
+        /*
+         * Eskiden structuredClone bütün
+         * katalogu her tuşta kopyalıyordu.
+         *
+         * Artık sadece callback'e verilen
+         * veriyi kontrollü şekilde değiştiriyoruz.
+         *
+         * Fotoğraflar URL olduğu için veri
+         * zaten çok küçük kalacak.
+         */
 
-    });
+        const copy = {
+          ...previous
+        };
+
+
+        callback(
+          copy
+        );
+
+
+        return copy;
+
+      }
+    );
 
   }
 
@@ -1161,37 +1996,43 @@ function App() {
     value
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      let target = copy;
+        let target =
+          copy;
 
 
-      for (
-        let i = 0;
-        i < path.length - 1;
-        i++
-      ) {
-
-        if (
-          target[path[i]] === undefined ||
-          target[path[i]] === null
+        for (
+          let i = 0;
+          i <
+            path.length - 1;
+          i++
         ) {
 
-          target[path[i]] = {};
+          const key =
+            path[i];
+
+
+          target[key] = {
+            ...(target[key] || {})
+          };
+
+
+          target =
+            target[key];
 
         }
 
-        target =
-          target[path[i]];
+
+        target[
+          path[
+            path.length - 1
+          ]
+        ] = value;
 
       }
-
-
-      target[
-        path[path.length - 1]
-      ] = value;
-
-    });
+    );
 
   }
 
@@ -1202,102 +2043,99 @@ function App() {
 
   async function save() {
 
-    if (!data) {
+    if (
+      !data ||
+      saving
+    ) {
+
       return;
+
     }
 
 
-    setSaving(true);
+    setSaving(
+      true
+    );
 
 
     try {
 
       /*
-       * Güncel Supabase verisini kontrol ediyoruz.
+       * ÖNEMLİ:
+       *
+       * Artık kaydetmeden önce Supabase'den
+       * mevcut veriyi tekrar çekmiyoruz.
+       *
+       * Bu eski sistemdeki en büyük
+       * yavaşlık kaynaklarından biriydi.
        */
 
-      const current =
-        await supabase
-          .from("site_data")
-          .select("data")
-          .eq("id", SITE_ID)
-          .maybeSingle();
 
-
-      if (current.error) {
-        throw current.error;
-      }
-
-
-      let dataToSave =
-        structuredClone(data);
+      const dataToSave =
+        normalizeData(
+          data
+        );
 
 
       /*
-       * Kategoriler yanlışlıkla boş geldiyse
-       * mevcut DB kategorilerini koru.
+       * Eğer hâlâ yanlışlıkla Base64 kaldıysa
+       * kaydetmeden önce durdur.
        */
 
-      const dbCategories =
-        current.data?.data?.categories;
-
-
       if (
-        Array.isArray(dbCategories) &&
-        dbCategories.length > 0 &&
-        (
-          !Array.isArray(
-            dataToSave.categories
-          ) ||
-          dataToSave.categories.length === 0
+        containsBase64Images(
+          dataToSave
         )
       ) {
 
-        dataToSave.categories =
-          structuredClone(
-            dbCategories
-          );
+        throw new Error(
+          "Fotoğraflar hâlâ optimize ediliyor. Birkaç saniye sonra tekrar deneyin."
+        );
 
       }
 
 
-      /*
-       * Supabase'e tek kayıt olarak yaz.
-       */
-
       const result =
         await supabase
-          .from("site_data")
+          .from(
+            "site_data"
+          )
           .upsert(
             {
+              id:
+                SITE_ID,
 
-              id: SITE_ID,
-
-              data: dataToSave,
+              data:
+                dataToSave,
 
               updated_at:
-                new Date().toISOString()
-
+                new Date()
+                  .toISOString()
             },
             {
-              onConflict: "id"
+              onConflict:
+                "id"
             }
           );
 
 
-      if (result.error) {
+      if (
+        result.error
+      ) {
+
         throw result.error;
+
       }
 
 
       setData(
-        normalizeData(
-          dataToSave
-        )
+        dataToSave
       );
 
 
-      setSaved(true);
+      setSaved(
+        true
+      );
 
 
       showToast(
@@ -1305,13 +2143,20 @@ function App() {
       );
 
 
-      setTimeout(() => {
+      setTimeout(
+        () => {
 
-        setSaved(false);
+          setSaved(
+            false
+          );
 
-        setPanelOpen(false);
+          setPanelOpen(
+            false
+          );
 
-      }, 900);
+        },
+        900
+      );
 
 
     } catch (error) {
@@ -1325,15 +2170,17 @@ function App() {
       showToast(
         "Kaydetme hatası: " +
         (
-          error.message ||
-          "Supabase"
+          error?.message ||
+          "Supabase bağlantısı"
         )
       );
 
 
     } finally {
 
-      setSaving(false);
+      setSaving(
+        false
+      );
 
     }
 
@@ -1346,20 +2193,30 @@ function App() {
 
   function openAdmin() {
 
-    if (unlocked) {
+    if (
+      unlocked
+    ) {
 
-      setPanelOpen(true);
+      setPanelOpen(
+        true
+      );
 
       return;
 
     }
 
 
-    setPinInput("");
+    setPinInput(
+      ""
+    );
 
-    setPinError(false);
+    setPinError(
+      false
+    );
 
-    setPinModal(true);
+    setPinModal(
+      true
+    );
 
   }
 
@@ -1378,15 +2235,23 @@ function App() {
       correctPin
     ) {
 
-      setUnlocked(true);
+      setUnlocked(
+        true
+      );
 
-      setPinModal(false);
+      setPinModal(
+        false
+      );
 
-      setPanelOpen(true);
+      setPanelOpen(
+        true
+      );
 
     } else {
 
-      setPinError(true);
+      setPinError(
+        true
+      );
 
     }
 
@@ -1401,31 +2266,38 @@ function App() {
 
     const category = {
 
-      id: uid(),
+      id:
+        uid(),
 
-      name: tf(
-        "Yeni Kategori",
-        "New Category",
-        "فئة جديدة"
-      ),
+      name:
+        tf(
+          "Yeni Kategori",
+          "New Category",
+          "فئة جديدة"
+        ),
 
-      items: []
+      items:
+        []
 
     };
 
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      copy.categories.push(
-        category
-      );
+        copy.categories = [
+          ...copy.categories,
+          category
+        ];
 
-    });
+      }
+    );
 
 
     setActiveCat(
       category.id
     );
+
 
     setOpenCat(
       category.id
@@ -1438,35 +2310,46 @@ function App() {
      KATEGORİ SİL
      ======================================================= */
 
-  function deleteCategory(id) {
+  function deleteCategory(
+    id
+  ) {
 
     if (
       !confirm(
         "Bu kategori ve içindeki ürünler silinsin mi?"
       )
     ) {
+
       return;
+
     }
 
 
-    const remaining =
-      data.categories.filter(
-        (category) =>
-          category.id !== id
-      );
+    updateData(
+      (copy) => {
 
+        copy.categories =
+          copy.categories.filter(
+            (category) =>
+              category.id !==
+              id
+          );
 
-    updateData((copy) => {
-
-      copy.categories =
-        remaining;
-
-    });
+      }
+    );
 
 
     if (
       activeCat === id
     ) {
+
+      const remaining =
+        data.categories.filter(
+          (category) =>
+            category.id !==
+            id
+        );
+
 
       setActiveCat(
         remaining[0]?.id ||
@@ -1480,7 +2363,9 @@ function App() {
       openCat === id
     ) {
 
-      setOpenCat(null);
+      setOpenCat(
+        null
+      );
 
     }
 
@@ -1496,43 +2381,53 @@ function App() {
     direction
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const index =
-        copy.categories.findIndex(
-          (category) =>
-            category.id === id
-        );
-
-
-      const target =
-        index + direction;
+        const list =
+          [
+            ...copy.categories
+          ];
 
 
-      if (
-        index < 0 ||
-        target < 0 ||
-        target >= copy.categories.length
-      ) {
+        const index =
+          list.findIndex(
+            (category) =>
+              category.id ===
+              id
+          );
 
-        return;
+
+        const target =
+          index +
+          direction;
+
+
+        if (
+          index < 0 ||
+          target < 0 ||
+          target >= list.length
+        ) {
+
+          return;
+
+        }
+
+
+        [
+          list[index],
+          list[target]
+        ] = [
+          list[target],
+          list[index]
+        ];
+
+
+        copy.categories =
+          list;
 
       }
-
-
-      const list =
-        copy.categories;
-
-
-      [
-        list[index],
-        list[target]
-      ] = [
-        list[target],
-        list[index]
-      ];
-
-    });
+    );
 
   }
 
@@ -1546,25 +2441,41 @@ function App() {
     value
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === id
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                id
+              ) {
+
+                return category;
+
+              }
 
 
-      if (!category) {
-        return;
+              return {
+
+                ...category,
+
+                name: {
+                  ...category.name,
+
+                  [editLang]:
+                    value
+                }
+
+              };
+
+            }
+          );
+
       }
-
-
-      category.name[
-        editLang
-      ] = value;
-
-    });
+    );
 
   }
 
@@ -1579,53 +2490,75 @@ function App() {
 
     const item = {
 
-      id: uid(),
+      id:
+        uid(),
 
-      name: tf(
-        "Yeni Ürün",
-        "New Product",
-        "منتج جديد"
-      ),
+      name:
+        tf(
+          "Yeni Ürün",
+          "New Product",
+          "منتج جديد"
+        ),
 
-      desc: tf(
+      desc:
+        tf(
+          "",
+          "",
+          ""
+        ),
+
+      dims:
         "",
-        "",
-        ""
-      ),
-
-      dims: "",
 
       price: {
 
-        amount: null,
+        amount:
+          null,
 
-        contactOnly: true
+        contactOnly:
+          true
 
       },
 
-      image: null
+      image:
+        null
 
     };
 
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === categoryId
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                categoryId
+              ) {
+
+                return category;
+
+              }
 
 
-      if (category) {
+              return {
 
-        category.items.push(
-          item
-        );
+                ...category,
+
+                items: [
+                  ...category.items,
+                  item
+                ]
+
+              };
+
+            }
+          );
 
       }
-
-    });
+    );
 
   }
 
@@ -1641,48 +2574,83 @@ function App() {
     value
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === categoryId
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                categoryId
+              ) {
+
+                return category;
+
+              }
 
 
-      if (!category) {
-        return;
+              return {
+
+                ...category,
+
+                items:
+                  category.items.map(
+                    (item) => {
+
+                      if (
+                        item.id !==
+                        itemId
+                      ) {
+
+                        return item;
+
+                      }
+
+
+                      if (
+                        field ===
+                          "name" ||
+                        field ===
+                          "desc"
+                      ) {
+
+                        return {
+
+                          ...item,
+
+                          [field]: {
+                            ...item[field],
+
+                            [editLang]:
+                              value
+                          }
+
+                        };
+
+                      }
+
+
+                      return {
+
+                        ...item,
+
+                        [field]:
+                          value
+
+                      };
+
+                    }
+                  )
+
+              };
+
+            }
+          );
+
       }
-
-
-      const item =
-        category.items.find(
-          (x) =>
-            x.id === itemId
-        );
-
-
-      if (!item) {
-        return;
-      }
-
-
-      if (
-        field === "name" ||
-        field === "desc"
-      ) {
-
-        item[field][editLang] =
-          value;
-
-      } else {
-
-        item[field] =
-          value;
-
-      }
-
-    });
+    );
 
   }
 
@@ -1697,38 +2665,62 @@ function App() {
     patch
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === categoryId
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                categoryId
+              ) {
+
+                return category;
+
+              }
 
 
-      if (!category) {
-        return;
+              return {
+
+                ...category,
+
+                items:
+                  category.items.map(
+                    (item) => {
+
+                      if (
+                        item.id !==
+                        itemId
+                      ) {
+
+                        return item;
+
+                      }
+
+
+                      return {
+
+                        ...item,
+
+                        price: {
+                          ...item.price,
+                          ...patch
+                        }
+
+                      };
+
+                    }
+                  )
+
+              };
+
+            }
+          );
+
       }
-
-
-      const item =
-        category.items.find(
-          (x) =>
-            x.id === itemId
-        );
-
-
-      if (!item) {
-        return;
-      }
-
-
-      item.price = {
-        ...item.price,
-        ...patch
-      };
-
-    });
+    );
 
   }
 
@@ -1747,30 +2739,47 @@ function App() {
         "Bu ürün silinsin mi?"
       )
     ) {
+
       return;
+
     }
 
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === categoryId
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                categoryId
+              ) {
+
+                return category;
+
+              }
 
 
-      if (category) {
+              return {
 
-        category.items =
-          category.items.filter(
-            (item) =>
-              item.id !== itemId
+                ...category,
+
+                items:
+                  category.items.filter(
+                    (item) =>
+                      item.id !==
+                      itemId
+                  )
+
+              };
+
+            }
           );
 
       }
-
-    });
+    );
 
   }
 
@@ -1785,51 +2794,77 @@ function App() {
     direction
   ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      const category =
-        copy.categories.find(
-          (x) =>
-            x.id === categoryId
-        );
+        copy.categories =
+          copy.categories.map(
+            (category) => {
+
+              if (
+                category.id !==
+                categoryId
+              ) {
+
+                return category;
+
+              }
 
 
-      if (!category) {
-        return;
+              const list =
+                [
+                  ...category.items
+                ];
+
+
+              const index =
+                list.findIndex(
+                  (x) =>
+                    x.id ===
+                    itemId
+                );
+
+
+              const target =
+                index +
+                direction;
+
+
+              if (
+                index < 0 ||
+                target < 0 ||
+                target >=
+                  list.length
+              ) {
+
+                return category;
+
+              }
+
+
+              [
+                list[index],
+                list[target]
+              ] = [
+                list[target],
+                list[index]
+              ];
+
+
+              return {
+
+                ...category,
+
+                items:
+                  list
+
+              };
+
+            }
+          );
+
       }
-
-
-      const index =
-        category.items.findIndex(
-          (x) =>
-            x.id === itemId
-        );
-
-
-      const target =
-        index + direction;
-
-
-      if (
-        index < 0 ||
-        target < 0 ||
-        target >= category.items.length
-      ) {
-
-        return;
-
-      }
-
-
-      [
-        category.items[index],
-        category.items[target]
-      ] = [
-        category.items[target],
-        category.items[index]
-      ];
-
-    });
+    );
 
   }
 
@@ -1851,41 +2886,85 @@ function App() {
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const image =
+      const compressed =
         await resizeImg(
           file,
           700,
-          0.90
+          0.88
+        );
+
+
+      const blob =
+        dataUrlToBlob(
+          compressed
+        );
+
+
+      const path =
+        storagePath(
+          "logo",
+          "logo"
+        );
+
+
+      const url =
+        await uploadBlobToStorage(
+          blob,
+          path
         );
 
 
       setPath(
-        ["logo", "src"],
-        image
+        [
+          "logo",
+          "src"
+        ],
+        url
       );
 
 
       showToast(
-        "Logo eklendi"
+        "Logo eklendi. Kaydet'e basın."
       );
 
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       showToast(
-        "Logo yüklenemedi"
+        "Logo yüklenemedi: " +
+        (
+          error?.message ||
+          ""
+        )
       );
 
     } finally {
 
-      setBusy(false);
+      setBusy(
+        false
+      );
+
+
+      if (
+        event.target
+      ) {
+
+        event.target.value =
+          "";
+
+      }
 
     }
 
@@ -1909,33 +2988,61 @@ function App() {
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const image =
+      const compressed =
         await resizeImg(
           file,
-          1400,
-          0.72
+          1600,
+          0.70
+        );
+
+
+      const blob =
+        dataUrlToBlob(
+          compressed
+        );
+
+
+      const path =
+        storagePath(
+          "background",
+          "background"
+        );
+
+
+      const url =
+        await uploadBlobToStorage(
+          blob,
+          path
         );
 
 
       setPath(
-        ["theme", "bgImage"],
-        image
+        [
+          "theme",
+          "bgImage"
+        ],
+        url
       );
 
 
       showToast(
-        "Arka plan eklendi"
+        "Arka plan eklendi. Kaydet'e basın."
       );
 
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       showToast(
         "Arka plan yüklenemedi"
@@ -1943,7 +3050,19 @@ function App() {
 
     } finally {
 
-      setBusy(false);
+      setBusy(
+        false
+      );
+
+
+      if (
+        event.target
+      ) {
+
+        event.target.value =
+          "";
+
+      }
 
     }
 
@@ -1969,16 +3088,38 @@ function App() {
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const image =
+      const compressed =
         await resizeImg(
           file,
           1000,
-          0.80
+          0.76
+        );
+
+
+      const blob =
+        dataUrlToBlob(
+          compressed
+        );
+
+
+      const path =
+        storagePath(
+          "products",
+          itemId
+        );
+
+
+      const url =
+        await uploadBlobToStorage(
+          blob,
+          path
         );
 
 
@@ -1986,26 +3127,45 @@ function App() {
         categoryId,
         itemId,
         "image",
-        image
+        url
       );
 
 
       showToast(
-        "Ürün görseli eklendi"
+        "Ürün görseli yüklendi. Kaydet'e basın."
       );
 
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
+
 
       showToast(
-        "Görsel yüklenemedi"
+        "Görsel yüklenemedi: " +
+        (
+          error?.message ||
+          ""
+        )
       );
 
     } finally {
 
-      setBusy(false);
+      setBusy(
+        false
+      );
+
+
+      if (
+        event.target
+      ) {
+
+        event.target.value =
+          "";
+
+      }
 
     }
 
@@ -2016,25 +3176,33 @@ function App() {
      TEMA
      ======================================================= */
 
-  function applyTheme(theme) {
+  function applyTheme(
+    theme
+  ) {
 
-    updateData((copy) => {
+    updateData(
+      (copy) => {
 
-      copy.theme = {
+        copy.theme = {
 
-        ...copy.theme,
+          ...copy.theme,
 
-        bg: theme.bg,
+          bg:
+            theme.bg,
 
-        card: theme.card,
+          card:
+            theme.card,
 
-        accent: theme.accent,
+          accent:
+            theme.accent,
 
-        text: theme.text
+          text:
+            theme.text
 
-      };
+        };
 
-    });
+      }
+    );
 
   }
 
@@ -2060,7 +3228,9 @@ function App() {
       defaultData();
 
 
-    setData(fresh);
+    setData(
+      fresh
+    );
 
 
     setActiveCat(
@@ -2080,22 +3250,63 @@ function App() {
      YÜKLENİYOR
      ======================================================= */
 
-  if (loading) {
+  if (
+    loading
+  ) {
 
     return (
 
       <div
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#141416",
-          color: "#999",
-          fontFamily: "Inter, sans-serif"
+          minHeight:
+            "100vh",
+
+          display:
+            "flex",
+
+          alignItems:
+            "center",
+
+          justifyContent:
+            "center",
+
+          flexDirection:
+            "column",
+
+          gap:
+            "12px",
+
+          background:
+            "#141416",
+
+          color:
+            "#999",
+
+          fontFamily:
+            "Inter, sans-serif"
         }}
       >
-        Veriler yükleniyor…
+
+        <div>
+          Veriler yükleniyor…
+        </div>
+
+        {migration.active && (
+
+          <div
+            style={{
+              fontSize:
+                "11px",
+
+              color:
+                "#C9A227"
+            }}
+          >
+            Fotoğraflar optimize ediliyor…
+          </div>
+
+        )}
+
       </div>
 
     );
@@ -2103,18 +3314,31 @@ function App() {
   }
 
 
-  if (!data) {
+  if (
+    !data
+  ) {
 
     return (
 
       <div
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#141416",
-          color: "#f87171"
+          minHeight:
+            "100vh",
+
+          display:
+            "flex",
+
+          alignItems:
+            "center",
+
+          justifyContent:
+            "center",
+
+          background:
+            "#141416",
+
+          color:
+            "#f87171"
         }}
       >
         Site verileri yüklenemedi.
@@ -2129,7 +3353,9 @@ function App() {
      DİL
      ======================================================= */
 
-  function text(field) {
+  function text(
+    field
+  ) {
 
     if (!field) {
       return "";
@@ -2150,7 +3376,8 @@ function App() {
   const activeCategory =
     data.categories.find(
       (category) =>
-        category.id === activeCat
+        category.id ===
+        activeCat
     ) ||
     data.categories[0];
 
@@ -2173,7 +3400,9 @@ function App() {
 
   const initial =
     (
-      text(data.siteName) ||
+      text(
+        data.siteName
+      ) ||
       "O"
     )
       .trim()
@@ -2196,7 +3425,8 @@ function App() {
 
       style={{
 
-        minHeight: "100vh",
+        minHeight:
+          "100vh",
 
         backgroundColor:
           data.theme.bg,
@@ -2211,11 +3441,18 @@ function App() {
             :
             undefined,
 
-        backgroundSize: "cover",
+        backgroundSize:
+          "cover",
 
-        backgroundPosition: "center",
+        backgroundPosition:
+          "center",
 
-        backgroundAttachment: "fixed",
+        /*
+         * Mobil cihazlarda fixed background
+         * performansı düşürebilir.
+         */
+        backgroundAttachment:
+          "scroll",
 
         color:
           data.theme.text,
@@ -2228,110 +3465,206 @@ function App() {
 
 
       {/* ===================================================
+          FOTOĞRAF OPTİMİZASYON BİLGİSİ
+      =================================================== */}
+
+      {migration.active && (
+
+        <div
+          className="fixed top-0 left-0 right-0 z-[100] bg-neutral-950 text-white px-4 py-2"
+        >
+
+          <div
+            className="text-center text-[11px]"
+          >
+            Fotoğraflar optimize ediliyor...
+            {" "}
+            {migration.current}
+            /
+            {migration.total}
+          </div>
+
+          <div
+            className="h-1 bg-neutral-800 rounded-full mt-1 overflow-hidden"
+          >
+
+            <div
+              style={{
+                width:
+                  migration.total
+                    ?
+                    (
+                      (
+                        migration.current /
+                        migration.total
+                      ) *
+                      100
+                    ) +
+                    "%"
+                    :
+                    "0%",
+
+                height:
+                  "100%",
+
+                background:
+                  data.theme.accent,
+
+                transition:
+                  "width .25s ease"
+              }}
+            />
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* ===================================================
           DİL VE PARA
       =================================================== */}
 
       <div
         className="fixed top-4 z-30 flex flex-col gap-1.5"
+
         style={{
-          insetInlineEnd: 16
+          insetInlineEnd:
+            16
         }}
       >
 
         <div
           className="flex gap-1 rounded-full p-1"
+
           style={{
             background:
               "rgba(0,0,0,.18)",
+
             backdropFilter:
               "blur(12px)"
           }}
         >
 
-          {LANGS.map((lang) => (
+          {LANGS.map(
+            (lang) => (
 
-            <button
-              key={lang.c}
+              <button
+                key={
+                  lang.c
+                }
 
-              onClick={() =>
-                setUiLang(lang.c)
-              }
+                onClick={() =>
+                  setUiLang(
+                    lang.c
+                  )
+                }
 
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold"
 
-              style={{
+                style={{
 
-                backgroundColor:
-                  uiLang === lang.c
-                    ? data.theme.accent
-                    : "transparent",
+                  backgroundColor:
+                    uiLang ===
+                    lang.c
+                      ?
+                      data.theme.accent
+                      :
+                      "transparent",
 
-                color:
-                  uiLang === lang.c
-                    ? "#fff"
-                    : data.theme.text,
+                  color:
+                    uiLang ===
+                    lang.c
+                      ?
+                      "#fff"
+                      :
+                      data.theme.text,
 
-                opacity:
-                  uiLang === lang.c
-                    ? 1
-                    : .55
+                  opacity:
+                    uiLang ===
+                    lang.c
+                      ?
+                      1
+                      :
+                      .55
 
-              }}
-            >
-              {lang.c.toUpperCase()}
-            </button>
+                }}
+              >
+                {
+                  lang.c.toUpperCase()
+                }
+              </button>
 
-          ))}
+            )
+          )}
 
         </div>
 
 
         <div
           className="flex gap-1 rounded-full p-1"
+
           style={{
             background:
               "rgba(0,0,0,.18)",
+
             backdropFilter:
               "blur(12px)"
           }}
         >
 
-          {CURR.map((currency) => (
+          {CURR.map(
+            (currency) => (
 
-            <button
-              key={currency.c}
-
-              onClick={() =>
-                setUiCurrency(
+              <button
+                key={
                   currency.c
-                )
-              }
+                }
 
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold"
+                onClick={() =>
+                  setUiCurrency(
+                    currency.c
+                  )
+                }
 
-              style={{
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold"
 
-                backgroundColor:
-                  uiCurrency === currency.c
-                    ? data.theme.accent
-                    : "transparent",
+                style={{
 
-                color:
-                  uiCurrency === currency.c
-                    ? "#fff"
-                    : data.theme.text,
+                  backgroundColor:
+                    uiCurrency ===
+                    currency.c
+                      ?
+                      data.theme.accent
+                      :
+                      "transparent",
 
-                opacity:
-                  uiCurrency === currency.c
-                    ? 1
-                    : .55
+                  color:
+                    uiCurrency ===
+                    currency.c
+                      ?
+                      "#fff"
+                      :
+                      data.theme.text,
 
-              }}
-            >
-              {currency.s}
-            </button>
+                  opacity:
+                    uiCurrency ===
+                    currency.c
+                      ?
+                      1
+                      :
+                      .55
 
-          ))}
+                }}
+              >
+                {
+                  currency.s
+                }
+              </button>
+
+            )
+          )}
 
         </div>
 
@@ -2349,19 +3682,27 @@ function App() {
         <div
           style={{
 
-            width: "100%",
+            width:
+              "100%",
 
-            display: "flex",
+            display:
+              "flex",
 
             justifyContent:
-              data.logo.position === "left"
-                ? "flex-start"
+              data.logo.position ===
+                "left"
+                ?
+                "flex-start"
                 :
-                data.logo.position === "right"
-                  ? "flex-end"
-                  : "center",
+                data.logo.position ===
+                  "right"
+                  ?
+                  "flex-end"
+                  :
+                  "center",
 
-            marginBottom: 18
+            marginBottom:
+              18
 
           }}
         >
@@ -2369,8 +3710,15 @@ function App() {
           {data.logo.src ? (
 
             <img
-              src={data.logo.src}
+              src={
+                data.logo.src
+              }
+
               alt="Ofischi Logo"
+
+              loading="eager"
+
+              decoding="async"
 
               style={{
 
@@ -2419,7 +3767,8 @@ function App() {
                   data.theme.accent,
 
                 fontSize:
-                  data.logo.size * .42,
+                  data.logo.size *
+                  .42,
 
                 fontWeight:
                   800,
@@ -2429,7 +3778,9 @@ function App() {
 
               }}
             >
-              {initial}
+              {
+                initial
+              }
             </div>
 
           )}
@@ -2437,7 +3788,9 @@ function App() {
         </div>
 
 
-        <div className="text-center">
+        <div
+          className="text-center"
+        >
 
           <div
             className="text-[11px] font-bold tracking-[.25em] mb-2"
@@ -2447,7 +3800,11 @@ function App() {
                 data.theme.accent
             }}
           >
-            {text(data.eyebrow)}
+            {
+              text(
+                data.eyebrow
+              )
+            }
           </div>
 
 
@@ -2459,14 +3816,22 @@ function App() {
                 headingFont
             }}
           >
-            {text(data.siteName)}
+            {
+              text(
+                data.siteName
+              )
+            }
           </h1>
 
 
           <p
             className="text-sm opacity-60 mt-2"
           >
-            {text(data.subtitle)}
+            {
+              text(
+                data.subtitle
+              )
+            }
           </p>
 
 
@@ -2497,7 +3862,9 @@ function App() {
                 size={15}
               />
 
-              {data.phone}
+              {
+                data.phone
+              }
 
             </a>
 
@@ -2523,6 +3890,7 @@ function App() {
 
         <div
           className="flex gap-2 overflow-x-auto"
+
           style={{
             scrollbarWidth:
               "none"
@@ -2540,7 +3908,9 @@ function App() {
               return (
 
                 <button
-                  key={category.id}
+                  key={
+                    category.id
+                  }
 
                   onClick={() =>
                     setActiveCat(
@@ -2557,25 +3927,33 @@ function App() {
 
                     backgroundColor:
                       active
-                        ? data.theme.accent
-                        : data.theme.accent +
+                        ?
+                        data.theme.accent
+                        :
+                        data.theme.accent +
                           "18",
 
                     color:
                       active
-                        ? "#fff"
-                        : data.theme.text,
+                        ?
+                        "#fff"
+                        :
+                        data.theme.text,
 
                     opacity:
                       active
-                        ? 1
-                        : .75
+                        ?
+                        1
+                        :
+                        .75
 
                   }}
                 >
-                  {text(
-                    category.name
-                  )}
+                  {
+                    text(
+                      category.name
+                    )
+                  }
                 </button>
 
               );
@@ -2603,19 +3981,26 @@ function App() {
 
         {(
           !activeCategory ||
-          activeCategory.items.length === 0
+          activeCategory.items.length ===
+            0
         ) && (
 
           <div
             className="col-span-full text-center py-16 opacity-50"
           >
 
-            {uiLang === "ar"
-              ? "لا توجد منتجات بعد."
-              :
-              uiLang === "en"
-                ? "No products yet."
-                : "Henüz ürün eklenmedi."
+            {
+              uiLang ===
+                "ar"
+                ?
+                "لا توجد منتجات بعد."
+                :
+                uiLang ===
+                  "en"
+                  ?
+                  "No products yet."
+                  :
+                  "Henüz ürün eklenmedi."
             }
 
           </div>
@@ -2627,7 +4012,9 @@ function App() {
           (item) => (
 
             <article
-              key={item.id}
+              key={
+                item.id
+              }
 
               className="rounded-xl overflow-hidden"
 
@@ -2667,8 +4054,10 @@ function App() {
 
                   display:
                     item.image
-                      ? "block"
-                      : "flex",
+                      ?
+                      "block"
+                      :
+                      "flex",
 
                   alignItems:
                     "center",
@@ -2691,7 +4080,9 @@ function App() {
               </div>
 
 
-              <div className="p-3">
+              <div
+                className="p-3"
+              >
 
                 <div
                   className="font-semibold text-sm leading-tight"
@@ -2701,16 +4092,26 @@ function App() {
                       headingFont
                   }}
                 >
-                  {text(item.name)}
+                  {
+                    text(
+                      item.name
+                    )
+                  }
                 </div>
 
 
-                {text(item.desc) && (
+                {text(
+                  item.desc
+                ) && (
 
                   <div
                     className="text-[11.5px] opacity-55 mt-1 leading-snug"
                   >
-                    {text(item.desc)}
+                    {
+                      text(
+                        item.desc
+                      )
+                    }
                   </div>
 
                 )}
@@ -2721,7 +4122,9 @@ function App() {
                   <div
                     className="text-[11px] opacity-50 mt-1"
                   >
-                    {item.dims}
+                    {
+                      item.dims
+                    }
                   </div>
 
                 )}
@@ -2735,12 +4138,14 @@ function App() {
                       data.theme.accent
                   }}
                 >
-                  {formatPrice(
-                    item.price,
-                    uiCurrency,
-                    data.rates,
-                    uiLang
-                  )}
+                  {
+                    formatPrice(
+                      item.price,
+                      uiCurrency,
+                      data.rates,
+                      uiLang
+                    )
+                  }
                 </div>
 
               </div>
@@ -2758,17 +4163,22 @@ function App() {
       =================================================== */}
 
       <button
-        onClick={openAdmin}
+        onClick={
+          openAdmin
+        }
 
         className="fixed bottom-5 z-30 rounded-full shadow-xl flex items-center justify-center"
 
         style={{
 
-          insetInlineEnd: 18,
+          insetInlineEnd:
+            18,
 
-          width: 52,
+          width:
+            52,
 
-          height: 52,
+          height:
+            52,
 
           backgroundColor:
             data.theme.text,
@@ -2794,10 +4204,11 @@ function App() {
       {toast && (
 
         <div
-          className="fixed bottom-24 z-[70] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
+          className="fixed bottom-24 z-[110] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
 
           style={{
-            insetInlineEnd: 18
+            insetInlineEnd:
+              18
           }}
         >
 
@@ -2806,7 +4217,9 @@ function App() {
             size={15}
           />
 
-          {toast}
+          {
+            toast
+          }
 
         </div>
 
@@ -2820,7 +4233,7 @@ function App() {
       {pinModal && (
 
         <div
-          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4"
         >
 
           <div
@@ -2836,7 +4249,9 @@ function App() {
                 size={18}
               />
 
-              <h2 className="font-bold">
+              <h2
+                className="font-bold"
+              >
                 Yönetim Girişi
               </h2>
 
@@ -2852,33 +4267,41 @@ function App() {
 
               maxLength={8}
 
-              value={pinInput}
+              value={
+                pinInput
+              }
 
-              onChange={(event) => {
+              onChange={
+                (event) => {
 
-                setPinInput(
-                  event.target.value.replace(
-                    /\D/g,
-                    ""
-                  )
-                );
+                  setPinInput(
+                    event.target.value.replace(
+                      /\D/g,
+                      ""
+                    )
+                  );
 
-                setPinError(false);
-
-              }}
-
-              onKeyDown={(event) => {
-
-                if (
-                  event.key ===
-                  "Enter"
-                ) {
-
-                  tryUnlock();
+                  setPinError(
+                    false
+                  );
 
                 }
+              }
 
-              }}
+              onKeyDown={
+                (event) => {
+
+                  if (
+                    event.key ===
+                    "Enter"
+                  ) {
+
+                    tryUnlock();
+
+                  }
+
+                }
+              }
 
               placeholder="PIN"
 
@@ -2910,7 +4333,9 @@ function App() {
 
               <button
                 onClick={() =>
-                  setPinModal(false)
+                  setPinModal(
+                    false
+                  )
                 }
 
                 className="flex-1 py-2.5 bg-neutral-800 rounded-lg text-sm text-neutral-300"
@@ -2920,7 +4345,9 @@ function App() {
 
 
               <button
-                onClick={tryUnlock}
+                onClick={
+                  tryUnlock
+                }
 
                 className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
 
@@ -2956,7 +4383,9 @@ function App() {
               className="flex-1 bg-black/30"
 
               onClick={() =>
-                setPanelOpen(false)
+                setPanelOpen(
+                  false
+                )
               }
             />
 
@@ -2984,7 +4413,9 @@ function App() {
 
                   <button
                     onClick={() =>
-                      setPanelOpen(false)
+                      setPanelOpen(
+                        false
+                      )
                     }
 
                     className="text-neutral-500"
@@ -3015,7 +4446,9 @@ function App() {
                     (lang) => (
 
                       <button
-                        key={lang.c}
+                        key={
+                          lang.c
+                        }
 
                         onClick={() =>
                           setEditLang(
@@ -3045,7 +4478,9 @@ function App() {
 
                         }}
                       >
-                        {lang.c.toUpperCase()}
+                        {
+                          lang.c.toUpperCase()
+                        }
                       </button>
 
                     )
@@ -3060,7 +4495,9 @@ function App() {
 
                   <button
                     onClick={() =>
-                      setTab("genel")
+                      setTab(
+                        "genel"
+                      )
                     }
 
                     className="flex-1 py-2 rounded-lg text-sm font-semibold"
@@ -3068,7 +4505,8 @@ function App() {
                     style={{
 
                       backgroundColor:
-                        tab === "genel"
+                        tab ===
+                          "genel"
                           ?
                           data.theme.accent
                           :
@@ -3082,7 +4520,9 @@ function App() {
 
                   <button
                     onClick={() =>
-                      setTab("icerik")
+                      setTab(
+                        "icerik"
+                      )
                     }
 
                     className="flex-1 py-2 rounded-lg text-sm font-semibold"
@@ -3090,7 +4530,8 @@ function App() {
                     style={{
 
                       backgroundColor:
-                        tab === "icerik"
+                        tab ===
+                          "icerik"
                           ?
                           data.theme.accent
                           :
@@ -3116,7 +4557,8 @@ function App() {
                     GENEL
                 ========================================= */}
 
-                {tab === "genel" && (
+                {tab ===
+                  "genel" && (
 
                   <div>
 
@@ -3135,17 +4577,19 @@ function App() {
                         value={
                           data.siteName[
                             editLang
-                          ] || ""
+                          ] ||
+                          ""
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "siteName",
-                              editLang
-                            ],
-                            event.target.value
-                          )
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "siteName",
+                                editLang
+                              ],
+                              event.target.value
+                            )
                         }
                       />
 
@@ -3167,17 +4611,19 @@ function App() {
                         value={
                           data.eyebrow[
                             editLang
-                          ] || ""
+                          ] ||
+                          ""
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "eyebrow",
-                              editLang
-                            ],
-                            event.target.value
-                          )
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "eyebrow",
+                                editLang
+                              ],
+                              event.target.value
+                            )
                         }
                       />
 
@@ -3199,17 +4645,19 @@ function App() {
                         value={
                           data.subtitle[
                             editLang
-                          ] || ""
+                          ] ||
+                          ""
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "subtitle",
-                              editLang
-                            ],
-                            event.target.value
-                          )
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "subtitle",
+                                editLang
+                              ],
+                              event.target.value
+                            )
                         }
                       />
 
@@ -3229,16 +4677,18 @@ function App() {
                         className="admin-input"
 
                         value={
-                          data.phone || ""
+                          data.phone ||
+                          ""
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "phone"
-                            ],
-                            event.target.value
-                          )
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "phone"
+                              ],
+                              event.target.value
+                            )
                         }
 
                         placeholder="+90 5xx xxx xx xx"
@@ -3273,6 +4723,7 @@ function App() {
 
                         <input
                           type="number"
+
                           step="0.01"
 
                           className="admin-input"
@@ -3281,16 +4732,18 @@ function App() {
                             data.rates.usd
                           }
 
-                          onChange={(event) =>
-                            setPath(
-                              [
-                                "rates",
-                                "usd"
-                              ],
-                              Number(
-                                event.target.value
-                              ) || 0
-                            )
+                          onChange={
+                            (event) =>
+                              setPath(
+                                [
+                                  "rates",
+                                  "usd"
+                                ],
+                                Number(
+                                  event.target.value
+                                ) ||
+                                0
+                              )
                           }
                         />
 
@@ -3305,6 +4758,7 @@ function App() {
 
                         <input
                           type="number"
+
                           step="0.01"
 
                           className="admin-input"
@@ -3313,16 +4767,18 @@ function App() {
                             data.rates.eur
                           }
 
-                          onChange={(event) =>
-                            setPath(
-                              [
-                                "rates",
-                                "eur"
-                              ],
-                              Number(
-                                event.target.value
-                              ) || 0
-                            )
+                          onChange={
+                            (event) =>
+                              setPath(
+                                [
+                                  "rates",
+                                  "eur"
+                                ],
+                                Number(
+                                  event.target.value
+                                ) ||
+                                0
+                              )
                           }
                         />
 
@@ -3352,9 +4808,15 @@ function App() {
                       {data.logo.src ? (
 
                         <img
-                          src={data.logo.src}
+                          src={
+                            data.logo.src
+                          }
 
                           alt="Logo"
+
+                          loading="lazy"
+
+                          decoding="async"
 
                           style={{
 
@@ -3388,11 +4850,15 @@ function App() {
                     >
 
                       <button
+                        disabled={
+                          busy
+                        }
+
                         onClick={() =>
                           logoRef.current?.click()
                         }
 
-                        className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
                       >
 
                         <Icon
@@ -3400,7 +4866,13 @@ function App() {
                           size={14}
                         />
 
-                        PNG Logo Yükle
+                        {
+                          busy
+                            ?
+                            "Yükleniyor..."
+                            :
+                            "PNG Logo Yükle"
+                        }
 
                       </button>
 
@@ -3432,7 +4904,9 @@ function App() {
 
 
                       <input
-                        ref={logoRef}
+                        ref={
+                          logoRef
+                        }
 
                         type="file"
 
@@ -3453,29 +4927,35 @@ function App() {
                     >
 
                       <AdminLabel>
-                        Logo Boyutu — {data.logo.size}px
+                        Logo Boyutu —{" "}
+                        {
+                          data.logo.size
+                        }px
                       </AdminLabel>
 
 
                       <input
                         type="range"
+
                         min="40"
+
                         max="260"
 
                         value={
                           data.logo.size
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "logo",
-                              "size"
-                            ],
-                            Number(
-                              event.target.value
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "logo",
+                                "size"
+                              ],
+                              Number(
+                                event.target.value
+                              )
                             )
-                          )
                         }
 
                         className="w-full"
@@ -3507,10 +4987,17 @@ function App() {
                           "Sağ"
                         ]
                       ].map(
-                        ([value, label]) => (
+                        (
+                          [
+                            value,
+                            label
+                          ]
+                        ) => (
 
                           <button
-                            key={value}
+                            key={
+                              value
+                            }
 
                             onClick={() =>
                               setPath(
@@ -3536,7 +5023,9 @@ function App() {
 
                             }}
                           >
-                            {label}
+                            {
+                              label
+                            }
                           </button>
 
                         )
@@ -3567,7 +5056,9 @@ function App() {
                         (theme) => (
 
                           <button
-                            key={theme.id}
+                            key={
+                              theme.id
+                            }
 
                             onClick={() =>
                               applyTheme(
@@ -3637,7 +5128,9 @@ function App() {
                             <div
                               className="bg-neutral-900 py-1 text-[9px]"
                             >
-                              {theme.name}
+                              {
+                                theme.name
+                              }
                             </div>
 
                           </button>
@@ -3652,68 +5145,80 @@ function App() {
 
                     <ColorInput
                       label="Arka Plan Rengi"
+
                       value={
                         data.theme.bg
                       }
-                      onChange={(value) =>
-                        setPath(
-                          [
-                            "theme",
-                            "bg"
-                          ],
-                          value
-                        )
+
+                      onChange={
+                        (value) =>
+                          setPath(
+                            [
+                              "theme",
+                              "bg"
+                            ],
+                            value
+                          )
                       }
                     />
 
 
                     <ColorInput
                       label="Kart Rengi"
+
                       value={
                         data.theme.card
                       }
-                      onChange={(value) =>
-                        setPath(
-                          [
-                            "theme",
-                            "card"
-                          ],
-                          value
-                        )
+
+                      onChange={
+                        (value) =>
+                          setPath(
+                            [
+                              "theme",
+                              "card"
+                            ],
+                            value
+                          )
                       }
                     />
 
 
                     <ColorInput
                       label="Vurgu Rengi"
+
                       value={
                         data.theme.accent
                       }
-                      onChange={(value) =>
-                        setPath(
-                          [
-                            "theme",
-                            "accent"
-                          ],
-                          value
-                        )
+
+                      onChange={
+                        (value) =>
+                          setPath(
+                            [
+                              "theme",
+                              "accent"
+                            ],
+                            value
+                          )
                       }
                     />
 
 
                     <ColorInput
                       label="Yazı Rengi"
+
                       value={
                         data.theme.text
                       }
-                      onChange={(value) =>
-                        setPath(
-                          [
-                            "theme",
-                            "text"
-                          ],
-                          value
-                        )
+
+                      onChange={
+                        (value) =>
+                          setPath(
+                            [
+                              "theme",
+                              "text"
+                            ],
+                            value
+                          )
                       }
                     />
 
@@ -3723,11 +5228,15 @@ function App() {
                     >
 
                       <button
+                        disabled={
+                          busy
+                        }
+
                         onClick={() =>
                           bgRef.current?.click()
                         }
 
-                        className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
                       >
 
                         <Icon
@@ -3735,7 +5244,13 @@ function App() {
                           size={14}
                         />
 
-                        Arka Plan Görseli
+                        {
+                          busy
+                            ?
+                            "Yükleniyor..."
+                            :
+                            "Arka Plan Görseli"
+                        }
 
                       </button>
 
@@ -3767,7 +5282,9 @@ function App() {
 
 
                       <input
-                        ref={bgRef}
+                        ref={
+                          bgRef
+                        }
 
                         type="file"
 
@@ -3788,7 +5305,10 @@ function App() {
                     >
 
                       <AdminLabel>
-                        Ürün Görsel Yüksekliği — {data.cardImgSize}px
+                        Ürün Görsel Yüksekliği —{" "}
+                        {
+                          data.cardImgSize
+                        }px
                       </AdminLabel>
 
 
@@ -3803,15 +5323,16 @@ function App() {
                           data.cardImgSize
                         }
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "cardImgSize"
-                            ],
-                            Number(
-                              event.target.value
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "cardImgSize"
+                              ],
+                              Number(
+                                event.target.value
+                              )
                             )
-                          )
                         }
 
                         className="w-full"
@@ -3833,23 +5354,25 @@ function App() {
                         className="admin-input"
 
                         value={
-                          data.pin || ""
+                          data.pin ||
+                          ""
                         }
 
                         inputMode="numeric"
 
                         maxLength={8}
 
-                        onChange={(event) =>
-                          setPath(
-                            [
-                              "pin"
-                            ],
-                            event.target.value.replace(
-                              /\D/g,
-                              ""
+                        onChange={
+                          (event) =>
+                            setPath(
+                              [
+                                "pin"
+                              ],
+                              event.target.value.replace(
+                                /\D/g,
+                                ""
+                              )
                             )
-                          )
                         }
 
                         style={{
@@ -3880,7 +5403,8 @@ function App() {
                     ÜRÜN KATALOĞU
                 ========================================= */}
 
-                {tab === "icerik" && (
+                {tab ===
+                  "icerik" && (
 
                   <div>
 
@@ -3929,14 +5453,16 @@ function App() {
                               value={
                                 category.name[
                                   editLang
-                                ] || ""
+                                ] ||
+                                ""
                               }
 
-                              onChange={(event) =>
-                                renameCategory(
-                                  category.id,
-                                  event.target.value
-                                )
+                              onChange={
+                                (event) =>
+                                  renameCategory(
+                                    category.id,
+                                    event.target.value
+                                  )
                               }
 
                               className="admin-input"
@@ -3944,6 +5470,7 @@ function App() {
                               style={{
                                 padding:
                                   "9px 10px",
+
                                 fontSize:
                                   "13px"
                               }}
@@ -3985,7 +5512,7 @@ function App() {
                               disabled={
                                 categoryIndex ===
                                 data.categories.length -
-                                1
+                                  1
                               }
 
                               className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
@@ -4032,12 +5559,14 @@ function App() {
                               className="px-2.5 py-2 bg-neutral-800 rounded-lg text-[11px] whitespace-nowrap"
                             >
 
-                              {openCat ===
-                                category.id
-                                ?
-                                "Kapat"
-                                :
-                                "Ürünler"}
+                              {
+                                openCat ===
+                                  category.id
+                                  ?
+                                  "Kapat"
+                                  :
+                                  "Ürünler"
+                              }
 
                             </button>
 
@@ -4115,21 +5644,24 @@ function App() {
 
                                         className="hidden"
 
-                                        ref={(element) => {
+                                        ref={
+                                          (element) => {
 
-                                          itemRefs.current[
-                                            item.id
-                                          ] =
-                                            element;
+                                            itemRefs.current[
+                                              item.id
+                                            ] =
+                                              element;
 
-                                        }}
+                                          }
+                                        }
 
-                                        onChange={(event) =>
-                                          uploadItemImage(
-                                            category.id,
-                                            item.id,
-                                            event
-                                          )
+                                        onChange={
+                                          (event) =>
+                                            uploadItemImage(
+                                              category.id,
+                                              item.id,
+                                              event
+                                            )
                                         }
                                       />
 
@@ -4142,16 +5674,18 @@ function App() {
                                           value={
                                             item.name[
                                               editLang
-                                            ] || ""
+                                            ] ||
+                                            ""
                                           }
 
-                                          onChange={(event) =>
-                                            updateItem(
-                                              category.id,
-                                              item.id,
-                                              "name",
-                                              event.target.value
-                                            )
+                                          onChange={
+                                            (event) =>
+                                              updateItem(
+                                                category.id,
+                                                item.id,
+                                                "name",
+                                                event.target.value
+                                              )
                                           }
 
                                           placeholder="Ürün adı"
@@ -4159,12 +5693,16 @@ function App() {
                                           className="admin-input"
 
                                           style={{
+
                                             padding:
                                               "8px 9px",
+
                                             fontSize:
                                               "12px",
+
                                             marginBottom:
                                               "6px"
+
                                           }}
                                         />
 
@@ -4175,13 +5713,14 @@ function App() {
                                             ""
                                           }
 
-                                          onChange={(event) =>
-                                            updateItem(
-                                              category.id,
-                                              item.id,
-                                              "dims",
-                                              event.target.value
-                                            )
+                                          onChange={
+                                            (event) =>
+                                              updateItem(
+                                                category.id,
+                                                item.id,
+                                                "dims",
+                                                event.target.value
+                                              )
                                           }
 
                                           placeholder="Ölçüler: 200x90x75 cm"
@@ -4189,10 +5728,13 @@ function App() {
                                           className="admin-input"
 
                                           style={{
+
                                             padding:
                                               "8px 9px",
+
                                             fontSize:
                                               "12px"
+
                                           }}
                                         />
 
@@ -4205,16 +5747,18 @@ function App() {
                                       value={
                                         item.desc[
                                           editLang
-                                        ] || ""
+                                        ] ||
+                                        ""
                                       }
 
-                                      onChange={(event) =>
-                                        updateItem(
-                                          category.id,
-                                          item.id,
-                                          "desc",
-                                          event.target.value
-                                        )
+                                      onChange={
+                                        (event) =>
+                                          updateItem(
+                                            category.id,
+                                            item.id,
+                                            "desc",
+                                            event.target.value
+                                          )
                                       }
 
                                       placeholder="Ürün özellikleri"
@@ -4222,12 +5766,16 @@ function App() {
                                       className="admin-input"
 
                                       style={{
+
                                         padding:
                                           "8px 9px",
+
                                         fontSize:
                                           "12px",
+
                                         marginBottom:
                                           "8px"
+
                                       }}
                                     />
 
@@ -4248,22 +5796,23 @@ function App() {
                                           ""
                                         }
 
-                                        onChange={(event) =>
-                                          updatePrice(
-                                            category.id,
-                                            item.id,
-                                            {
-                                              amount:
-                                                event.target.value ===
-                                                ""
-                                                  ?
-                                                  null
-                                                  :
-                                                  Number(
-                                                    event.target.value
-                                                  )
-                                            }
-                                          )
+                                        onChange={
+                                          (event) =>
+                                            updatePrice(
+                                              category.id,
+                                              item.id,
+                                              {
+                                                amount:
+                                                  event.target.value ===
+                                                    ""
+                                                    ?
+                                                    null
+                                                    :
+                                                    Number(
+                                                      event.target.value
+                                                    )
+                                              }
+                                            )
                                         }
 
                                         placeholder="Fiyat TL"
@@ -4271,16 +5820,20 @@ function App() {
                                         className="admin-input"
 
                                         style={{
+
                                           padding:
                                             "8px 9px",
+
                                           fontSize:
                                             "12px",
+
                                           opacity:
                                             item.price.contactOnly
                                               ?
                                               .4
                                               :
                                               1
+
                                         }}
                                       />
 
@@ -4296,15 +5849,16 @@ function App() {
                                             !!item.price.contactOnly
                                           }
 
-                                          onChange={(event) =>
-                                            updatePrice(
-                                              category.id,
-                                              item.id,
-                                              {
-                                                contactOnly:
-                                                  event.target.checked
-                                              }
-                                            )
+                                          onChange={
+                                            (event) =>
+                                              updatePrice(
+                                                category.id,
+                                                item.id,
+                                                {
+                                                  contactOnly:
+                                                    event.target.checked
+                                                }
+                                              )
                                           }
                                         />
 
@@ -4376,7 +5930,7 @@ function App() {
                                         disabled={
                                           itemIndex ===
                                           category.items.length -
-                                          1
+                                            1
                                         }
 
                                         className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
@@ -4460,13 +6014,17 @@ function App() {
               >
 
                 <button
-                  onClick={save}
-
-                  disabled={
-                    saving
+                  onClick={
+                    save
                   }
 
-                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
+                  disabled={
+                    saving ||
+                    busy ||
+                    migration.active
+                  }
+
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
 
                   style={{
 
@@ -4512,11 +6070,15 @@ function App() {
                     ?
                     "Kaydedildi!"
                     :
-                    saving
+                    migration.active
                       ?
-                      "Kaydediliyor..."
+                      "Fotoğraflar hazırlanıyor..."
                       :
-                      "Kaydet ve Kapat"
+                      saving
+                        ?
+                        "Kaydediliyor..."
+                        :
+                        "Kaydet ve Kapat"
                   }
 
                 </button>
@@ -4549,21 +6111,29 @@ function AdminLabel({
     <div
       style={{
 
-        color: "#737373",
+        color:
+          "#737373",
 
-        fontSize: "10px",
+        fontSize:
+          "10px",
 
-        fontWeight: 700,
+        fontWeight:
+          700,
 
-        letterSpacing: ".08em",
+        letterSpacing:
+          ".08em",
 
-        textTransform: "uppercase",
+        textTransform:
+          "uppercase",
 
-        marginBottom: "6px"
+        marginBottom:
+          "6px"
 
       }}
     >
-      {children}
+      {
+        children
+      }
     </div>
 
   );
@@ -4590,20 +6160,25 @@ function ColorInput({
       <span
         className="text-xs text-neutral-400"
       >
-        {label}
+        {
+          label
+        }
       </span>
 
 
       <input
         type="color"
+
         value={
-          value || "#000000"
+          value ||
+          "#000000"
         }
 
-        onChange={(event) =>
-          onChange(
-            event.target.value
-          )
+        onChange={
+          (event) =>
+            onChange(
+              event.target.value
+            )
         }
 
         className="w-9 h-9 rounded-lg border border-neutral-700 bg-transparent cursor-pointer"
@@ -4622,7 +6197,9 @@ function ColorInput({
 
 ReactDOM
   .createRoot(
-    document.getElementById("root")
+    document.getElementById(
+      "root"
+    )
   )
   .render(
     <App />
