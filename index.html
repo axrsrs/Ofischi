@@ -2,9 +2,9 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#141416">
-<title>Ofischi</title>
+<title>Ofischi Premium</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -14,26 +14,59 @@
 
 <style>
 *{box-sizing:border-box}
-html,body,#root{margin:0;padding:0;width:100%;min-height:100%}
-body{background:#141416;overflow-x:hidden}
-button,input{font-family:inherit}
-button{cursor:pointer}
-button:disabled{cursor:not-allowed}
-::-webkit-scrollbar{display:none}
+
+html,body,#root{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+}
+
+body{
+  background:#141416;
+  overflow-x:hidden;
+}
+
+button,input{
+  font-family:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+button:disabled{
+  cursor:not-allowed;
+}
+
+::-webkit-scrollbar{
+  display:none;
+}
 
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(8px)}
-  to{opacity:1;transform:translateY(0)}
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
-@keyframes pop{
-  0%{transform:scale(.96);opacity:0}
-  100%{transform:scale(1);opacity:1}
+@keyframes pulseGlow{
+  0%,100%{
+    box-shadow:0 0 0 0 rgba(255,255,255,.20);
+  }
+  50%{
+    box-shadow:0 0 0 8px rgba(255,255,255,0);
+  }
 }
 
-@keyframes pulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}
-  50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}
+@keyframes popSave{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.05)}
+  100%{transform:scale(1)}
 }
 
 .admin-input{
@@ -56,47 +89,21 @@ button:disabled{cursor:not-allowed}
   -webkit-user-select:none;
 }
 
-.search-input{
-  width:100%;
-  background:rgba(0,0,0,.18);
-  border:1px solid rgba(255,255,255,.12);
-  color:inherit;
-  border-radius:14px;
-  padding:12px 42px 12px 42px;
-  outline:none;
-  backdrop-filter:blur(14px);
-}
-
-.search-input::placeholder{
-  color:currentColor;
-  opacity:.45;
-}
-
-.modal-backdrop{
-  background:rgba(0,0,0,.78);
-  backdrop-filter:blur(7px);
-}
-
 .image-loading{
   background:
-  linear-gradient(
-    90deg,
-    rgba(255,255,255,.04),
-    rgba(255,255,255,.10),
-    rgba(255,255,255,.04)
-  );
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.04),
+      rgba(255,255,255,.10),
+      rgba(255,255,255,.04)
+    );
   background-size:200% 100%;
+  animation:imageShimmer 1.2s infinite;
 }
 
-.price-row{
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(0,0,0,.12);
-}
-
-@media(max-width:420px){
-  .product-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
+@keyframes imageShimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
 }
 </style>
 </head>
@@ -111,12 +118,12 @@ const {
   useState,
   useEffect,
   useRef
-} = React;
+}=React;
 
 
 /* =========================================================
    SUPABASE
-========================================================= */
+   ========================================================= */
 
 const SUPABASE_URL =
   "https://irudfkepeocdcmocyvpi.supabase.co";
@@ -137,30 +144,101 @@ const supabase =
     }
   );
 
-const SITE_ID = 1;
+const SITE_ID=1;
 
-const STORAGE_BUCKET =
-  "catalog-images";
+const STORAGE_BUCKET="catalog-images";
 
 
 /* =========================================================
-   SABİTLER
-========================================================= */
+   SADECE TÜRKÇE
+   ========================================================= */
 
-const STORES = [
+const LANG="tr";
+
+
+/* =========================================================
+   PARA BİRİMLERİ
+   ========================================================= */
+
+const CURRENCIES=[
   {
-    id:"premium",
-    name:"Premium",
-    subtitle:"Premium Koleksiyon"
+    code:"TRY",
+    symbol:"₺",
+    name:"Türk Lirası"
   },
   {
-    id:"outlet",
-    name:"Outlet",
-    subtitle:"Outlet Koleksiyon"
+    code:"USD",
+    symbol:"$",
+    name:"Amerikan Doları"
+  },
+  {
+    code:"EUR",
+    symbol:"€",
+    name:"Euro"
   }
 ];
 
-const CATS = [
+
+/* =========================================================
+   TEMALAR
+   ========================================================= */
+
+const THEMES=[
+
+  {
+    id:"graphite",
+    name:"Grafit",
+    bg:"#141416",
+    card:"#1D1E21",
+    accent:"#C9A227",
+    text:"#EDEDEF"
+  },
+
+  {
+    id:"walnut",
+    name:"Ceviz",
+    bg:"#F5F1EA",
+    card:"#FFFFFF",
+    accent:"#8B4A2B",
+    text:"#2A2016"
+  },
+
+  {
+    id:"navy",
+    name:"Lacivert",
+    bg:"#F4F6FA",
+    card:"#FFFFFF",
+    accent:"#1E3A5F",
+    text:"#101826"
+  },
+
+  {
+    id:"goldnight",
+    name:"Antrasit Altın",
+    bg:"#1B1B1F",
+    card:"#242428",
+    accent:"#D4AF37",
+    text:"#F0EFEA"
+  },
+
+  {
+    id:"concrete",
+    name:"Beton Gri",
+    bg:"#EEEEEC",
+    card:"#FFFFFF",
+    accent:"#4A4A4A",
+    text:"#1C1C1C"
+  }
+
+];
+
+
+/* =========================================================
+   KATEGORİLER
+   ========================================================= */
+
+const CATS=[
+
   "VIP Makam Takımları",
   "Makam Takımları",
   "Personel Takımları",
@@ -170,90 +248,79 @@ const CATS = [
   "Ofis Koltukları",
   "Fileli Koltuklar",
   "Aksesuarlar"
-];
 
-const THEMES = [
-  {
-    id:"graphite",
-    name:"Grafit",
-    bg:"#141416",
-    card:"#1D1E21",
-    accent:"#C9A227",
-    text:"#EDEDEF"
-  },
-  {
-    id:"walnut",
-    name:"Ceviz",
-    bg:"#F5F1EA",
-    card:"#FFFFFF",
-    accent:"#8B4A2B",
-    text:"#2A2016"
-  },
-  {
-    id:"navy",
-    name:"Lacivert",
-    bg:"#F4F6FA",
-    card:"#FFFFFF",
-    accent:"#1E3A5F",
-    text:"#101826"
-  },
-  {
-    id:"goldnight",
-    name:"Antrasit Altın",
-    bg:"#1B1B1F",
-    card:"#242428",
-    accent:"#D4AF37",
-    text:"#F0EFEA"
-  },
-  {
-    id:"concrete",
-    name:"Beton Gri",
-    bg:"#EEEEEC",
-    card:"#FFFFFF",
-    accent:"#4A4A4A",
-    text:"#1C1C1C"
-  }
 ];
 
 
 /* =========================================================
-   YARDIMCI
-========================================================= */
+   ID
+   ========================================================= */
 
-function uid(){
-  return (
-    Math.random().toString(36).slice(2,10) +
-    Date.now().toString(36)
+const uid=()=>{
+
+  return(
+    Math.random()
+      .toString(36)
+      .slice(2,10)+
+    Date.now()
+      .toString(36)
   );
-}
 
-function createCategory(name){
-  return {
-    id:uid(),
-    name:name,
-    items:[]
-  };
-}
+};
+
+
+/* =========================================================
+   VARSAYILAN KATEGORİLER
+   ========================================================= */
 
 function createDefaultCategories(){
-  return CATS.map(
-    name => createCategory(name)
-  );
+
+  return CATS.map(name=>({
+
+    id:uid(),
+
+    name,
+
+    items:[]
+
+  }));
+
 }
 
-function createEmptyStore(){
-  return {
-    categories:createDefaultCategories()
-  };
-}
+
+/* =========================================================
+   VARSAYILAN VERİ
+   ========================================================= */
 
 function defaultData(){
-  return {
-    siteName:"Ofischi",
-    subtitle:"Ofis Mobilyaları",
+
+  return{
+
+    siteName:"Ofischi Premium",
+
+    subtitle:"Premium Ofis Mobilyaları",
+
     eyebrow:"İNEGÖL ÜRETİM",
+
     phone:"+90 500 000 00 00",
+
     pin:"1234",
+
+
+    /*
+     * KURLARI BURADAN VE YÖNETİM PANELİNDEN
+     * İSTEDİĞİN ZAMAN DEĞİŞTİREBİLİRSİN.
+     *
+     * ÖRNEK:
+     * 1 USD = 40 TL
+     * 1 EUR = 47 TL
+     */
+
+    rates:{
+      USD:40,
+      EUR:47
+    },
+
 
     logo:{
       src:"./ofischi_logo_transparent.png",
@@ -261,297 +328,228 @@ function defaultData(){
       position:"left"
     },
 
+
     theme:{
       ...THEMES[0],
       bgImage:null
     },
 
-    cardImgSize:180,
 
-    stores:{
-      premium:createEmptyStore(),
-      outlet:createEmptyStore()
-    }
+    cardImgSize:170,
+
+
+    categories:
+      createDefaultCategories()
+
   };
+
 }
 
 
 /* =========================================================
-   ESKİ SİSTEMDEN YENİ SİSTEME GEÇİŞ
-========================================================= */
-
-function normalizePrice(price){
-
-  if(!price){
-    return {
-      contactOnly:true,
-      amount:null,
-      parts:[]
-    };
-  }
-
-  let parts = [];
-
-  if(Array.isArray(price.parts)){
-    parts = price.parts.map(
-      p => ({
-        id:p.id || uid(),
-        name:p.name || "Ürün",
-        amount:
-          p.amount === "" ||
-          p.amount === null ||
-          p.amount === undefined
-            ? null
-            : Number(p.amount),
-        contactOnly:!!p.contactOnly
-      })
-    );
-  }
-
-  /*
-   Eski sistemde tek fiyat varsa
-   onu "Ürün" fiyatı olarak koruyoruz.
-  */
-
-  if(
-    parts.length === 0 &&
-    price.amount !== null &&
-    price.amount !== undefined &&
-    price.amount !== ""
-  ){
-    parts.push({
-      id:uid(),
-      name:"Ürün",
-      amount:Number(price.amount),
-      contactOnly:!!price.contactOnly
-    });
-  }
-
-  return {
-    contactOnly:
-      !!price.contactOnly &&
-      parts.length === 0,
-
-    amount:
-      price.amount ?? null,
-
-    parts
-  };
-}
-
-
-function normalizeItem(item){
-
-  return {
-    ...item,
-
-    id:item.id || uid(),
-
-    name:
-      typeof item.name === "string"
-        ? item.name
-        : "Yeni Ürün",
-
-    desc:
-      typeof item.desc === "string"
-        ? item.desc
-        : "",
-
-    dims:
-      item.dims || "",
-
-    image:
-      item.image || null,
-
-    price:
-      normalizePrice(item.price)
-  };
-}
-
-
-function normalizeCategories(categories){
-
-  if(!Array.isArray(categories)){
-    return createDefaultCategories();
-  }
-
-  return categories.map(
-    category => ({
-      id:category.id || uid(),
-
-      name:
-        typeof category.name === "string"
-          ? category.name
-          : (
-              category.name?.tr ||
-              "Yeni Kategori"
-            ),
-
-      items:
-        Array.isArray(category.items)
-          ? category.items.map(normalizeItem)
-          : []
-    })
-  );
-}
-
-
-function normalizeStore(store){
-
-  return {
-    categories:
-      normalizeCategories(
-        store?.categories
-      )
-  };
-}
-
+   VERİ NORMALİZASYON
+   ========================================================= */
 
 function normalizeData(input){
 
-  const base =
-    defaultData();
+  const base=defaultData();
 
-  if(!input || typeof input !== "object"){
+  if(
+    !input ||
+    typeof input!=="object"
+  ){
     return base;
   }
 
-  const result = {
+
+  const result={
     ...base,
     ...input
   };
 
-  result.logo = {
+
+  result.rates={
+    ...base.rates,
+    ...(input.rates||{})
+  };
+
+
+  result.logo={
     ...base.logo,
-    ...(input.logo || {})
+    ...(input.logo||{})
   };
 
-  result.theme = {
+
+  result.theme={
     ...base.theme,
-    ...(input.theme || {})
+    ...(input.theme||{})
   };
 
-  /*
-   Yeni sistem mevcutsa kullan.
-  */
+
+  result.siteName=
+    input.siteName ||
+    base.siteName;
+
+
+  result.subtitle=
+    input.subtitle ||
+    base.subtitle;
+
+
+  result.eyebrow=
+    input.eyebrow ||
+    base.eyebrow;
+
+
+  result.phone=
+    input.phone ||
+    "";
+
+
+  result.pin=
+    input.pin ||
+    "1234";
+
+
+  result.cardImgSize=
+    Number(input.cardImgSize) ||
+    170;
+
 
   if(
-    input.stores &&
-    typeof input.stores === "object"
+    !Array.isArray(input.categories) ||
+    input.categories.length===0
   ){
 
-    result.stores = {
-      premium:
-        normalizeStore(
-          input.stores.premium
-        ),
+    result.categories=
+      createDefaultCategories();
 
-      outlet:
-        normalizeStore(
-          input.stores.outlet
-        )
-    };
+  }else{
+
+    result.categories=
+      input.categories.map(category=>({
+
+        ...category,
+
+        id:
+          category.id ||
+          uid(),
+
+        name:
+          typeof category.name==="string"
+            ? category.name
+            : (
+              category.name?.tr ||
+              "Kategori"
+            ),
+
+        items:
+          Array.isArray(category.items)
+            ?
+            category.items.map(item=>({
+
+              ...item,
+
+              id:
+                item.id ||
+                uid(),
+
+              name:
+                typeof item.name==="string"
+                  ? item.name
+                  : (
+                    item.name?.tr ||
+                    "Yeni Ürün"
+                  ),
+
+              desc:
+                typeof item.desc==="string"
+                  ? item.desc
+                  : (
+                    item.desc?.tr ||
+                    ""
+                  ),
+
+              dims:
+                item.dims ||
+                "",
+
+              price:{
+                amount:
+                  item.price?.amount ??
+                  null,
+
+                contactOnly:
+                  !!item.price?.contactOnly,
+
+                /*
+                 * Yeni sistem:
+                 * Tek üründe istediğin kadar
+                 * ayrı fiyat ekleyebilmek için
+                 * price.parts kullanılabilir.
+                 */
+
+                parts:
+                  Array.isArray(
+                    item.price?.parts
+                  )
+                    ?
+                    item.price.parts
+                    : []
+
+              },
+
+              image:
+                item.image ||
+                null
+
+            }))
+            : []
+
+      }));
 
   }
 
-  /*
-   Eski sistemde categories vardı.
-   Mevcut ürünleri Premium'a taşıyoruz.
-  */
-
-  else if(
-    Array.isArray(input.categories)
-  ){
-
-    result.stores = {
-      premium:{
-        categories:
-          normalizeCategories(
-            input.categories
-          )
-      },
-
-      outlet:
-        createEmptyStore()
-    };
-
-  }
-
-  else{
-
-    result.stores = {
-      premium:
-        createEmptyStore(),
-
-      outlet:
-        createEmptyStore()
-    };
-
-  }
-
-  /*
-   Eski dil alanlarını artık kullanmıyoruz.
-  */
-
-  result.siteName =
-    typeof input.siteName === "string"
-      ? input.siteName
-      : "Ofischi";
-
-  result.subtitle =
-    typeof input.subtitle === "string"
-      ? input.subtitle
-      : "Ofis Mobilyaları";
-
-  result.eyebrow =
-    typeof input.eyebrow === "string"
-      ? input.eyebrow
-      : "İNEGÖL ÜRETİM";
 
   return result;
+
 }
 
 
 /* =========================================================
-   GÖRSEL
-========================================================= */
+   BASE64 → BLOB
+   ========================================================= */
 
 function dataUrlToBlob(dataUrl){
 
-  const parts =
-    dataUrl.split(",");
+  const parts=dataUrl.split(",");
 
-  const meta =
-    parts[0] || "";
+  const meta=parts[0]||"";
 
-  const data =
-    parts[1] || "";
+  const data=parts[1]||"";
 
-  const mimeMatch =
-    meta.match(
-      /data:([^;]+)/
-    );
+  const mimeMatch=
+    meta.match(/data:([^;]+)/);
 
-  const mime =
+  const mime=
     mimeMatch
       ? mimeMatch[1]
       : "image/jpeg";
 
-  const binary =
-    atob(data);
+  const binary=atob(data);
 
-  const bytes =
-    new Uint8Array(
-      binary.length
-    );
+  const bytes=
+    new Uint8Array(binary.length);
 
   for(
     let i=0;
     i<binary.length;
     i++
   ){
-    bytes[i] =
+
+    bytes[i]=
       binary.charCodeAt(i);
+
   }
 
   return new Blob(
@@ -560,8 +558,13 @@ function dataUrlToBlob(dataUrl){
       type:mime
     }
   );
+
 }
 
+
+/* =========================================================
+   GÖRSEL SIKIŞTIRME
+   ========================================================= */
 
 function resizeImg(
   file,
@@ -572,116 +575,129 @@ function resizeImg(
   return new Promise(
     (resolve,reject)=>{
 
-      const reader =
+      const reader=
         new FileReader();
 
-      reader.onload =
-        event => {
+      reader.onload=
+        event=>{
 
-          const img =
+          const img=
             new Image();
 
-          img.onload =
-            ()=>{
+          img.onload=()=>{
 
-              let width =
-                img.width;
+            let width=img.width;
 
-              let height =
-                img.height;
+            let height=img.height;
 
-              if(
-                width >
-                maxWidth
-              ){
 
-                height =
-                  Math.round(
-                    height *
-                    (
-                      maxWidth /
-                      width
-                    )
-                  );
+            if(
+              width>maxWidth
+            ){
 
-                width =
-                  maxWidth;
-              }
-
-              const canvas =
-                document.createElement(
-                  "canvas"
+              height=
+                Math.round(
+                  height*
+                  (
+                    maxWidth/
+                    width
+                  )
                 );
 
-              canvas.width =
-                width;
+              width=maxWidth;
 
-              canvas.height =
-                height;
+            }
 
-              const ctx =
-                canvas.getContext(
-                  "2d"
-                );
 
-              ctx.drawImage(
-                img,
-                0,
-                0,
-                width,
-                height
+            const canvas=
+              document.createElement(
+                "canvas"
               );
 
-              resolve(
-                canvas.toDataURL(
-                  "image/jpeg",
-                  quality
-                )
+            canvas.width=width;
+
+            canvas.height=height;
+
+
+            const ctx=
+              canvas.getContext(
+                "2d",
+                {
+                  alpha:false
+                }
               );
-            };
 
-          img.onerror =
-            reject;
 
-          img.src =
+            ctx.drawImage(
+              img,
+              0,
+              0,
+              width,
+              height
+            );
+
+
+            resolve(
+              canvas.toDataURL(
+                "image/jpeg",
+                quality
+              )
+            );
+
+          };
+
+
+          img.onerror=reject;
+
+          img.src=
             event.target.result;
+
         };
 
-      reader.onerror =
-        reject;
 
-      reader.readAsDataURL(
-        file
-      );
+      reader.onerror=reject;
+
+      reader.readAsDataURL(file);
+
     }
   );
+
 }
 
+
+/* =========================================================
+   STORAGE PATH
+   ========================================================= */
 
 function storagePath(
   type,
   id
 ){
 
-  return (
-    SITE_ID +
+  return(
+    SITE_ID+
     "/" +
-    type +
+    type+
     "/" +
-    id +
+    id+
     "-" +
-    Date.now() +
+    Date.now()+
     ".jpg"
   );
+
 }
 
+
+/* =========================================================
+   STORAGE UPLOAD
+   ========================================================= */
 
 async function uploadBlobToStorage(
   blob,
   path
 ){
 
-  const result =
+  const result=
     await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(
@@ -694,31 +710,384 @@ async function uploadBlobToStorage(
         }
       );
 
+
   if(result.error){
     throw result.error;
   }
 
-  return (
+
+  const publicResult=
     supabase.storage
       .from(STORAGE_BUCKET)
-      .getPublicUrl(path)
+      .getPublicUrl(path);
+
+
+  return(
+    publicResult
       ?.data
       ?.publicUrl ||
     null
   );
+
+}
+
+
+/* =========================================================
+   ESKİ FOTOĞRAF TAŞIMA
+   ========================================================= */
+
+async function migrateOldImages(
+  originalData,
+  onProgress
+){
+
+  const copy=
+    normalizeData(originalData);
+
+  const tasks=[];
+
+
+  if(
+    typeof copy.logo?.src==="string" &&
+    copy.logo.src.startsWith("data:image/")
+  ){
+
+    tasks.push({
+      type:"logo",
+      id:"logo",
+      value:copy.logo.src
+    });
+
+  }
+
+
+  if(
+    typeof copy.theme?.bgImage==="string" &&
+    copy.theme.bgImage.startsWith("data:image/")
+  ){
+
+    tasks.push({
+      type:"background",
+      id:"background",
+      value:copy.theme.bgImage
+    });
+
+  }
+
+
+  copy.categories.forEach(category=>{
+
+    category.items.forEach(item=>{
+
+      if(
+        typeof item.image==="string" &&
+        item.image.startsWith("data:image/")
+      ){
+
+        tasks.push({
+          type:"product",
+          id:item.id,
+          value:item.image,
+          categoryId:category.id
+        });
+
+      }
+
+    });
+
+  });
+
+
+  if(tasks.length===0){
+
+    return{
+      data:copy,
+      migrated:0
+    };
+
+  }
+
+
+  let completed=0;
+
+  const concurrency=3;
+
+
+  async function worker(){
+
+    while(true){
+
+      const task=tasks.shift();
+
+      if(!task){
+        break;
+      }
+
+
+      try{
+
+        const blob=
+          dataUrlToBlob(task.value);
+
+        const path=
+          storagePath(
+            task.type,
+            task.id
+          );
+
+        const url=
+          await uploadBlobToStorage(
+            blob,
+            path
+          );
+
+
+        if(task.type==="logo"){
+
+          copy.logo.src=url;
+
+        }else if(
+          task.type==="background"
+        ){
+
+          copy.theme.bgImage=url;
+
+        }else{
+
+          const category=
+            copy.categories.find(
+              x=>x.id===task.categoryId
+            );
+
+          const item=
+            category?.items.find(
+              x=>x.id===task.id
+            );
+
+          if(item){
+            item.image=url;
+          }
+
+        }
+
+
+        completed++;
+
+
+        if(onProgress){
+
+          onProgress(
+            completed,
+            completed+
+            tasks.length
+          );
+
+        }
+
+      }catch(error){
+
+        console.error(
+          "Fotoğraf taşıma hatası:",
+          error
+        );
+
+      }
+
+    }
+
+  }
+
+
+  await Promise.all(
+    Array.from(
+      {
+        length:
+          Math.min(
+            concurrency,
+            tasks.length
+          )
+      },
+      worker
+    )
+  );
+
+
+  return{
+    data:copy,
+    migrated:completed
+  };
+
+}
+
+
+/* =========================================================
+   FİYAT FORMAT
+   ========================================================= */
+
+function numberTR(value){
+
+  return Number(value).toLocaleString(
+    "tr-TR",
+    {
+      minimumFractionDigits:0,
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+function numberUSD(value){
+
+  return Number(value).toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+function numberEUR(value){
+
+  return Number(value).toLocaleString(
+    "de-DE",
+    {
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    }
+  );
+
+}
+
+
+/* =========================================================
+   ÜÇ PARA BİRİMİ
+   ========================================================= */
+
+function PriceDisplay({
+  price,
+  rates,
+  compact=false
+}){
+
+  if(
+    !price ||
+    price.contactOnly
+  ){
+
+    return(
+      <div
+        style={{
+          color:"inherit",
+          fontWeight:700
+        }}
+      >
+        Fiyat için iletişime geçin
+      </div>
+    );
+
+  }
+
+
+  const amount=
+    Number(price.amount);
+
+
+  if(
+    !Number.isFinite(amount)
+  ){
+
+    return(
+      <div>
+        Fiyat için iletişime geçin
+      </div>
+    );
+
+  }
+
+
+  const usdRate=
+    Number(rates?.USD)||1;
+
+  const eurRate=
+    Number(rates?.EUR)||1;
+
+
+  const usd=
+    amount/usdRate;
+
+  const eur=
+    amount/eurRate;
+
+
+  return(
+
+    <div
+      style={{
+        display:"flex",
+        flexDirection:"column",
+        gap:compact?"1px":"3px"
+      }}
+    >
+
+      <div
+        style={{
+          fontWeight:800,
+          fontSize:
+            compact
+              ? "12px"
+              : "15px"
+        }}
+      >
+        {numberTR(amount)} ₺
+      </div>
+
+
+      <div
+        style={{
+          fontSize:
+            compact
+              ? "10px"
+              : "12px",
+          opacity:.68
+        }}
+      >
+        ${numberUSD(usd)}
+      </div>
+
+
+      <div
+        style={{
+          fontSize:
+            compact
+              ? "10px"
+              : "12px",
+          opacity:.68
+        }}
+      >
+        €{numberEUR(eur)}
+      </div>
+
+    </div>
+
+  );
+
 }
 
 
 /* =========================================================
    ICON
-========================================================= */
+   ========================================================= */
 
 function Icon({
   type,
   size=18
 }){
 
-  const props = {
+  const props={
     width:size,
     height:size,
     viewBox:"0 0 24 24",
@@ -729,9 +1098,12 @@ function Icon({
     strokeLinejoin:"round"
   };
 
+
   let content=null;
 
+
   if(type==="settings"){
+
     content=(
       <>
         <circle cx="12" cy="12" r="3"/>
@@ -764,27 +1136,36 @@ function Icon({
         "/>
       </>
     );
+
   }
 
+
   if(type==="x"){
+
     content=(
       <>
         <path d="M6 6l12 12"/>
         <path d="M18 6L6 18"/>
       </>
     );
+
   }
 
+
   if(type==="plus"){
+
     content=(
       <>
         <path d="M12 5v14"/>
         <path d="M5 12h14"/>
       </>
     );
+
   }
 
+
   if(type==="trash"){
+
     content=(
       <>
         <path d="M3 6h18"/>
@@ -794,9 +1175,12 @@ function Icon({
         <path d="M14 11v5"/>
       </>
     );
+
   }
 
+
   if(type==="upload"){
+
     content=(
       <>
         <path d="M12 16V4"/>
@@ -804,17 +1188,30 @@ function Icon({
         <path d="M5 20h14"/>
       </>
     );
+
   }
+
 
   if(type==="up"){
-    content=<path d="m18 15-6-6-6 6"/>;
+
+    content=(
+      <path d="m18 15-6-6-6 6"/>
+    );
+
   }
+
 
   if(type==="down"){
-    content=<path d="m6 9 6 6 6-6"/>;
+
+    content=(
+      <path d="m6 9 6 6 6-6"/>
+    );
+
   }
 
+
   if(type==="save"){
+
     content=(
       <>
         <path d="
@@ -826,9 +1223,12 @@ function Icon({
         <path d="M7 3v5h8"/>
       </>
     );
+
   }
 
+
   if(type==="image"){
+
     content=(
       <>
         <rect
@@ -846,9 +1246,12 @@ function Icon({
         <path d="m21 15-5-5L5 21"/>
       </>
     );
+
   }
 
+
   if(type==="lock"){
+
     content=(
       <>
         <rect
@@ -863,15 +1266,21 @@ function Icon({
         />
       </>
     );
+
   }
 
+
   if(type==="check"){
+
     content=(
       <path d="m5 12 4 4L19 6"/>
     );
+
   }
 
+
   if(type==="phone"){
+
     content=(
       <path d="
         M22 16.92v3
@@ -888,325 +1297,487 @@ function Icon({
         A2 2 0 0 1 22 16.92z
       "/>
     );
+
   }
 
+
   if(type==="search"){
+
     content=(
       <>
-        <circle cx="11" cy="11" r="7"/>
+        <circle
+          cx="11"
+          cy="11"
+          r="7"
+        />
         <path d="m20 20-4-4"/>
       </>
     );
+
   }
+
 
   if(type==="arrow"){
+
     content=(
-      <>
-        <path d="M5 12h14"/>
-        <path d="m13 6 6 6-6 6"/>
-      </>
+      <path d="M5 12h14M13 6l6 6-6 6"/>
     );
+
   }
 
-  if(type==="chevron"){
-    content=<path d="m6 9 6 6 6-6"/>;
-  }
 
-  if(type==="close"){
-    content=(
-      <>
-        <path d="M6 6l12 12"/>
-        <path d="M18 6L6 18"/>
-      </>
-    );
-  }
-
-  return (
+  return(
     <svg {...props}>
       {content}
     </svg>
   );
+
 }
 
 
 /* =========================================================
    APP
-========================================================= */
+   ========================================================= */
 
 function App(){
 
-  const [data,setData] =
+  const [data,setData]=
     useState(null);
 
-  const [loading,setLoading] =
+  const [loading,setLoading]=
     useState(true);
 
-  const [saving,setSaving] =
+  const [saving,setSaving]=
     useState(false);
 
-  const [saved,setSaved] =
+  const [saved,setSaved]=
     useState(false);
 
-  const [toast,setToast] =
+  const [toast,setToast]=
     useState("");
 
-  const [store,setStore] =
-    useState("premium");
+  const [panelOpen,setPanelOpen]=
+    useState(false);
 
-  const [activeCat,setActiveCat] =
-    useState(null);
+  const [unlocked,setUnlocked]=
+    useState(false);
 
-  const [search,setSearch] =
+  const [pinModal,setPinModal]=
+    useState(false);
+
+  const [pinInput,setPinInput]=
     useState("");
 
-  const [selectedProduct,setSelectedProduct] =
-    useState(null);
-
-  const [panelOpen,setPanelOpen] =
+  const [pinError,setPinError]=
     useState(false);
 
-  const [unlocked,setUnlocked] =
-    useState(false);
-
-  const [pinModal,setPinModal] =
-    useState(false);
-
-  const [pinInput,setPinInput] =
-    useState("");
-
-  const [pinError,setPinError] =
-    useState(false);
-
-  const [tab,setTab] =
+  const [tab,setTab]=
     useState("genel");
 
-  const [busy,setBusy] =
+  const [activeCat,setActiveCat]=
+    useState(null);
+
+  const [busy,setBusy]=
     useState(false);
 
-  const logoRef =
+  const [migration,setMigration]=
+    useState({
+      active:false,
+      current:0,
+      total:0
+    });
+
+  const [search,setSearch]=
+    useState("");
+
+  const [selectedItem,setSelectedItem]=
+    useState(null);
+
+
+  const logoRef=
     useRef(null);
 
-  const bgRef =
+  const bgRef=
     useRef(null);
 
-  const itemRefs =
+  const itemRefs=
     useRef({});
 
 
   /* =======================================================
      TOAST
-  ======================================================= */
+     ======================================================= */
 
   function showToast(message){
 
     setToast(message);
 
     setTimeout(
-      ()=>setToast(""),
+      ()=>{
+        setToast("");
+      },
       3000
     );
+
   }
 
 
   /* =======================================================
-     VERİ OKU
-  ======================================================= */
+     SUPABASE OKU
+     ======================================================= */
 
-  useEffect(
-    ()=>{
-      let cancelled=false;
+  useEffect(()=>{
 
-      async function load(){
+    let cancelled=false;
 
-        try{
 
-          const result =
-            await supabase
-              .from("site_data")
-              .select("data")
-              .eq("id",SITE_ID)
-              .maybeSingle();
+    async function loadData(){
 
-          if(result.error){
-            throw result.error;
-          }
+      try{
 
-          let loaded;
+        const result=
+          await supabase
+            .from("site_data")
+            .select("data")
+            .eq("id",SITE_ID)
+            .maybeSingle();
 
-          if(
-            result.data &&
-            result.data.data
-          ){
 
-            loaded =
-              normalizeData(
-                result.data.data
-              );
+        if(result.error){
+          throw result.error;
+        }
 
-          }else{
 
-            loaded =
-              defaultData();
+        let loadedData;
 
-            await supabase
-              .from("site_data")
-              .upsert({
-                id:SITE_ID,
-                data:loaded,
-                updated_at:
-                  new Date()
-                    .toISOString()
-              });
-          }
 
-          if(cancelled)return;
+        if(
+          result.data &&
+          result.data.data
+        ){
 
-          setData(loaded);
+          loadedData=
+            normalizeData(
+              result.data.data
+            );
 
-          setActiveCat(
-            loaded.stores
-              ?.premium
-              ?.categories
-              ?.[0]
-              ?.id ||
-            null
-          );
+        }else{
 
-        }catch(error){
-
-          console.error(
-            "VERİ OKUMA HATASI:",
-            error
-          );
-
-          const fallback =
+          loadedData=
             defaultData();
 
-          setData(fallback);
 
-          setActiveCat(
-            fallback.stores
-              .premium
-              .categories
-              [0]?.id ||
-            null
-          );
+          const insert=
+            await supabase
+              .from("site_data")
+              .insert({
+                id:SITE_ID,
+                data:loadedData,
+                updated_at:
+                  new Date().toISOString()
+              });
 
-          showToast(
-            "Veritabanı bağlantısı kontrol edilmeli"
-          );
 
-        }finally{
+          if(
+            insert.error &&
+            insert.error.code!=="23505"
+          ){
 
-          if(!cancelled){
-            setLoading(false);
+            console.error(
+              "İlk veri oluşturulamadı:",
+              insert.error
+            );
+
           }
 
         }
+
+
+        if(cancelled){
+          return;
+        }
+
+
+        setData(loadedData);
+
+
+        setActiveCat(
+          loadedData
+            .categories?.[0]?.id ||
+          null
+        );
+
+
+        const total=
+          countBase64Images(
+            loadedData
+          );
+
+
+        if(total>0){
+
+          setMigration({
+            active:true,
+            current:0,
+            total
+          });
+
+
+          try{
+
+            const migrated=
+              await migrateOldImages(
+                loadedData,
+                (current,totalCount)=>{
+
+                  if(cancelled){
+                    return;
+                  }
+
+                  setMigration({
+                    active:true,
+                    current,
+                    total:totalCount
+                  });
+
+                }
+              );
+
+
+            if(cancelled){
+              return;
+            }
+
+
+            setData(migrated.data);
+
+
+            if(migrated.migrated>0){
+
+              const saveResult=
+                await supabase
+                  .from("site_data")
+                  .upsert(
+                    {
+                      id:SITE_ID,
+                      data:migrated.data,
+                      updated_at:
+                        new Date().toISOString()
+                    },
+                    {
+                      onConflict:"id"
+                    }
+                  );
+
+
+              if(saveResult.error){
+
+                console.error(
+                  "Fotoğraf kaydı:",
+                  saveResult.error
+                );
+
+              }else{
+
+                showToast(
+                  migrated.migrated+
+                  " fotoğraf optimize edildi"
+                );
+
+              }
+
+            }
+
+          }catch(error){
+
+            console.error(
+              "Migrasyon hatası:",
+              error
+            );
+
+          }finally{
+
+            if(!cancelled){
+
+              setMigration({
+                active:false,
+                current:0,
+                total:0
+              });
+
+            }
+
+          }
+
+        }
+
+      }catch(error){
+
+        console.error(
+          "SUPABASE OKUMA HATASI:",
+          error
+        );
+
+
+        if(cancelled){
+          return;
+        }
+
+
+        const fallback=
+          defaultData();
+
+
+        setData(fallback);
+
+
+        setActiveCat(
+          fallback.categories[0]?.id ||
+          null
+        );
+
+
+        showToast(
+          "Veritabanı bağlantısı kontrol edilmeli"
+        );
+
+      }finally{
+
+        if(!cancelled){
+
+          setLoading(false);
+
+        }
+
       }
 
-      load();
+    }
 
-      return ()=>{
-        cancelled=true;
-      };
 
-    },
-    []
-  );
+    loadData();
+
+
+    return()=>{
+
+      cancelled=true;
+
+    };
+
+  },[]);
 
 
   /* =======================================================
-     STORE DEĞİŞTİR
-  ======================================================= */
+     BASE64 SAY
+     ======================================================= */
 
-  function changeStore(nextStore){
+  function countBase64Images(source){
 
-    setStore(nextStore);
+    let count=0;
 
-    setSearch("");
 
-    const categories =
-      data?.stores
-        ?.[
-          nextStore
-        ]
-        ?.categories ||
-      [];
+    if(
+      source?.logo?.src
+        ?.startsWith("data:image/")
+    ){
+      count++;
+    }
 
-    setActiveCat(
-      categories[0]?.id ||
-      null
-    );
+
+    if(
+      source?.theme?.bgImage
+        ?.startsWith("data:image/")
+    ){
+      count++;
+    }
+
+
+    source?.categories?.forEach(category=>{
+
+      category.items?.forEach(item=>{
+
+        if(
+          item.image
+            ?.startsWith("data:image/")
+        ){
+          count++;
+        }
+
+      });
+
+    });
+
+
+    return count;
+
   }
 
 
   /* =======================================================
-     VERİ GÜNCELLE
-  ======================================================= */
+     VERİ DEĞİŞTİR
+     ======================================================= */
 
   function updateData(callback){
 
-    setData(
-      previous => {
+    setData(previous=>{
 
-        if(!previous){
-          return previous;
-        }
-
-        const copy = {
-          ...previous
-        };
-
-        callback(copy);
-
-        return copy;
+      if(!previous){
+        return previous;
       }
-    );
+
+
+      const copy={
+        ...previous
+      };
+
+
+      callback(copy);
+
+
+      return copy;
+
+    });
+
   }
 
 
-  function setPath(
-    path,
-    value
-  ){
+  function setPath(path,value){
 
-    updateData(
-      copy => {
+    updateData(copy=>{
 
-        let target =
-          copy;
+      let target=copy;
 
-        for(
-          let i=0;
-          i<path.length-1;
-          i++
-        ){
 
-          const key =
-            path[i];
+      for(
+        let i=0;
+        i<path.length-1;
+        i++
+      ){
 
-          target[key] = {
-            ...(target[key] || {})
-          };
+        const key=path[i];
 
-          target =
-            target[key];
-        }
 
-        target[
-          path[
-            path.length-1
-          ]
-        ] = value;
+        target[key]={
+          ...(target[key]||{})
+        };
+
+
+        target=target[key];
+
       }
-    );
+
+
+      target[
+        path[path.length-1]
+      ]=value;
+
+    });
+
   }
 
 
   /* =======================================================
      KAYDET
-  ======================================================= */
+     ======================================================= */
 
   async function save(){
 
@@ -1214,34 +1785,49 @@ function App(){
       return;
     }
 
+
     setSaving(true);
+
 
     try{
 
-      const clean =
+      const dataToSave=
         normalizeData(data);
 
-      const result =
+
+      if(
+        countBase64Images(dataToSave)>0
+      ){
+
+        throw new Error(
+          "Fotoğraflar hâlâ hazırlanıyor."
+        );
+
+      }
+
+
+      const result=
         await supabase
           .from("site_data")
           .upsert(
             {
               id:SITE_ID,
-              data:clean,
+              data:dataToSave,
               updated_at:
-                new Date()
-                  .toISOString()
+                new Date().toISOString()
             },
             {
               onConflict:"id"
             }
           );
 
+
       if(result.error){
         throw result.error;
       }
 
-      setData(clean);
+
+      setData(dataToSave);
 
       setSaved(true);
 
@@ -1249,13 +1835,15 @@ function App(){
         "Başarıyla kaydedildi"
       );
 
-      setTimeout(
-        ()=>{
-          setSaved(false);
-          setPanelOpen(false);
-        },
-        800
-      );
+
+      setTimeout(()=>{
+
+        setSaved(false);
+
+        setPanelOpen(false);
+
+      },900);
+
 
     }catch(error){
 
@@ -1264,91 +1852,111 @@ function App(){
         error
       );
 
+
       showToast(
-        "Kaydetme hatası: " +
+        "Kaydetme hatası: "+
         (
           error?.message ||
-          "Bilinmeyen hata"
+          "Supabase bağlantısı"
         )
       );
 
     }finally{
 
       setSaving(false);
+
     }
+
   }
 
 
   /* =======================================================
-     ADMİN
-  ======================================================= */
+     ADMIN
+     ======================================================= */
 
   function openAdmin(){
 
     if(unlocked){
+
       setPanelOpen(true);
+
       return;
+
     }
 
+
     setPinInput("");
+
     setPinError(false);
+
     setPinModal(true);
+
   }
 
 
   function tryUnlock(){
 
-    const correct =
+    const correctPin=
       String(
         data?.pin ||
         "1234"
       );
 
+
     if(
-      pinInput ===
-      correct
+      pinInput===correctPin
     ){
 
       setUnlocked(true);
+
       setPinModal(false);
+
       setPanelOpen(true);
 
     }else{
 
       setPinError(true);
+
     }
+
   }
 
 
   /* =======================================================
-     KATEGORİ
-  ======================================================= */
+     KATEGORİ EKLE
+     ======================================================= */
 
   function addCategory(){
 
-    const category =
-      createCategory(
-        "Yeni Kategori"
-      );
+    const category={
 
-    updateData(
-      copy=>{
-        copy.stores[
-          store
-        ].categories = [
-          ...copy.stores[
-            store
-          ].categories,
-          category
-        ];
-      }
-    );
+      id:uid(),
 
-    setActiveCat(
-      category.id
-    );
+      name:"Yeni Kategori",
+
+      items:[]
+
+    };
+
+
+    updateData(copy=>{
+
+      copy.categories=[
+        ...copy.categories,
+        category
+      ];
+
+    });
+
+
+    setActiveCat(category.id);
+
   }
 
+
+  /* =======================================================
+     KATEGORİ SİL
+     ======================================================= */
 
   function deleteCategory(id){
 
@@ -1360,155 +1968,190 @@ function App(){
       return;
     }
 
-    updateData(
-      copy=>{
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.filter(
-            category =>
-              category.id !== id
-          );
-      }
-    );
 
-    const remaining =
-      data.stores[
-        store
-      ].categories.filter(
-        category =>
-          category.id !== id
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.filter(
+          category=>
+            category.id!==id
+        );
+
+    });
+
+
+    if(activeCat===id){
+
+      const remaining=
+        data.categories.filter(
+          category=>
+            category.id!==id
+        );
+
+
+      setActiveCat(
+        remaining[0]?.id ||
+        null
       );
 
-    setActiveCat(
-      remaining[0]?.id ||
-      null
-    );
+    }
+
   }
 
 
-  function renameCategory(
-    id,
-    value
-  ){
-
-    updateData(
-      copy=>{
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category =>
-              category.id === id
-                ? {
-                    ...category,
-                    name:value
-                  }
-                : category
-          );
-      }
-    );
-  }
-
+  /* =======================================================
+     KATEGORİ SIRALA
+     ======================================================= */
 
   function moveCategory(
     id,
     direction
   ){
 
-    updateData(
-      copy=>{
+    updateData(copy=>{
 
-        const list =
-          [
-            ...copy.stores[
-              store
-            ].categories
-          ];
+      const list=[
+        ...copy.categories
+      ];
 
-        const index =
-          list.findIndex(
-            x=>x.id===id
-          );
 
-        const target =
-          index+direction;
+      const index=
+        list.findIndex(
+          category=>
+            category.id===id
+        );
 
-        if(
-          index<0 ||
-          target<0 ||
-          target>=list.length
-        ){
-          return;
-        }
 
-        [
-          list[index],
-          list[target]
-        ]=[
-          list[target],
-          list[index]
-        ];
+      const target=
+        index+direction;
 
-        copy.stores[
-          store
-        ].categories =
-          list;
+
+      if(
+        index<0 ||
+        target<0 ||
+        target>=list.length
+      ){
+        return;
       }
-    );
+
+
+      [
+        list[index],
+        list[target]
+      ]=[
+        list[target],
+        list[index]
+      ];
+
+
+      copy.categories=list;
+
+    });
+
   }
 
 
   /* =======================================================
-     ÜRÜN
-  ======================================================= */
+     KATEGORİ İSMİ
+     ======================================================= */
 
-  function addItem(
-    categoryId
+  function renameCategory(
+    id,
+    value
   ){
 
-    const item = {
-      id:uid(),
-      name:"Yeni Ürün",
-      desc:"",
-      dims:"",
-      image:null,
-      price:{
-        contactOnly:true,
-        amount:null,
-        parts:[]
-      }
-    };
+    updateData(copy=>{
 
-    updateData(
-      copy=>{
+      copy.categories=
+        copy.categories.map(
+          category=>{
 
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category =>
-              category.id ===
-              categoryId
-                ? {
-                    ...category,
-                    items:[
-                      ...category.items,
-                      item
-                    ]
-                  }
-                : category
-          );
-      }
-    );
+            if(
+              category.id!==id
+            ){
+              return category;
+            }
+
+
+            return{
+              ...category,
+              name:value
+            };
+
+          }
+        );
+
+    });
+
   }
 
+
+  /* =======================================================
+     ÜRÜN EKLE
+     ======================================================= */
+
+  function addItem(categoryId){
+
+    const item={
+
+      id:uid(),
+
+      name:"Yeni Ürün",
+
+      desc:"",
+
+      dims:"",
+
+      price:{
+
+        amount:null,
+
+        contactOnly:true,
+
+        parts:[]
+
+      },
+
+      image:null
+
+    };
+
+
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:[
+                ...category.items,
+                item
+              ]
+
+            };
+
+          }
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     ÜRÜN GÜNCELLE
+     ======================================================= */
 
   function updateItem(
     categoryId,
@@ -1517,45 +2160,351 @@ function App(){
     value
   ){
 
-    updateData(
-      copy=>{
+    updateData(copy=>{
 
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category=>{
+      copy.categories=
+        copy.categories.map(
+          category=>{
 
-              if(
-                category.id !==
-                categoryId
-              ){
-                return category;
-              }
-
-              return {
-                ...category,
-
-                items:
-                  category.items.map(
-                    item =>
-                      item.id ===
-                      itemId
-                        ? {
-                            ...item,
-                            [field]:value
-                          }
-                        : item
-                  )
-              };
+            if(
+              category.id!==categoryId
+            ){
+              return category;
             }
-          );
-      }
-    );
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.map(
+                  item=>{
+
+                    if(
+                      item.id!==itemId
+                    ){
+                      return item;
+                    }
+
+
+                    return{
+                      ...item,
+                      [field]:value
+                    };
+
+                  }
+                )
+
+            };
+
+          }
+        );
+
+    });
+
   }
 
+
+  /* =======================================================
+     FİYAT GÜNCELLE
+     ======================================================= */
+
+  function updatePrice(
+    categoryId,
+    itemId,
+    patch
+  ){
+
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.map(
+                  item=>{
+
+                    if(
+                      item.id!==itemId
+                    ){
+                      return item;
+                    }
+
+
+                    return{
+
+                      ...item,
+
+                      price:{
+                        ...item.price,
+                        ...patch
+                      }
+
+                    };
+
+                  }
+                )
+
+            };
+
+          }
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     EK FİYAT EKLE
+     ======================================================= */
+
+  function addPricePart(
+    categoryId,
+    itemId
+  ){
+
+    const part={
+
+      id:uid(),
+
+      name:"Yeni Fiyat",
+
+      amount:null,
+
+      contactOnly:false
+
+    };
+
+
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.map(
+                  item=>{
+
+                    if(
+                      item.id!==itemId
+                    ){
+                      return item;
+                    }
+
+
+                    return{
+
+                      ...item,
+
+                      price:{
+
+                        ...item.price,
+
+                        parts:[
+                          ...(item.price?.parts||[]),
+                          part
+                        ]
+
+                      }
+
+                    };
+
+                  }
+                )
+
+            };
+
+          }
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     EK FİYAT GÜNCELLE
+     ======================================================= */
+
+  function updatePricePart(
+    categoryId,
+    itemId,
+    partId,
+    patch
+  ){
+
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.map(
+                  item=>{
+
+                    if(
+                      item.id!==itemId
+                    ){
+                      return item;
+                    }
+
+
+                    return{
+
+                      ...item,
+
+                      price:{
+
+                        ...item.price,
+
+                        parts:
+                          (
+                            item.price?.parts||[]
+                          ).map(part=>{
+
+                            if(
+                              part.id!==partId
+                            ){
+                              return part;
+                            }
+
+
+                            return{
+                              ...part,
+                              ...patch
+                            };
+
+                          })
+
+                      }
+
+                    };
+
+                  }
+                )
+
+            };
+
+          }
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     EK FİYAT SİL
+     ======================================================= */
+
+  function deletePricePart(
+    categoryId,
+    itemId,
+    partId
+  ){
+
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.map(
+                  item=>{
+
+                    if(
+                      item.id!==itemId
+                    ){
+                      return item;
+                    }
+
+
+                    return{
+
+                      ...item,
+
+                      price:{
+
+                        ...item.price,
+
+                        parts:
+                          (
+                            item.price?.parts||[]
+                          ).filter(
+                            part=>
+                              part.id!==partId
+                          )
+
+                      }
+
+                    };
+
+                  }
+                )
+
+            };
+
+          }
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     ÜRÜN SİL
+     ======================================================= */
 
   function deleteItem(
     categoryId,
@@ -1570,33 +2519,43 @@ function App(){
       return;
     }
 
-    updateData(
-      copy=>{
 
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category =>
-              category.id ===
-              categoryId
-                ? {
-                    ...category,
-                    items:
-                      category.items.filter(
-                        item =>
-                          item.id !==
-                          itemId
-                      )
-                  }
-                : category
-          );
-      }
-    );
+    updateData(copy=>{
+
+      copy.categories=
+        copy.categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+
+            return{
+
+              ...category,
+
+              items:
+                category.items.filter(
+                  item=>
+                    item.id!==itemId
+                )
+
+            };
+
+          }
+        );
+
+    });
+
   }
 
+
+  /* =======================================================
+     ÜRÜN SIRALA
+     ======================================================= */
 
   function moveItem(
     categoryId,
@@ -1604,284 +2563,222 @@ function App(){
     direction
   ){
 
-    updateData(
-      copy=>{
+    updateData(copy=>{
 
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category=>{
+      copy.categories=
+        copy.categories.map(
+          category=>{
 
-              if(
-                category.id !==
-                categoryId
-              ){
-                return category;
-              }
-
-              const list =
-                [
-                  ...category.items
-                ];
-
-              const index =
-                list.findIndex(
-                  x=>x.id===itemId
-                );
-
-              const target =
-                index+direction;
-
-              if(
-                index<0 ||
-                target<0 ||
-                target>=list.length
-              ){
-                return category;
-              }
-
-              [
-                list[index],
-                list[target]
-              ]=[
-                list[target],
-                list[index]
-              ];
-
-              return {
-                ...category,
-                items:list
-              };
+            if(
+              category.id!==categoryId
+            ){
+              return category;
             }
-          );
-      }
-    );
+
+
+            const list=[
+              ...category.items
+            ];
+
+
+            const index=
+              list.findIndex(
+                x=>x.id===itemId
+              );
+
+
+            const target=
+              index+direction;
+
+
+            if(
+              index<0 ||
+              target<0 ||
+              target>=list.length
+            ){
+              return category;
+            }
+
+
+            [
+              list[index],
+              list[target]
+            ]=[
+              list[target],
+              list[index]
+            ];
+
+
+            return{
+              ...category,
+              items:list
+            };
+
+          }
+        );
+
+    });
+
   }
 
 
   /* =======================================================
-     FİYAT KALEMLERİ
-  ======================================================= */
+     LOGO
+     ======================================================= */
 
-  function addPricePart(
-    categoryId,
-    itemId
-  ){
+  async function uploadLogo(event){
 
-    const part = {
-      id:uid(),
-      name:"Yeni Parça",
-      amount:null,
-      contactOnly:false
-    };
+    const file=
+      event.target.files?.[0];
 
-    updateData(
-      copy=>{
 
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category=>{
+    if(!file){
+      return;
+    }
 
-              if(
-                category.id !==
-                categoryId
-              ){
-                return category;
-              }
 
-              return {
-                ...category,
+    setBusy(true);
 
-                items:
-                  category.items.map(
-                    item=>{
 
-                      if(
-                        item.id !==
-                        itemId
-                      ){
-                        return item;
-                      }
+    try{
 
-                      const oldPrice =
-                        normalizePrice(
-                          item.price
-                        );
+      const compressed=
+        await resizeImg(
+          file,
+          700,
+          .88
+        );
 
-                      return {
-                        ...item,
 
-                        price:{
-                          ...oldPrice,
-                          contactOnly:false,
-                          parts:[
-                            ...oldPrice.parts,
-                            part
-                          ]
-                        }
-                      };
-                    }
-                  )
-              };
-            }
-          );
+      const blob=
+        dataUrlToBlob(compressed);
+
+
+      const path=
+        storagePath(
+          "logo",
+          "logo"
+        );
+
+
+      const url=
+        await uploadBlobToStorage(
+          blob,
+          path
+        );
+
+
+      setPath(
+        ["logo","src"],
+        url
+      );
+
+
+      showToast(
+        "Logo eklendi. Kaydet'e basın."
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "Logo yüklenemedi"
+      );
+
+    }finally{
+
+      setBusy(false);
+
+      if(event.target){
+        event.target.value="";
       }
-    );
-  }
 
+    }
 
-  function updatePricePart(
-    categoryId,
-    itemId,
-    partId,
-    field,
-    value
-  ){
-
-    updateData(
-      copy=>{
-
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category=>{
-
-              if(
-                category.id !==
-                categoryId
-              ){
-                return category;
-              }
-
-              return {
-                ...category,
-
-                items:
-                  category.items.map(
-                    item=>{
-
-                      if(
-                        item.id !==
-                        itemId
-                      ){
-                        return item;
-                      }
-
-                      const price =
-                        normalizePrice(
-                          item.price
-                        );
-
-                      return {
-                        ...item,
-
-                        price:{
-                          ...price,
-
-                          parts:
-                            price.parts.map(
-                              part =>
-                                part.id ===
-                                partId
-                                  ? {
-                                      ...part,
-                                      [field]:
-                                        value
-                                    }
-                                  : part
-                            )
-                        }
-                      };
-                    }
-                  )
-              };
-            }
-          );
-      }
-    );
-  }
-
-
-  function deletePricePart(
-    categoryId,
-    itemId,
-    partId
-  ){
-
-    updateData(
-      copy=>{
-
-        copy.stores[
-          store
-        ].categories =
-          copy.stores[
-            store
-          ].categories.map(
-            category=>{
-
-              if(
-                category.id !==
-                categoryId
-              ){
-                return category;
-              }
-
-              return {
-                ...category,
-
-                items:
-                  category.items.map(
-                    item=>{
-
-                      if(
-                        item.id !==
-                        itemId
-                      ){
-                        return item;
-                      }
-
-                      const price =
-                        normalizePrice(
-                          item.price
-                        );
-
-                      return {
-                        ...item,
-
-                        price:{
-                          ...price,
-
-                          parts:
-                            price.parts.filter(
-                              part =>
-                                part.id !==
-                                partId
-                            )
-                        }
-                      };
-                    }
-                  )
-              };
-            }
-          );
-      }
-    );
   }
 
 
   /* =======================================================
-     FOTOĞRAF
-  ======================================================= */
+     ARKA PLAN
+     ======================================================= */
+
+  async function uploadBackground(event){
+
+    const file=
+      event.target.files?.[0];
+
+
+    if(!file){
+      return;
+    }
+
+
+    setBusy(true);
+
+
+    try{
+
+      const compressed=
+        await resizeImg(
+          file,
+          1600,
+          .70
+        );
+
+
+      const blob=
+        dataUrlToBlob(compressed);
+
+
+      const path=
+        storagePath(
+          "background",
+          "background"
+        );
+
+
+      const url=
+        await uploadBlobToStorage(
+          blob,
+          path
+        );
+
+
+      setPath(
+        ["theme","bgImage"],
+        url
+      );
+
+
+      showToast(
+        "Arka plan eklendi. Kaydet'e basın."
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "Arka plan yüklenemedi"
+      );
+
+    }finally{
+
+      setBusy(false);
+
+      if(event.target){
+        event.target.value="";
+      }
+
+    }
+
+  }
+
+
+  /* =======================================================
+     ÜRÜN GÖRSELİ
+     ======================================================= */
 
   async function uploadItemImage(
     categoryId,
@@ -1889,40 +2786,45 @@ function App(){
     event
   ){
 
-    const file =
+    const file=
       event.target.files?.[0];
+
 
     if(!file){
       return;
     }
 
+
     setBusy(true);
+
 
     try{
 
-      const compressed =
+      const compressed=
         await resizeImg(
           file,
           1000,
           .76
         );
 
-      const blob =
-        dataUrlToBlob(
-          compressed
-        );
 
-      const path =
+      const blob=
+        dataUrlToBlob(compressed);
+
+
+      const path=
         storagePath(
           "products",
           itemId
         );
 
-      const url =
+
+      const url=
         await uploadBlobToStorage(
           blob,
           path
         );
+
 
       updateItem(
         categoryId,
@@ -1931,8 +2833,9 @@ function App(){
         url
       );
 
+
       showToast(
-        "Görsel yüklendi. Kaydet'e basın."
+        "Ürün görseli yüklendi. Kaydet'e basın."
       );
 
     }catch(error){
@@ -1940,7 +2843,7 @@ function App(){
       console.error(error);
 
       showToast(
-        "Görsel yüklenemedi."
+        "Görsel yüklenemedi"
       );
 
     }finally{
@@ -1950,546 +2853,254 @@ function App(){
       if(event.target){
         event.target.value="";
       }
-    }
-  }
 
-
-  async function uploadLogo(event){
-
-    const file =
-      event.target.files?.[0];
-
-    if(!file){
-      return;
     }
 
-    setBusy(true);
-
-    try{
-
-      const compressed =
-        await resizeImg(
-          file,
-          700,
-          .88
-        );
-
-      const blob =
-        dataUrlToBlob(
-          compressed
-        );
-
-      const url =
-        await uploadBlobToStorage(
-          blob,
-          storagePath(
-            "logo",
-            "logo"
-          )
-        );
-
-      setPath(
-        ["logo","src"],
-        url
-      );
-
-      showToast(
-        "Logo yüklendi."
-      );
-
-    }catch(error){
-
-      console.error(error);
-
-      showToast(
-        "Logo yüklenemedi."
-      );
-
-    }finally{
-
-      setBusy(false);
-
-      if(event.target){
-        event.target.value="";
-      }
-    }
-  }
-
-
-  async function uploadBackground(event){
-
-    const file =
-      event.target.files?.[0];
-
-    if(!file){
-      return;
-    }
-
-    setBusy(true);
-
-    try{
-
-      const compressed =
-        await resizeImg(
-          file,
-          1600,
-          .70
-        );
-
-      const blob =
-        dataUrlToBlob(
-          compressed
-        );
-
-      const url =
-        await uploadBlobToStorage(
-          blob,
-          storagePath(
-            "background",
-            "background"
-          )
-        );
-
-      setPath(
-        ["theme","bgImage"],
-        url
-      );
-
-      showToast(
-        "Arka plan yüklendi."
-      );
-
-    }catch(error){
-
-      console.error(error);
-
-      showToast(
-        "Arka plan yüklenemedi."
-      );
-
-    }finally{
-
-      setBusy(false);
-
-      if(event.target){
-        event.target.value="";
-      }
-    }
   }
 
 
   /* =======================================================
      TEMA
-  ======================================================= */
+     ======================================================= */
 
   function applyTheme(theme){
 
-    updateData(
-      copy=>{
-        copy.theme={
-          ...copy.theme,
-          bg:theme.bg,
-          card:theme.card,
-          accent:theme.accent,
-          text:theme.text
-        };
-      }
-    );
+    updateData(copy=>{
+
+      copy.theme={
+
+        ...copy.theme,
+
+        bg:theme.bg,
+
+        card:theme.card,
+
+        accent:theme.accent,
+
+        text:theme.text
+
+      };
+
+    });
+
   }
 
 
   /* =======================================================
      RESET
-  ======================================================= */
+     ======================================================= */
 
   function resetDefault(){
 
     if(
       !confirm(
-        "Tüm ayarlar varsayılana döndürülsün mü?"
+        "Varsayılan ayarlara dönülsün mü?"
       )
     ){
       return;
     }
 
-    const fresh =
+
+    const fresh=
       defaultData();
+
 
     setData(fresh);
 
-    setStore("premium");
 
     setActiveCat(
-      fresh.stores
-        .premium
-        .categories
-        [0]?.id ||
+      fresh.categories[0]?.id ||
       null
     );
 
+
     showToast(
-      "Varsayılan ayarlar yüklendi. Kaydedin."
+      "Varsayılan ayarlar yüklendi. Kaydet'e basın."
     );
+
   }
 
 
   /* =======================================================
-     LOADING
-  ======================================================= */
+     YÜKLENİYOR
+     ======================================================= */
 
   if(loading){
 
     return(
+
       <div
         style={{
           minHeight:"100vh",
-          background:"#141416",
-          color:"#aaa",
           display:"flex",
           alignItems:"center",
           justifyContent:"center",
+          flexDirection:"column",
+          gap:"12px",
+          background:"#141416",
+          color:"#999",
           fontFamily:"Inter,sans-serif"
         }}
       >
-        Veriler yükleniyor...
+
+        <div>
+          Veriler yükleniyor…
+        </div>
+
       </div>
+
     );
+
   }
 
 
   if(!data){
 
     return(
+
       <div
         style={{
           minHeight:"100vh",
-          background:"#141416",
-          color:"#f87171",
           display:"flex",
           alignItems:"center",
-          justifyContent:"center"
+          justifyContent:"center",
+          background:"#141416",
+          color:"#f87171"
         }}
       >
         Site verileri yüklenemedi.
       </div>
+
     );
+
   }
 
 
   /* =======================================================
-     AKTİF VERİ
-  ======================================================= */
+     AKTİF KATEGORİ
+     ======================================================= */
 
-  const currentStore =
-    data.stores[
-      store
-    ];
-
-  const categories =
-    currentStore?.categories ||
-    [];
-
-  const activeCategory =
-    categories.find(
-      category =>
-        category.id ===
-        activeCat
+  const activeCategory=
+    data.categories.find(
+      category=>
+        category.id===activeCat
     ) ||
-    categories[0] ||
-    null;
-
-
-  /*
-   Arama aktifse bütün mağazadaki
-   ürünlerde arama yapıyoruz.
-  */
-
-  const allProducts =
-    categories.flatMap(
-      category =>
-        category.items.map(
-          item=>({
-            ...item,
-            categoryName:
-              category.name
-          })
-        )
-    );
-
-  const normalizedSearch =
-    search
-      .trim()
-      .toLocaleLowerCase("tr-TR");
-
-  let visibleProducts;
-
-  if(normalizedSearch){
-
-    visibleProducts =
-      allProducts.filter(
-        item=>{
-
-          const text = (
-            item.name +
-            " " +
-            item.desc +
-            " " +
-            item.dims +
-            " " +
-            item.categoryName
-          ).toLocaleLowerCase(
-            "tr-TR"
-          );
-
-          return text.includes(
-            normalizedSearch
-          );
-        }
-      );
-
-  }else{
-
-    visibleProducts =
-      activeCategory?.items ||
-      [];
-  }
-
-
-  const theme =
-    data.theme;
+    data.categories[0];
 
 
   /* =======================================================
-     PRICE TEXT
-  ======================================================= */
+     ARAMA
+     ======================================================= */
 
-  function priceText(
-    part
-  ){
-
-    if(
-      !part ||
-      part.contactOnly ||
-      part.amount === null ||
-      part.amount === undefined ||
-      part.amount === ""
-    ){
-      return "Fiyat için iletişime geçin";
-    }
-
-    return (
-      Number(
-        part.amount
-      ).toLocaleString(
-        "tr-TR"
-      ) +
-      " ₺"
-    );
-  }
+  const searchValue=
+    search.trim().toLocaleLowerCase("tr-TR");
 
 
-  function productMainPrice(
-    item
-  ){
+  const filteredItems=
+    activeCategory?.items?.filter(item=>{
 
-    const price =
-      normalizePrice(
-        item.price
-      );
-
-    if(price.parts.length){
-
-      const numeric =
-        price.parts
-          .filter(
-            p =>
-              !p.contactOnly &&
-              p.amount !== null &&
-              p.amount !== ""
-          )
-          .map(
-            p=>Number(p.amount)
-          );
-
-      if(numeric.length){
-
-        const min =
-          Math.min(...numeric);
-
-        return (
-          min.toLocaleString(
-            "tr-TR"
-          ) +
-          " ₺'den başlayan"
-        );
+      if(!searchValue){
+        return true;
       }
 
-      return "Fiyat için iletişime geçin";
-    }
 
-    if(
-      price.amount !== null &&
-      price.amount !== undefined
-    ){
+      const text=
+        (
+          item.name+
+          " "+
+          item.desc+
+          " "+
+          item.dims
+        )
+        .toLocaleLowerCase("tr-TR");
 
-      return (
-        Number(
-          price.amount
-        ).toLocaleString(
-          "tr-TR"
-        ) +
-        " ₺"
-      );
-    }
 
-    return "Fiyat için iletişime geçin";
-  }
+      return text.includes(searchValue);
+
+    })||[];
 
 
   /* =======================================================
      ANA SAYFA
-  ======================================================= */
+     ======================================================= */
 
   return(
 
     <div
       style={{
+
         minHeight:"100vh",
 
         backgroundColor:
-          theme.bg,
+          data.theme.bg,
 
         backgroundImage:
-          theme.bgImage
-            ? `linear-gradient(
-                ${theme.bg}cc,
-                ${theme.bg}f5
-              ),url(${theme.bgImage})`
-            : undefined,
+          data.theme.bgImage
+            ?
+            `linear-gradient(
+              ${data.theme.bg}cc,
+              ${data.theme.bg}f5
+            ),url(${data.theme.bgImage})`
+            :
+            undefined,
 
         backgroundSize:"cover",
+
         backgroundPosition:"center",
-        color:theme.text,
+
+        backgroundAttachment:"scroll",
+
+        color:
+          data.theme.text,
 
         fontFamily:
-          "Inter,system-ui,sans-serif"
+          "'Inter',sans-serif"
+
       }}
     >
 
-      {/* =================================================
-          STORE SELECTOR
-      ================================================= */}
 
-      <div
-        className="fixed top-4 left-4 right-4 z-40"
-      >
+      {/* ===================================================
+          FOTOĞRAF OPTİMİZASYONU
+      =================================================== */}
+
+      {migration.active &&(
 
         <div
-          className="max-w-5xl mx-auto flex justify-between items-center gap-3"
+          className="fixed top-0 left-0 right-0 z-[100] bg-neutral-950 text-white px-4 py-2"
         >
 
           <div
-            className="flex gap-1 p-1 rounded-full"
-            style={{
-              background:"rgba(0,0,0,.25)",
-              backdropFilter:"blur(15px)"
-            }}
+            className="text-center text-[11px]"
           >
-
-            {STORES.map(
-              item=>(
-
-                <button
-                  key={item.id}
-                  onClick={()=>
-                    changeStore(
-                      item.id
-                    )
-                  }
-                  className="px-4 py-2 rounded-full text-xs font-bold transition"
-                  style={{
-                    background:
-                      store===item.id
-                        ? theme.accent
-                        : "transparent",
-
-                    color:
-                      store===item.id
-                        ? "#fff"
-                        : theme.text,
-
-                    opacity:
-                      store===item.id
-                        ? 1
-                        : .55
-                  }}
-                >
-                  {item.name}
-                </button>
-
-              )
-            )}
-
+            Fotoğraflar optimize ediliyor...
+            {" "}
+            {migration.current}
+            /
+            {migration.total}
           </div>
 
-          <button
-            onClick={()=>
-              setSearch(
-                search ? "" : " "
-              )
-            }
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{
-              background:"rgba(0,0,0,.25)",
-              backdropFilter:"blur(15px)",
-              color:theme.text
-            }}
-          >
-            <Icon
-              type="search"
-              size={18}
-            />
-          </button>
-
-        </div>
-
-      </div>
-
-
-      {/* =================================================
-          ARAMA
-      ================================================= */}
-
-      {search !== "" && (
-
-        <div
-          className="fixed top-[68px] left-4 right-4 z-40"
-        >
-
           <div
-            className="max-w-5xl mx-auto relative"
+            className="h-1 bg-neutral-800 rounded-full mt-1 overflow-hidden"
           >
 
-            <Icon
-              type="search"
-              size={17}
-            />
-
-            <input
-              autoFocus
-              value={
-                search.trim()
-              }
-              onChange={
-                e =>
-                  setSearch(
-                    e.target.value
-                  )
-              }
-              placeholder="Ürün ara..."
-              className="search-input"
+            <div
               style={{
-                color:theme.text
+                width:
+                  migration.total
+                    ?
+                    (
+                      migration.current/
+                      migration.total*
+                      100
+                    )+"%"
+                    :
+                    "0%",
+                height:"100%",
+                background:
+                  data.theme.accent,
+                transition:
+                  "width .25s ease"
               }}
             />
 
@@ -2500,12 +3111,12 @@ function App(){
       )}
 
 
-      {/* =================================================
+      {/* ===================================================
           HEADER
-      ================================================= */}
+      =================================================== */}
 
       <header
-        className="px-6 pt-28 pb-8 max-w-5xl mx-auto"
+        className="px-6 pt-8 pb-6"
       >
 
         <div
@@ -2514,41 +3125,36 @@ function App(){
             display:"flex",
             justifyContent:
               data.logo.position==="left"
-                ? "flex-start"
-                : data.logo.position==="right"
-                  ? "flex-end"
-                  : "center",
+                ?
+                "flex-start"
+                :
+                data.logo.position==="right"
+                  ?
+                  "flex-end"
+                  :
+                  "center",
             marginBottom:18
           }}
         >
 
-          {data.logo.src ? (
+          {data.logo.src ?(
 
             <img
               src={data.logo.src}
-              alt="Ofischi"
+              alt="Ofischi Logo"
+              loading="eager"
+              decoding="async"
               style={{
                 width:data.logo.size,
                 maxWidth:"70vw",
+                height:"auto",
                 maxHeight:data.logo.size,
                 objectFit:"contain",
                 display:"block"
               }}
             />
 
-          ) : (
-
-            <div
-              style={{
-                fontSize:50,
-                fontWeight:800,
-                color:theme.accent
-              }}
-            >
-              O
-            </div>
-
-          )}
+          ):null}
 
         </div>
 
@@ -2556,13 +3162,14 @@ function App(){
         <div className="text-center">
 
           <div
-            className="text-[10px] font-bold tracking-[.28em] mb-2"
+            className="text-[11px] font-bold tracking-[.25em] mb-2"
             style={{
-              color:theme.accent
+              color:data.theme.accent
             }}
           >
             {data.eyebrow}
           </div>
+
 
           <h1
             className="text-3xl font-bold leading-tight"
@@ -2570,27 +3177,25 @@ function App(){
             {data.siteName}
           </h1>
 
+
           <p
             className="text-sm opacity-60 mt-2"
           >
-            {store==="premium"
-              ? "Premium Ofis Mobilyaları"
-              : "Outlet Ofis Mobilyaları"}
+            {data.subtitle}
           </p>
 
-          {data.phone && (
+
+          {data.phone &&(
 
             <a
               href={
-                "tel:" +
-                data.phone.replace(
-                  /\s/g,
-                  ""
-                )
+                "tel:"+
+                data.phone.replace(/\s/g,"")
               }
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
               style={{
-                background:theme.accent,
+                backgroundColor:
+                  data.theme.accent,
                 color:"#fff"
               }}
             >
@@ -2611,360 +3216,337 @@ function App(){
       </header>
 
 
-      {/* =================================================
-          STORE TITLE
-      ================================================= */}
+      {/* ===================================================
+          ARAMA
+      =================================================== */}
 
       <div
-        className="max-w-5xl mx-auto px-4 mb-2"
+        className="px-4 pb-3 max-w-5xl mx-auto"
       >
 
         <div
-          className="flex items-center justify-between"
+          className="relative"
         >
 
-          <div>
+          <Icon
+            type="search"
+            size={18}
+          />
 
-            <div
-              className="text-xl font-bold"
-            >
-              {store==="premium"
-                ? "Premium"
-                : "Outlet"}
-            </div>
+          <input
+            value={search}
+            onChange={e=>
+              setSearch(e.target.value)
+            }
+            placeholder="Ürün ara..."
+            className="w-full rounded-xl py-3 pl-11 pr-4 outline-none text-sm"
+            style={{
+              backgroundColor:
+                data.theme.card,
+              color:
+                data.theme.text,
+              border:
+                "1px solid "+
+                data.theme.accent+
+                "25"
+            }}
+          />
 
-            <div
-              className="text-[11px] opacity-45 mt-1"
-            >
-              {currentStore.categories.reduce(
-                (total,c)=>
-                  total+c.items.length,
-                0
-              )} ürün
-            </div>
+          <div
+            style={{
+              position:"absolute",
+              left:14,
+              top:"50%",
+              transform:"translateY(-50%)",
+              color:data.theme.accent
+            }}
+          >
+
+            <Icon
+              type="search"
+              size={18}
+            />
 
           </div>
-
-          {search.trim() && (
-
-            <button
-              onClick={()=>
-                setSearch("")
-              }
-              className="text-xs opacity-60"
-            >
-              Aramayı temizle
-            </button>
-
-          )}
 
         </div>
 
       </div>
 
 
-      {/* =================================================
+      {/* ===================================================
           KATEGORİLER
-      ================================================= */}
+      =================================================== */}
 
-      {!search.trim() && (
+      <div
+        className="sticky top-0 z-20 px-4 pt-2 pb-2"
+        style={{
+          backgroundColor:data.theme.bg
+        }}
+      >
 
         <div
-          className="sticky top-[64px] z-20 px-4 pt-3 pb-2"
+          className="flex gap-2 overflow-x-auto"
           style={{
-            backgroundColor:
-              theme.bg
+            scrollbarWidth:"none"
           }}
         >
 
-          <div
-            className="max-w-5xl mx-auto flex gap-2 overflow-x-auto"
-          >
+          {data.categories.map(category=>{
 
-            {categories.map(
-              category=>{
+            const active=
+              category.id===activeCat;
 
-                const active =
-                  category.id ===
-                  activeCat;
 
-                return(
+            return(
 
-                  <button
-                    key={category.id}
-                    onClick={()=>
-                      setActiveCat(
-                        category.id
-                      )
-                    }
-                    className="flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap"
-                    style={{
-                      background:
-                        active
-                          ? theme.accent
-                          : theme.accent+"18",
+              <button
+                key={category.id}
+                onClick={()=>{
 
-                      color:
-                        active
-                          ? "#fff"
-                          : theme.text,
+                  setActiveCat(
+                    category.id
+                  );
 
-                      opacity:
-                        active
-                          ? 1
-                          : .75
-                    }}
-                  >
-                    {category.name}
-                  </button>
+                  setSearch("");
 
-                );
-              }
-            )}
+                }}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap"
+                style={{
+                  backgroundColor:
+                    active
+                      ?
+                      data.theme.accent
+                      :
+                      data.theme.accent+"18",
+                  color:
+                    active
+                      ?
+                      "#fff"
+                      :
+                      data.theme.text,
+                  opacity:
+                    active
+                      ?
+                      1
+                      :
+                      .75
+                }}
+              >
+                {category.name}
+              </button>
 
-          </div>
+            );
+
+          })}
 
         </div>
 
-      )}
+      </div>
 
 
-      {/* =================================================
+      {/* ===================================================
           ÜRÜNLER
-      ================================================= */}
+      =================================================== */}
 
       <main
-        className="product-grid px-4 pt-4 pb-28 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
+        className="px-4 pt-4 pb-28 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
         style={{
           animation:"fadeIn .3s ease"
         }}
       >
 
-        {search.trim() && (
-          <div
-            className="col-span-full mb-1"
-          >
-            <div className="text-xs opacity-50">
-              "{search.trim()}" için{" "}
-              {visibleProducts.length} ürün bulundu
-            </div>
-          </div>
-        )}
-
-
-        {visibleProducts.length===0 && (
+        {filteredItems.length===0 &&(
 
           <div
             className="col-span-full text-center py-16 opacity-50"
           >
-            {search.trim()
-              ? "Aradığınız ürün bulunamadı."
-              : "Henüz ürün eklenmedi."}
+
+            {search
+              ?
+              "Aradığınız ürün bulunamadı."
+              :
+              "Henüz ürün eklenmedi."
+            }
+
           </div>
 
         )}
 
 
-        {visibleProducts.map(
-          item=>(
+        {filteredItems.map(item=>(
 
-            <article
-              key={item.id}
+          <article
+            key={item.id}
+            className="rounded-xl overflow-hidden"
+            style={{
+              backgroundColor:
+                data.theme.card,
+              boxShadow:
+                "0 3px 15px rgba(0,0,0,.12)"
+            }}
+          >
+
+            {/* FOTOĞRAF */}
+
+            <div
               onClick={()=>
-                setSelectedProduct(
-                  item
-                )
+                setSelectedItem(item)
               }
-              className="rounded-xl overflow-hidden active:scale-[.98] transition cursor-pointer"
               style={{
-                background:
-                  theme.card,
-
-                boxShadow:
-                  "0 3px 15px rgba(0,0,0,.12)"
+                height:data.cardImgSize,
+                backgroundColor:
+                  data.theme.accent+"12",
+                backgroundImage:
+                  item.image
+                    ?
+                    `url(${item.image})`
+                    :
+                    undefined,
+                backgroundSize:"cover",
+                backgroundPosition:"center",
+                display:
+                  item.image
+                    ?
+                    "block"
+                    :
+                    "flex",
+                alignItems:"center",
+                justifyContent:"center",
+                cursor:"pointer"
               }}
             >
 
+              {!item.image &&(
+
+                <Icon
+                  type="image"
+                  size={26}
+                />
+
+              )}
+
+            </div>
+
+
+            <div className="p-3">
+
               <div
+                className="font-semibold text-sm leading-tight"
+              >
+                {item.name}
+              </div>
+
+
+              {item.desc &&(
+
+                <div
+                  className="text-[11.5px] opacity-55 mt-1 leading-snug"
+                >
+                  {item.desc}
+                </div>
+
+              )}
+
+
+              {item.dims &&(
+
+                <div
+                  className="text-[11px] opacity-50 mt-1"
+                >
+                  {item.dims}
+                </div>
+
+              )}
+
+
+              <div
+                className="mt-2"
                 style={{
-                  height:
-                    data.cardImgSize,
-
-                  backgroundColor:
-                    theme.accent+"12",
-
-                  backgroundImage:
-                    item.image
-                      ? `url(${item.image})`
-                      : undefined,
-
-                  backgroundSize:"cover",
-                  backgroundPosition:"center",
-
-                  display:
-                    item.image
-                      ? "block"
-                      : "flex",
-
-                  alignItems:"center",
-                  justifyContent:"center"
+                  color:data.theme.accent
                 }}
               >
 
-                {!item.image && (
-
-                  <Icon
-                    type="image"
-                    size={28}
-                  />
-
-                )}
+                <PriceDisplay
+                  price={item.price}
+                  rates={data.rates}
+                  compact
+                />
 
               </div>
 
+            </div>
 
-              <div className="p-3">
+          </article>
 
-                <div
-                  className="font-semibold text-sm leading-tight"
-                >
-                  {item.name}
-                </div>
-
-
-                {item.desc && (
-
-                  <div
-                    className="text-[11px] opacity-55 mt-1 leading-snug line-clamp-2"
-                  >
-                    {item.desc}
-                  </div>
-
-                )}
-
-
-                {item.dims && (
-
-                  <div
-                    className="text-[10px] opacity-45 mt-1"
-                  >
-                    {item.dims}
-                  </div>
-
-                )}
-
-
-                <div
-                  className="text-[12px] font-bold mt-2"
-                  style={{
-                    color:theme.accent
-                  }}
-                >
-                  {productMainPrice(item)}
-                </div>
-
-
-                <div
-                  className="mt-2 text-[10px] opacity-45 flex items-center gap-1"
-                >
-                  Detaylı fiyatlar
-                  <Icon
-                    type="arrow"
-                    size={11}
-                  />
-                </div>
-
-              </div>
-
-            </article>
-
-          )
-        )}
+        ))}
 
       </main>
 
 
-      {/* =================================================
-          PRODUCT DETAIL MODAL
-      ================================================= */}
+      {/* ===================================================
+          ÜRÜN DETAY MODALI
+      =================================================== */}
 
-      {selectedProduct && (
+      {selectedItem &&(
 
         <div
-          className="fixed inset-0 z-[100] modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-5"
+          className="fixed inset-0 z-[120] bg-black/75 flex items-center justify-center p-4"
           onClick={()=>
-            setSelectedProduct(null)
+            setSelectedItem(null)
           }
         >
 
           <div
-            className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+            className="w-full max-w-md rounded-2xl overflow-hidden"
             style={{
-              background:theme.card,
-              color:theme.text,
-              animation:"pop .22s ease"
+              backgroundColor:
+                data.theme.card,
+              color:
+                data.theme.text,
+              maxHeight:"90vh",
+              overflowY:"auto"
             }}
             onClick={e=>
               e.stopPropagation()
             }
           >
 
+            {/* FOTOĞRAF */}
+
             <div
-              className="relative"
+              style={{
+                height:280,
+                backgroundColor:
+                  data.theme.accent+"12",
+                backgroundImage:
+                  selectedItem.image
+                    ?
+                    `url(${selectedItem.image})`
+                    :
+                    undefined,
+                backgroundSize:"contain",
+                backgroundRepeat:"no-repeat",
+                backgroundPosition:"center",
+                display:
+                  selectedItem.image
+                    ?
+                    "block"
+                    :
+                    "flex",
+                alignItems:"center",
+                justifyContent:"center"
+              }}
             >
 
-              <div
-                style={{
-                  height:270,
+              {!selectedItem.image &&(
 
-                  backgroundColor:
-                    theme.accent+"12",
-
-                  backgroundImage:
-                    selectedProduct.image
-                      ? `url(${selectedProduct.image})`
-                      : undefined,
-
-                  backgroundSize:"cover",
-                  backgroundPosition:"center",
-
-                  display:
-                    selectedProduct.image
-                      ? "block"
-                      : "flex",
-
-                  alignItems:"center",
-                  justifyContent:"center"
-                }}
-              >
-
-                {!selectedProduct.image && (
-
-                  <Icon
-                    type="image"
-                    size={40}
-                  />
-
-                )}
-
-              </div>
-
-
-              <button
-                onClick={()=>
-                  setSelectedProduct(null)
-                }
-                className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background:"rgba(0,0,0,.55)",
-                  color:"#fff"
-                }}
-              >
                 <Icon
-                  type="x"
-                  size={20}
+                  type="image"
+                  size={40}
                 />
-              </button>
+
+              )}
 
             </div>
 
@@ -2972,112 +3554,194 @@ function App(){
             <div className="p-5">
 
               <div
-                className="text-[10px] uppercase tracking-widest font-bold mb-2"
-                style={{
-                  color:theme.accent
-                }}
+                className="flex items-start justify-between gap-3"
               >
-                {store==="premium"
-                  ? "PREMIUM"
-                  : "OUTLET"}
+
+                <div>
+
+                  <h2
+                    className="text-xl font-bold"
+                  >
+                    {selectedItem.name}
+                  </h2>
+
+                </div>
+
+
+                <button
+                  onClick={()=>
+                    setSelectedItem(null)
+                  }
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-black/10"
+                >
+
+                  <Icon
+                    type="x"
+                    size={18}
+                  />
+
+                </button>
+
               </div>
 
 
-              <h2
-                className="text-2xl font-bold"
+              {selectedItem.desc &&(
+
+                <div
+                  className="text-sm opacity-65 mt-3 leading-relaxed"
+                >
+                  {selectedItem.desc}
+                </div>
+
+              )}
+
+
+              {selectedItem.dims &&(
+
+                <div
+                  className="text-sm opacity-60 mt-3"
+                >
+                  <b>Ölçü:</b>{" "}
+                  {selectedItem.dims}
+                </div>
+
+              )}
+
+
+              <div
+                className="mt-5 p-4 rounded-xl"
+                style={{
+                  backgroundColor:
+                    data.theme.accent+"12"
+                }}
               >
-                {selectedProduct.name}
-              </h2>
-
-
-              {selectedProduct.desc && (
-
-                <p
-                  className="text-sm opacity-65 mt-2 leading-relaxed"
-                >
-                  {selectedProduct.desc}
-                </p>
-
-              )}
-
-
-              {selectedProduct.dims && (
 
                 <div
-                  className="mt-3 px-3 py-2 rounded-xl text-xs"
-                  style={{
-                    background:
-                      theme.accent+"12"
-                  }}
+                  className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
                 >
-                  Ölçüler:{" "}
-                  <strong>
-                    {selectedProduct.dims}
-                  </strong>
-                </div>
-
-              )}
-
-
-              <div className="mt-5">
-
-                <div
-                  className="text-[10px] uppercase tracking-widest font-bold opacity-50 mb-3"
-                >
-                  Fiyatlar
+                  Fiyat
                 </div>
 
 
-                {normalizePrice(
-                  selectedProduct.price
-                ).parts.length > 0 ? (
+                <PriceDisplay
+                  price={selectedItem.price}
+                  rates={data.rates}
+                />
 
-                  <div className="space-y-2">
 
-                    {normalizePrice(
-                      selectedProduct.price
-                    ).parts.map(
-                      part=>(
+                {/* AYRI FİYATLAR */}
 
-                        <div
-                          key={part.id}
-                          className="price-row rounded-xl p-3 flex items-center justify-between gap-3"
-                        >
-
-                          <div
-                            className="text-sm font-medium"
-                          >
-                            {part.name}
-                          </div>
-
-                          <div
-                            className="text-sm font-bold whitespace-nowrap"
-                            style={{
-                              color:theme.accent
-                            }}
-                          >
-                            {priceText(part)}
-                          </div>
-
-                        </div>
-
-                      )
-                    )}
-
-                  </div>
-
-                ) : (
+                {selectedItem.price?.parts?.length>0 &&(
 
                   <div
-                    className="rounded-xl p-4 text-center"
-                    style={{
-                      background:
-                        theme.accent+"12",
-                      color:
-                        theme.accent
-                    }}
+                    className="mt-4 pt-4 border-t border-black/10"
                   >
-                    Fiyat için iletişime geçin
+
+                    <div
+                      className="text-[10px] uppercase tracking-widest opacity-50 mb-2"
+                    >
+                      Diğer Fiyatlar
+                    </div>
+
+
+                    <div
+                      className="space-y-2"
+                    >
+
+                      {selectedItem.price.parts.map(part=>{
+
+                        if(
+                          part.contactOnly ||
+                          part.amount===null
+                        ){
+
+                          return(
+
+                            <div
+                              key={part.id}
+                              className="flex justify-between gap-3 text-sm"
+                            >
+
+                              <span>
+                                {part.name}
+                              </span>
+
+                              <span
+                                style={{
+                                  color:
+                                    data.theme.accent
+                                }}
+                              >
+                                İletişime geçin
+                              </span>
+
+                            </div>
+
+                          );
+
+                        }
+
+
+                        const amount=
+                          Number(part.amount);
+
+                        const usd=
+                          amount/
+                          (
+                            Number(
+                              data.rates?.USD
+                            )||1
+                          );
+
+                        const eur=
+                          amount/
+                          (
+                            Number(
+                              data.rates?.EUR
+                            )||1
+                          );
+
+
+                        return(
+
+                          <div
+                            key={part.id}
+                            className="flex justify-between gap-3 text-sm"
+                          >
+
+                            <span>
+                              {part.name}
+                            </span>
+
+                            <span
+                              className="text-right"
+                              style={{
+                                color:
+                                  data.theme.accent
+                              }}
+                            >
+                              <div>
+                                {numberTR(amount)} ₺
+                              </div>
+
+                              <div
+                                className="text-[10px] opacity-60"
+                              >
+                                ${numberUSD(usd)}
+                                {" / "}
+                                €{numberEUR(eur)}
+                              </div>
+
+                            </span>
+
+                          </div>
+
+                        );
+
+                      })}
+
+                    </div>
+
                   </div>
 
                 )}
@@ -3085,28 +3749,28 @@ function App(){
               </div>
 
 
-              {data.phone && (
+              {data.phone &&(
 
                 <a
                   href={
-                    "tel:" +
-                    data.phone.replace(
-                      /\s/g,
-                      ""
-                    )
+                    "tel:"+
+                    data.phone.replace(/\s/g,"")
                   }
-                  className="mt-5 w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm"
+                  className="mt-4 w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold"
                   style={{
-                    background:
-                      theme.accent,
+                    backgroundColor:
+                      data.theme.accent,
                     color:"#fff"
                   }}
                 >
+
                   <Icon
                     type="phone"
                     size={16}
                   />
-                  Fiyat / Bilgi İçin Ara
+
+                  İletişime Geç
+
                 </a>
 
               )}
@@ -3120,56 +3784,62 @@ function App(){
       )}
 
 
-      {/* =================================================
-          ADMIN BUTTON
-      ================================================= */}
+      {/* ===================================================
+          ADMIN BUTONU
+      =================================================== */}
 
       <button
         onClick={openAdmin}
-        className="fixed bottom-5 right-[18px] z-30 rounded-full shadow-xl flex items-center justify-center"
+        className="fixed bottom-5 z-30 rounded-full shadow-xl flex items-center justify-center"
         style={{
+          right:18,
           width:52,
           height:52,
-          background:
-            theme.text,
+          backgroundColor:
+            data.theme.text,
           color:
-            theme.bg
+            data.theme.bg
         }}
       >
+
         <Icon
           type="settings"
           size={20}
         />
+
       </button>
 
 
-      {/* =================================================
+      {/* ===================================================
           TOAST
-      ================================================= */}
+      =================================================== */}
 
-      {toast && (
+      {toast &&(
 
         <div
-          className="fixed bottom-24 right-[18px] z-[150] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
+          className="fixed bottom-24 right-[18px] z-[110] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
         >
+
           <Icon
             type="check"
             size={15}
           />
+
           {toast}
+
         </div>
 
       )}
 
 
-      {/* =================================================
+      {/* ===================================================
           PIN
-      ================================================= */}
+      =================================================== */}
 
-      {pinModal && (
+      {pinModal &&(
 
         <div
-          className="fixed inset-0 z-[200] bg-black/75 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4"
         >
 
           <div
@@ -3179,13 +3849,16 @@ function App(){
             <div
               className="flex items-center gap-2 mb-4 text-white"
             >
+
               <Icon
                 type="lock"
                 size={18}
               />
+
               <h2 className="font-bold">
                 Yönetim Girişi
               </h2>
+
             </div>
 
 
@@ -3195,32 +3868,33 @@ function App(){
               inputMode="numeric"
               maxLength={8}
               value={pinInput}
-              onChange={
-                e=>{
-                  setPinInput(
-                    e.target.value.replace(
-                      /\D/g,
-                      ""
-                    )
-                  );
-                  setPinError(false);
+              onChange={event=>{
+
+                setPinInput(
+                  event.target.value.replace(
+                    /\D/g,
+                    ""
+                  )
+                );
+
+                setPinError(false);
+
+              }}
+              onKeyDown={event=>{
+
+                if(
+                  event.key==="Enter"
+                ){
+                  tryUnlock();
                 }
-              }
-              onKeyDown={
-                e=>{
-                  if(
-                    e.key==="Enter"
-                  ){
-                    tryUnlock();
-                  }
-                }
-              }
+
+              }}
               placeholder="PIN"
-              className="admin-input tracking-[.3em]"
+              className="w-full bg-neutral-900 border border-neutral-700 text-white rounded-lg px-3 py-3 outline-none tracking-[.3em]"
             />
 
 
-            {pinError && (
+            {pinError &&(
 
               <div
                 className="text-xs text-red-400 mt-2"
@@ -3238,7 +3912,9 @@ function App(){
             </div>
 
 
-            <div className="flex gap-2">
+            <div
+              className="flex gap-2"
+            >
 
               <button
                 onClick={()=>
@@ -3249,12 +3925,13 @@ function App(){
                 Vazgeç
               </button>
 
+
               <button
                 onClick={tryUnlock}
                 className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
                 style={{
-                  background:
-                    theme.accent
+                  backgroundColor:
+                    data.theme.accent
                 }}
               >
                 Giriş Yap
@@ -3269,18 +3946,18 @@ function App(){
       )}
 
 
-      {/* =================================================
-          ADMIN PANEL
-      ================================================= */}
+      {/* ===================================================
+          YÖNETİM PANELİ
+      =================================================== */}
 
-      {panelOpen && unlocked && (
+      {panelOpen && unlocked &&(
 
         <div
-          className="fixed inset-0 z-[180] flex justify-end"
+          className="fixed inset-0 z-50 flex justify-end"
         >
 
           <div
-            className="flex-1 bg-black/40"
+            className="flex-1 bg-black/30"
             onClick={()=>
               setPanelOpen(false)
             }
@@ -3288,7 +3965,7 @@ function App(){
 
 
           <aside
-            className="w-full sm:w-[460px] h-full bg-neutral-950 text-white overflow-y-auto shadow-2xl"
+            className="w-full sm:w-[430px] h-full bg-neutral-950 text-white overflow-y-auto shadow-2xl"
           >
 
             {/* PANEL HEADER */}
@@ -3301,11 +3978,10 @@ function App(){
                 className="flex items-center justify-between mb-4"
               >
 
-                <h2
-                  className="font-bold text-[17px]"
-                >
+                <h2 className="font-bold text-[16px]">
                   Yönetim Paneli
                 </h2>
+
 
                 <button
                   onClick={()=>
@@ -3313,59 +3989,16 @@ function App(){
                   }
                   className="text-neutral-500"
                 >
+
                   <Icon
                     type="x"
                     size={21}
                   />
+
                 </button>
 
               </div>
 
-
-              {/* MAĞAZA */}
-
-              <div
-                className="text-[10px] uppercase tracking-widest text-neutral-500 mb-2"
-              >
-                Düzenlenen Mağaza
-              </div>
-
-
-              <div
-                className="flex gap-1 bg-neutral-900 rounded-xl p-1 mb-3"
-              >
-
-                {STORES.map(
-                  s=>(
-
-                    <button
-                      key={s.id}
-                      onClick={()=>{
-                        changeStore(s.id);
-                      }}
-                      className="flex-1 py-2.5 rounded-lg text-xs font-bold"
-                      style={{
-                        background:
-                          store===s.id
-                            ? theme.accent
-                            : "transparent",
-
-                        color:
-                          store===s.id
-                            ? "#fff"
-                            : "#999"
-                      }}
-                    >
-                      {s.name}
-                    </button>
-
-                  )
-                )}
-
-              </div>
-
-
-              {/* TABS */}
 
               <div
                 className="flex gap-1 bg-neutral-900 rounded-xl p-1"
@@ -3377,14 +4010,17 @@ function App(){
                   }
                   className="flex-1 py-2 rounded-lg text-sm font-semibold"
                   style={{
-                    background:
+                    backgroundColor:
                       tab==="genel"
-                        ? theme.accent
-                        : "transparent"
+                        ?
+                        data.theme.accent
+                        :
+                        "transparent"
                   }}
                 >
                   Genel
                 </button>
+
 
                 <button
                   onClick={()=>
@@ -3392,10 +4028,12 @@ function App(){
                   }
                   className="flex-1 py-2 rounded-lg text-sm font-semibold"
                   style={{
-                    background:
+                    backgroundColor:
                       tab==="icerik"
-                        ? theme.accent
-                        : "transparent"
+                        ?
+                        data.theme.accent
+                        :
+                        "transparent"
                   }}
                 >
                   Ürün Kataloğu
@@ -3410,31 +4048,30 @@ function App(){
 
             <div className="p-5">
 
-              {/* =========================================
-                  GENEL
-              ========================================= */}
 
-              {tab==="genel" && (
+              {/* =================================================
+                  GENEL
+              ================================================= */}
+
+              {tab==="genel" &&(
 
                 <div>
+
 
                   <label className="block mb-4">
 
                     <AdminLabel>
-                      Site Adı
+                      Mağaza Adı
                     </AdminLabel>
 
                     <input
                       className="admin-input"
-                      value={
-                        data.siteName
-                      }
-                      onChange={
-                        e=>
-                          setPath(
-                            ["siteName"],
-                            e.target.value
-                          )
+                      value={data.siteName}
+                      onChange={event=>
+                        setPath(
+                          ["siteName"],
+                          event.target.value
+                        )
                       }
                     />
 
@@ -3449,15 +4086,32 @@ function App(){
 
                     <input
                       className="admin-input"
-                      value={
-                        data.eyebrow
+                      value={data.eyebrow}
+                      onChange={event=>
+                        setPath(
+                          ["eyebrow"],
+                          event.target.value
+                        )
                       }
-                      onChange={
-                        e=>
-                          setPath(
-                            ["eyebrow"],
-                            e.target.value
-                          )
+                    />
+
+                  </label>
+
+
+                  <label className="block mb-4">
+
+                    <AdminLabel>
+                      Alt Başlık
+                    </AdminLabel>
+
+                    <input
+                      className="admin-input"
+                      value={data.subtitle}
+                      onChange={event=>
+                        setPath(
+                          ["subtitle"],
+                          event.target.value
+                        )
                       }
                     />
 
@@ -3472,15 +4126,12 @@ function App(){
 
                     <input
                       className="admin-input"
-                      value={
-                        data.phone || ""
-                      }
-                      onChange={
-                        e=>
-                          setPath(
-                            ["phone"],
-                            e.target.value
-                          )
+                      value={data.phone}
+                      onChange={event=>
+                        setPath(
+                          ["phone"],
+                          event.target.value
+                        )
                       }
                       placeholder="+90 5xx xxx xx xx"
                     />
@@ -3491,7 +4142,139 @@ function App(){
                   <div className="h-px bg-neutral-800 my-5"/>
 
 
-                  {/* LOGO */}
+                  {/* =================================================
+                      KURLAR
+                  ================================================= */}
+
+                  <div
+                    className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-2"
+                  >
+                    Para Birimleri / Kurlar
+                  </div>
+
+
+                  <div
+                    className="text-[10px] text-neutral-500 mb-4"
+                  >
+                    Ürün fiyatlarını TL olarak gir.
+                    USD ve EUR otomatik hesaplanır.
+                    Kurları istediğin zaman değiştirebilirsin.
+                  </div>
+
+
+                  <div
+                    className="grid grid-cols-2 gap-2 mb-2"
+                  >
+
+                    <label>
+
+                      <AdminLabel>
+                        1 USD = TL
+                      </AdminLabel>
+
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="admin-input"
+                        value={
+                          data.rates?.USD ??
+                          ""
+                        }
+                        onChange={event=>
+                          setPath(
+                            ["rates","USD"],
+                            Number(
+                              event.target.value
+                            )||0
+                          )
+                        }
+                      />
+
+                    </label>
+
+
+                    <label>
+
+                      <AdminLabel>
+                        1 EUR = TL
+                      </AdminLabel>
+
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="admin-input"
+                        value={
+                          data.rates?.EUR ??
+                          ""
+                        }
+                        onChange={event=>
+                          setPath(
+                            ["rates","EUR"],
+                            Number(
+                              event.target.value
+                            )||0
+                          )
+                        }
+                      />
+
+                    </label>
+
+                  </div>
+
+
+                  <div
+                    className="rounded-xl bg-neutral-900 border border-neutral-800 p-3 mb-5"
+                  >
+
+                    <div
+                      className="text-[10px] text-neutral-500 mb-2"
+                    >
+                      Önizleme
+                    </div>
+
+                    <div
+                      className="flex justify-between text-xs"
+                    >
+
+                      <span>
+                        40.000 ₺
+                      </span>
+
+                      <span className="opacity-60">
+                        $
+                        {numberUSD(
+                          40000/
+                          (
+                            Number(
+                              data.rates?.USD
+                            )||1
+                          )
+                        )}
+                      </span>
+
+                      <span className="opacity-60">
+                        €
+                        {numberEUR(
+                          40000/
+                          (
+                            Number(
+                              data.rates?.EUR
+                            )||1
+                          )
+                        )}
+                      </span>
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="h-px bg-neutral-800 my-5"/>
+
+
+                  {/* =================================================
+                      LOGO
+                  ================================================= */}
 
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -3504,11 +4287,13 @@ function App(){
                     className="bg-neutral-900 rounded-xl p-4 mb-3 flex items-center justify-center min-h-[120px]"
                   >
 
-                    {data.logo.src ? (
+                    {data.logo.src ?(
 
                       <img
                         src={data.logo.src}
                         alt="Logo"
+                        loading="lazy"
+                        decoding="async"
                         style={{
                           maxWidth:"100%",
                           maxHeight:100,
@@ -3516,12 +4301,10 @@ function App(){
                         }}
                       />
 
-                    ) : (
-
+                    ):(
                       <div className="text-xs text-neutral-500">
                         Logo eklenmedi
                       </div>
-
                     )}
 
                   </div>
@@ -3536,15 +4319,23 @@ function App(){
                       }
                       className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
                     >
+
                       <Icon
                         type="upload"
                         size={14}
                       />
-                      Logo Yükle
+
+                      {busy
+                        ?
+                        "Yükleniyor..."
+                        :
+                        "PNG Logo Yükle"
+                      }
+
                     </button>
 
 
-                    {data.logo.src && (
+                    {data.logo.src &&(
 
                       <button
                         onClick={()=>
@@ -3555,10 +4346,12 @@ function App(){
                         }
                         className="px-3 bg-red-950 text-red-400 rounded-lg"
                       >
+
                         <Icon
                           type="trash"
                           size={14}
                         />
+
                       </button>
 
                     )}
@@ -3575,24 +4368,27 @@ function App(){
                   </div>
 
 
-                  <AdminLabel>
-                    Logo Boyutu — {data.logo.size}px
-                  </AdminLabel>
+                  <label className="block mb-4">
 
-                  <input
-                    type="range"
-                    min="40"
-                    max="260"
-                    value={data.logo.size}
-                    onChange={
-                      e=>
+                    <AdminLabel>
+                      Logo Boyutu — {data.logo.size}px
+                    </AdminLabel>
+
+                    <input
+                      type="range"
+                      min="40"
+                      max="260"
+                      value={data.logo.size}
+                      onChange={event=>
                         setPath(
                           ["logo","size"],
-                          Number(e.target.value)
+                          Number(event.target.value)
                         )
-                    }
-                    className="w-full mb-4"
-                  />
+                      }
+                      className="w-full"
+                    />
+
+                  </label>
 
 
                   <AdminLabel>
@@ -3619,10 +4415,12 @@ function App(){
                           }
                           className="flex-1 py-2 rounded-lg text-xs"
                           style={{
-                            background:
+                            backgroundColor:
                               data.logo.position===value
-                                ? theme.accent
-                                : "#1c1917"
+                                ?
+                                data.theme.accent
+                                :
+                                "#1c1917"
                           }}
                         >
                           {label}
@@ -3637,7 +4435,9 @@ function App(){
                   <div className="h-px bg-neutral-800 my-5"/>
 
 
-                  {/* TEMALAR */}
+                  {/* =================================================
+                      TEMALAR
+                  ================================================= */}
 
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -3650,107 +4450,108 @@ function App(){
                     className="grid grid-cols-3 gap-2 mb-5"
                   >
 
-                    {THEMES.map(
-                      item=>(
+                    {THEMES.map(theme=>(
 
-                        <button
-                          key={item.id}
-                          onClick={()=>
-                            applyTheme(item)
-                          }
-                          className="rounded-xl overflow-hidden border-2"
+                      <button
+                        key={theme.id}
+                        onClick={()=>
+                          applyTheme(theme)
+                        }
+                        className="rounded-xl overflow-hidden border-2"
+                        style={{
+                          borderColor:
+                            data.theme.bg===theme.bg &&
+                            data.theme.accent===theme.accent
+                              ?
+                              theme.accent
+                              :
+                              "#292524"
+                        }}
+                      >
+
+                        <div
                           style={{
-                            borderColor:
-                              theme.bg===item.bg &&
-                              theme.accent===item.accent
-                                ? item.accent
-                                : "#292524"
+                            height:35,
+                            backgroundColor:theme.bg,
+                            display:"flex",
+                            alignItems:"center",
+                            justifyContent:"center"
                           }}
                         >
 
-                          <div
+                          <span
                             style={{
-                              height:35,
-                              background:item.bg,
-                              display:"flex",
-                              alignItems:"center",
-                              justifyContent:"center"
+                              width:15,
+                              height:15,
+                              borderRadius:"50%",
+                              backgroundColor:
+                                theme.accent
                             }}
-                          >
-                            <span
-                              style={{
-                                width:15,
-                                height:15,
-                                borderRadius:"50%",
-                                background:item.accent
-                              }}
-                            />
-                          </div>
+                          />
 
-                          <div
-                            className="bg-neutral-900 py-1 text-[9px]"
-                          >
-                            {item.name}
-                          </div>
+                        </div>
 
-                        </button>
 
-                      )
-                    )}
+                        <div
+                          className="bg-neutral-900 py-1 text-[9px]"
+                        >
+                          {theme.name}
+                        </div>
+
+                      </button>
+
+                    ))}
 
                   </div>
 
 
                   <ColorInput
                     label="Arka Plan Rengi"
-                    value={theme.bg}
-                    onChange={
-                      value=>
-                        setPath(
-                          ["theme","bg"],
-                          value
-                        )
+                    value={data.theme.bg}
+                    onChange={value=>
+                      setPath(
+                        ["theme","bg"],
+                        value
+                      )
                     }
                   />
+
 
                   <ColorInput
                     label="Kart Rengi"
-                    value={theme.card}
-                    onChange={
-                      value=>
-                        setPath(
-                          ["theme","card"],
-                          value
-                        )
+                    value={data.theme.card}
+                    onChange={value=>
+                      setPath(
+                        ["theme","card"],
+                        value
+                      )
                     }
                   />
+
 
                   <ColorInput
                     label="Vurgu Rengi"
-                    value={theme.accent}
-                    onChange={
-                      value=>
-                        setPath(
-                          ["theme","accent"],
-                          value
-                        )
+                    value={data.theme.accent}
+                    onChange={value=>
+                      setPath(
+                        ["theme","accent"],
+                        value
+                      )
                     }
                   />
+
 
                   <ColorInput
                     label="Yazı Rengi"
-                    value={theme.text}
-                    onChange={
-                      value=>
-                        setPath(
-                          ["theme","text"],
-                          value
-                        )
+                    value={data.theme.text}
+                    onChange={value=>
+                      setPath(
+                        ["theme","text"],
+                        value
+                      )
                     }
                   />
 
-
-                  {/* BACKGROUND */}
 
                   <div className="flex gap-2 mb-5">
 
@@ -3759,13 +4560,25 @@ function App(){
                       onClick={()=>
                         bgRef.current?.click()
                       }
-                      className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs"
+                      className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
                     >
-                      Arka Plan Görseli
+
+                      <Icon
+                        type="upload"
+                        size={14}
+                      />
+
+                      {busy
+                        ?
+                        "Yükleniyor..."
+                        :
+                        "Arka Plan Görseli"
+                      }
+
                     </button>
 
 
-                    {theme.bgImage && (
+                    {data.theme.bgImage &&(
 
                       <button
                         onClick={()=>
@@ -3776,10 +4589,12 @@ function App(){
                         }
                         className="px-3 bg-red-950 text-red-400 rounded-lg"
                       >
+
                         <Icon
                           type="trash"
                           size={14}
                         />
+
                       </button>
 
                     )}
@@ -3796,51 +4611,55 @@ function App(){
                   </div>
 
 
-                  <AdminLabel>
-                    Ürün Görsel Yüksekliği — {data.cardImgSize}px
-                  </AdminLabel>
+                  <label className="block mb-4">
 
-                  <input
-                    type="range"
-                    min="100"
-                    max="320"
-                    value={data.cardImgSize}
-                    onChange={
-                      e=>
+                    <AdminLabel>
+                      Ürün Görsel Yüksekliği — {data.cardImgSize}px
+                    </AdminLabel>
+
+                    <input
+                      type="range"
+                      min="90"
+                      max="300"
+                      value={data.cardImgSize}
+                      onChange={event=>
                         setPath(
                           ["cardImgSize"],
-                          Number(
-                            e.target.value
-                          )
+                          Number(event.target.value)
                         )
-                    }
-                    className="w-full mb-5"
-                  />
+                      }
+                      className="w-full"
+                    />
+
+                  </label>
 
 
-                  <AdminLabel>
-                    Yönetim PIN
-                  </AdminLabel>
+                  <label className="block mb-5">
 
-                  <input
-                    className="admin-input mb-5"
-                    value={data.pin || ""}
-                    inputMode="numeric"
-                    maxLength={8}
-                    onChange={
-                      e=>
+                    <AdminLabel>
+                      Yönetim PIN
+                    </AdminLabel>
+
+                    <input
+                      className="admin-input"
+                      value={data.pin}
+                      inputMode="numeric"
+                      maxLength={8}
+                      onChange={event=>
                         setPath(
                           ["pin"],
-                          e.target.value.replace(
+                          event.target.value.replace(
                             /\D/g,
                             ""
                           )
                         )
-                    }
-                    style={{
-                      letterSpacing:".3em"
-                    }}
-                  />
+                      }
+                      style={{
+                        letterSpacing:".3em"
+                      }}
+                    />
+
+                  </label>
 
 
                   <button
@@ -3855,404 +4674,468 @@ function App(){
               )}
 
 
-              {/* =========================================
+              {/* =================================================
                   ÜRÜN KATALOĞU
-              ========================================= */}
+              ================================================= */}
 
-              {tab==="icerik" && (
+              {tab==="icerik" &&(
 
                 <div>
-
-                  {/* AKTİF MAĞAZA */}
-
-                  <div
-                    className="mb-4 rounded-xl p-3"
-                    style={{
-                      background:
-                        theme.accent+"12",
-                      border:
-                        "1px solid "+
-                        theme.accent+"25"
-                    }}
-                  >
-
-                    <div className="text-[10px] uppercase tracking-widest opacity-50">
-                      Şu anda düzenleniyor
-                    </div>
-
-                    <div
-                      className="font-bold mt-1"
-                      style={{
-                        color:theme.accent
-                      }}
-                    >
-                      {store==="premium"
-                        ? "Premium Mağaza"
-                        : "Outlet Mağaza"}
-                    </div>
-
-                    <div className="text-[10px] opacity-40 mt-1">
-                      Premium ve Outlet ürünleri birbirinden bağımsızdır.
-                    </div>
-
-                  </div>
-
 
                   <button
                     onClick={addCategory}
                     className="w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
                     style={{
-                      background:
-                        theme.accent
+                      backgroundColor:
+                        data.theme.accent
                     }}
                   >
+
                     <Icon
                       type="plus"
                       size={17}
                     />
+
                     Yeni Kategori
+
                   </button>
 
 
-                  {categories.map(
+                  {data.categories.map(
                     (
                       category,
                       categoryIndex
-                    )=>(
+                    )=>{
 
-                      <div
-                        key={category.id}
-                        className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hidden"
-                      >
+                      const isOpen=
+                        activeCat===
+                        category.id;
+
+
+                      return(
 
                         <div
-                          className="p-2 flex items-center gap-1.5"
+                          key={category.id}
+                          className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hidden"
                         >
 
-                          <input
-                            value={
-                              category.name
-                            }
-                            onChange={
-                              e=>
+                          <div
+                            className="p-2 flex items-center gap-1.5"
+                          >
+
+                            <input
+                              value={category.name}
+                              onChange={event=>
                                 renameCategory(
                                   category.id,
-                                  e.target.value
+                                  event.target.value
                                 )
-                            }
-                            className="admin-input"
-                            style={{
-                              padding:
-                                "9px 10px",
-                              fontSize:
-                                "13px"
-                            }}
-                          />
-
-
-                          <button
-                            onClick={()=>
-                              moveCategory(
-                                category.id,
-                                -1
-                              )
-                            }
-                            disabled={
-                              categoryIndex===0
-                            }
-                            className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
-                          >
-                            <Icon
-                              type="up"
-                              size={14}
+                              }
+                              className="admin-input"
+                              style={{
+                                padding:"9px 10px",
+                                fontSize:"13px"
+                              }}
                             />
-                          </button>
 
 
-                          <button
-                            onClick={()=>
-                              moveCategory(
-                                category.id,
-                                1
-                              )
-                            }
-                            disabled={
-                              categoryIndex===
-                              categories.length-1
-                            }
-                            className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
-                          >
-                            <Icon
-                              type="down"
-                              size={14}
-                            />
-                          </button>
+                            <button
+                              onClick={()=>
+                                moveCategory(
+                                  category.id,
+                                  -1
+                                )
+                              }
+                              disabled={
+                                categoryIndex===0
+                              }
+                              className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
+                            >
+
+                              <Icon
+                                type="up"
+                                size={14}
+                              />
+
+                            </button>
 
 
-                          <button
-                            onClick={()=>
-                              deleteCategory(
-                                category.id
-                              )
-                            }
-                            className="p-2 bg-red-950 text-red-400 rounded-lg"
-                          >
-                            <Icon
-                              type="trash"
-                              size={14}
-                            />
-                          </button>
+                            <button
+                              onClick={()=>
+                                moveCategory(
+                                  category.id,
+                                  1
+                                )
+                              }
+                              disabled={
+                                categoryIndex===
+                                data.categories.length-1
+                              }
+                              className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
+                            >
+
+                              <Icon
+                                type="down"
+                                size={14}
+                              />
+
+                            </button>
 
 
-                          <button
-                            onClick={()=>
-                              setActiveCat(
-                                category.id
-                              )
-                            }
-                            className="px-2.5 py-2 bg-neutral-800 rounded-lg text-[11px] whitespace-nowrap"
-                          >
-                            Ürünler
-                          </button>
+                            <button
+                              onClick={()=>
+                                deleteCategory(
+                                  category.id
+                                )
+                              }
+                              className="p-2 bg-red-950 text-red-400 rounded-lg"
+                            >
 
-                        </div>
+                              <Icon
+                                type="trash"
+                                size={14}
+                              />
+
+                            </button>
 
 
-                        {activeCat===
-                          category.id && (
+                            <button
+                              onClick={()=>
+                                setActiveCat(
+                                  isOpen
+                                    ?
+                                    null
+                                    :
+                                    category.id
+                                )
+                              }
+                              className="px-2.5 py-2 bg-neutral-800 rounded-lg text-[11px] whitespace-nowrap"
+                            >
 
-                          <div
-                            className="p-2 pt-0"
-                          >
+                              {isOpen
+                                ?
+                                "Kapat"
+                                :
+                                "Ürünler"
+                              }
 
-                            {category.items.map(
-                              (
-                                item,
-                                itemIndex
-                              )=>(
+                            </button>
 
-                                <div
-                                  key={item.id}
-                                  className="bg-neutral-800 rounded-xl p-3 mb-2"
-                                >
+                          </div>
 
-                                  {/* ÜRÜN BAŞLIK */}
+
+                          {isOpen &&(
+
+                            <div className="p-2 pt-0">
+
+                              {category.items.map(
+                                (
+                                  item,
+                                  itemIndex
+                                )=>(
 
                                   <div
-                                    className="flex gap-2 mb-2"
+                                    key={item.id}
+                                    className="bg-neutral-800 rounded-xl p-3 mb-2"
                                   >
 
+                                    {/* ÜRÜN ÜST */}
+
                                     <div
-                                      onClick={()=>
-                                        itemRefs
-                                          .current[
-                                            item.id
-                                          ]
-                                          ?.click()
-                                      }
-                                      className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
-                                      style={{
-                                        backgroundImage:
-                                          item.image
-                                            ? `url(${item.image})`
-                                            : undefined,
-                                        backgroundSize:"cover",
-                                        backgroundPosition:"center"
-                                      }}
+                                      className="flex gap-2 mb-2"
                                     >
 
-                                      {!item.image && (
+                                      <div
+                                        onClick={()=>
+                                          itemRefs.current[
+                                            item.id
+                                          ]?.click()
+                                        }
+                                        className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
+                                        style={{
+                                          backgroundImage:
+                                            item.image
+                                              ?
+                                              `url(${item.image})`
+                                              :
+                                              undefined,
+                                          backgroundSize:"cover",
+                                          backgroundPosition:"center"
+                                        }}
+                                      >
 
-                                        <Icon
-                                          type="image"
-                                          size={18}
+                                        {!item.image &&(
+
+                                          <Icon
+                                            type="image"
+                                            size={18}
+                                          />
+
+                                        )}
+
+                                      </div>
+
+
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        ref={element=>{
+
+                                          itemRefs.current[
+                                            item.id
+                                          ]=element;
+
+                                        }}
+                                        onChange={event=>
+                                          uploadItemImage(
+                                            category.id,
+                                            item.id,
+                                            event
+                                          )
+                                        }
+                                      />
+
+
+                                      <div className="flex-1">
+
+                                        <input
+                                          value={item.name}
+                                          onChange={event=>
+                                            updateItem(
+                                              category.id,
+                                              item.id,
+                                              "name",
+                                              event.target.value
+                                            )
+                                          }
+                                          placeholder="Ürün adı"
+                                          className="admin-input"
+                                          style={{
+                                            padding:"8px 9px",
+                                            fontSize:"12px",
+                                            marginBottom:"6px"
+                                          }}
                                         />
+
+
+                                        <input
+                                          value={item.dims}
+                                          onChange={event=>
+                                            updateItem(
+                                              category.id,
+                                              item.id,
+                                              "dims",
+                                              event.target.value
+                                            )
+                                          }
+                                          placeholder="Ölçüler: 200x90x75 cm"
+                                          className="admin-input"
+                                          style={{
+                                            padding:"8px 9px",
+                                            fontSize:"12px"
+                                          }}
+                                        />
+
+                                      </div>
+
+                                    </div>
+
+
+                                    {/* AÇIKLAMA */}
+
+                                    <input
+                                      value={item.desc}
+                                      onChange={event=>
+                                        updateItem(
+                                          category.id,
+                                          item.id,
+                                          "desc",
+                                          event.target.value
+                                        )
+                                      }
+                                      placeholder="Ürün özellikleri"
+                                      className="admin-input"
+                                      style={{
+                                        padding:"8px 9px",
+                                        fontSize:"12px",
+                                        marginBottom:"8px"
+                                      }}
+                                    />
+
+
+                                    {/* =================================================
+                                        ANA FİYAT
+                                    ================================================= */}
+
+                                    <div
+                                      className="rounded-xl bg-neutral-900 p-3 mb-2"
+                                    >
+
+                                      <div
+                                        className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-2"
+                                      >
+                                        Ana Fiyat
+                                      </div>
+
+
+                                      <div
+                                        className="flex gap-2 items-center mb-2"
+                                      >
+
+                                        <input
+                                          type="number"
+                                          value={
+                                            item.price.amount ??
+                                            ""
+                                          }
+                                          disabled={
+                                            !!item.price.contactOnly
+                                          }
+                                          onChange={event=>
+                                            updatePrice(
+                                              category.id,
+                                              item.id,
+                                              {
+                                                amount:
+                                                  event.target.value===""
+                                                    ?
+                                                    null
+                                                    :
+                                                    Number(
+                                                      event.target.value
+                                                    )
+                                              }
+                                            )
+                                          }
+                                          placeholder="Fiyat TL"
+                                          className="admin-input"
+                                          style={{
+                                            padding:"8px 9px",
+                                            fontSize:"12px",
+                                            opacity:
+                                              item.price.contactOnly
+                                                ?
+                                                .4
+                                                :
+                                                1
+                                          }}
+                                        />
+
+
+                                        <label
+                                          className="flex items-center gap-1.5 text-[10px] text-neutral-400 whitespace-nowrap"
+                                        >
+
+                                          <input
+                                            type="checkbox"
+                                            checked={
+                                              !!item.price.contactOnly
+                                            }
+                                            onChange={event=>
+                                              updatePrice(
+                                                category.id,
+                                                item.id,
+                                                {
+                                                  contactOnly:
+                                                    event.target.checked
+                                                }
+                                              )
+                                            }
+                                          />
+
+                                          İletişime geçin
+
+                                        </label>
+
+                                      </div>
+
+
+                                      {!item.price.contactOnly &&
+                                        item.price.amount!==null &&(
+
+                                        <div
+                                          className="text-[10px] text-neutral-500"
+                                        >
+
+                                          {numberTR(
+                                            item.price.amount
+                                          )} ₺
+                                          {" / "}
+                                          $
+                                          {numberUSD(
+                                            Number(
+                                              item.price.amount
+                                            )/
+                                            (
+                                              Number(
+                                                data.rates?.USD
+                                              )||1
+                                            )
+                                          )}
+                                          {" / "}
+                                          €
+                                          {numberEUR(
+                                            Number(
+                                              item.price.amount
+                                            )/
+                                            (
+                                              Number(
+                                                data.rates?.EUR
+                                              )||1
+                                            )
+                                          )}
+
+                                        </div>
 
                                       )}
 
                                     </div>
 
 
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      ref={
-                                        element=>{
-                                          itemRefs.current[
-                                            item.id
-                                          ]=element;
-                                        }
-                                      }
-                                      onChange={
-                                        e=>
-                                          uploadItemImage(
-                                            category.id,
-                                            item.id,
-                                            e
-                                          )
-                                      }
-                                    />
-
-
-                                    <div className="flex-1">
-
-                                      <input
-                                        value={
-                                          item.name
-                                        }
-                                        onChange={
-                                          e=>
-                                            updateItem(
-                                              category.id,
-                                              item.id,
-                                              "name",
-                                              e.target.value
-                                            )
-                                        }
-                                        placeholder="Ürün adı"
-                                        className="admin-input"
-                                        style={{
-                                          padding:
-                                            "8px 9px",
-                                          fontSize:
-                                            "12px",
-                                          marginBottom:
-                                            "6px"
-                                        }}
-                                      />
-
-
-                                      <input
-                                        value={
-                                          item.dims
-                                        }
-                                        onChange={
-                                          e=>
-                                            updateItem(
-                                              category.id,
-                                              item.id,
-                                              "dims",
-                                              e.target.value
-                                            )
-                                        }
-                                        placeholder="Ölçüler: 200x90x75 cm"
-                                        className="admin-input"
-                                        style={{
-                                          padding:
-                                            "8px 9px",
-                                          fontSize:
-                                            "12px"
-                                        }}
-                                      />
-
-                                    </div>
-
-                                  </div>
-
-
-                                  <input
-                                    value={
-                                      item.desc
-                                    }
-                                    onChange={
-                                      e=>
-                                        updateItem(
-                                          category.id,
-                                          item.id,
-                                          "desc",
-                                          e.target.value
-                                        )
-                                    }
-                                    placeholder="Ürün özellikleri"
-                                    className="admin-input"
-                                    style={{
-                                      padding:
-                                        "8px 9px",
-                                      fontSize:
-                                        "12px",
-                                      marginBottom:
-                                        "10px"
-                                    }}
-                                  />
-
-
-                                  {/* =================================
-                                      FİYATLAR
-                                  ================================= */}
-
-                                  <div
-                                    className="rounded-xl border border-neutral-700 bg-neutral-900 p-3 mb-2"
-                                  >
+                                    {/* =================================================
+                                        AYRI FİYATLAR
+                                    ================================================= */}
 
                                     <div
-                                      className="flex items-center justify-between mb-3"
+                                      className="rounded-xl bg-neutral-900 p-3 mb-2"
                                     >
 
-                                      <div>
+                                      <div
+                                        className="flex items-center justify-between gap-2 mb-2"
+                                      >
 
                                         <div
-                                          className="text-[10px] uppercase tracking-widest font-bold"
+                                          className="text-[10px] font-bold uppercase tracking-widest text-amber-500"
+                                        >
+                                          Diğer Fiyatlar
+                                        </div>
+
+
+                                        <button
+                                          onClick={()=>
+                                            addPricePart(
+                                              category.id,
+                                              item.id
+                                            )
+                                          }
+                                          className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold"
                                           style={{
-                                            color:
-                                              theme.accent
+                                            backgroundColor:
+                                              data.theme.accent,
+                                            color:"#fff"
                                           }}
                                         >
-                                          Ayrı Fiyatlar
-                                        </div>
-
-                                        <div
-                                          className="text-[9px] text-neutral-500 mt-1"
-                                        >
-                                          Ürünün parçalarını ayrı ayrı fiyatlandır.
-                                        </div>
+                                          + Fiyat Ekle
+                                        </button>
 
                                       </div>
 
 
-                                      <button
-                                        onClick={()=>
-                                          addPricePart(
-                                            category.id,
-                                            item.id
-                                          )
-                                        }
-                                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
-                                        style={{
-                                          background:
-                                            theme.accent
-                                        }}
-                                      >
-                                        <Icon
-                                          type="plus"
-                                          size={12}
-                                        />
-                                        Fiyat Ekle
-                                      </button>
-
-                                    </div>
-
-
-                                    {normalizePrice(
-                                      item.price
-                                    ).parts.length===0 && (
-
-                                      <div
-                                        className="text-[10px] text-neutral-500 py-2 text-center"
-                                      >
-                                        Henüz fiyat kalemi eklenmedi.
-                                      </div>
-
-                                    )}
-
-
-                                    {normalizePrice(
-                                      item.price
-                                    ).parts.map(
-                                      (
-                                        part,
-                                        partIndex
-                                      )=>(
+                                      {(
+                                        item.price?.parts||
+                                        []
+                                      ).map(part=>(
 
                                         <div
                                           key={part.id}
@@ -4260,70 +5143,30 @@ function App(){
                                         >
 
                                           <div
-                                            className="flex gap-2"
+                                            className="flex gap-2 mb-2"
                                           >
 
                                             <input
                                               value={
-                                                part.name
-                                              }
-                                              onChange={
-                                                e=>
-                                                  updatePricePart(
-                                                    category.id,
-                                                    item.id,
-                                                    part.id,
-                                                    "name",
-                                                    e.target.value
-                                                  )
-                                              }
-                                              placeholder="Örn: Masa"
-                                              className="admin-input"
-                                              style={{
-                                                padding:
-                                                  "8px",
-                                                fontSize:
-                                                  "11px"
-                                              }}
-                                            />
-
-
-                                            <input
-                                              type="number"
-                                              value={
-                                                part.amount ??
+                                                part.name||
                                                 ""
                                               }
-                                              disabled={
-                                                part.contactOnly
+                                              onChange={event=>
+                                                updatePricePart(
+                                                  category.id,
+                                                  item.id,
+                                                  part.id,
+                                                  {
+                                                    name:
+                                                      event.target.value
+                                                  }
+                                                )
                                               }
-                                              onChange={
-                                                e=>
-                                                  updatePricePart(
-                                                    category.id,
-                                                    item.id,
-                                                    part.id,
-                                                    "amount",
-                                                    e.target.value===""
-                                                      ? null
-                                                      : Number(
-                                                          e.target.value
-                                                        )
-                                                  )
-                                              }
-                                              placeholder="₺"
+                                              placeholder="Fiyat adı (Masa, Koltuk vb.)"
                                               className="admin-input"
                                               style={{
-                                                width:
-                                                  "105px",
-                                                padding:
-                                                  "8px",
-                                                fontSize:
-                                                  "11px",
-                                                opacity:
-                                                  part.contactOnly
-                                                    ? .4
-                                                    : 1
+                                                padding:"7px 8px",
+                                                fontSize:"11px"
                                               }}
                                             />
 
@@ -4338,159 +5181,237 @@ function App(){
                                               }
                                               className="px-2 bg-red-950 text-red-400 rounded-lg"
                                             >
+
                                               <Icon
                                                 type="trash"
                                                 size={13}
                                               />
+
                                             </button>
 
                                           </div>
 
 
-                                          <label
-                                            className="flex items-center gap-2 mt-2 text-[10px] text-neutral-400"
+                                          <div
+                                            className="flex gap-2 items-center"
                                           >
 
                                             <input
-                                              type="checkbox"
-                                              checked={
+                                              type="number"
+                                              value={
+                                                part.amount ??
+                                                ""
+                                              }
+                                              disabled={
                                                 !!part.contactOnly
                                               }
-                                              onChange={
-                                                e=>
+                                              onChange={event=>
+                                                updatePricePart(
+                                                  category.id,
+                                                  item.id,
+                                                  part.id,
+                                                  {
+                                                    amount:
+                                                      event.target.value===""
+                                                        ?
+                                                        null
+                                                        :
+                                                        Number(
+                                                          event.target.value
+                                                        )
+                                                  }
+                                                )
+                                              }
+                                              placeholder="TL fiyat"
+                                              className="admin-input"
+                                              style={{
+                                                padding:"7px 8px",
+                                                fontSize:"11px",
+                                                opacity:
+                                                  part.contactOnly
+                                                    ?
+                                                    .4
+                                                    :
+                                                    1
+                                              }}
+                                            />
+
+
+                                            <label
+                                              className="flex items-center gap-1 text-[9px] text-neutral-400 whitespace-nowrap"
+                                            >
+
+                                              <input
+                                                type="checkbox"
+                                                checked={
+                                                  !!part.contactOnly
+                                                }
+                                                onChange={event=>
                                                   updatePricePart(
                                                     category.id,
                                                     item.id,
                                                     part.id,
-                                                    "contactOnly",
-                                                    e.target.checked
+                                                    {
+                                                      contactOnly:
+                                                        event.target.checked
+                                                    }
                                                   )
-                                              }
-                                            />
+                                                }
+                                              />
 
-                                            Fiyat için iletişime geçin
+                                              İletişim
 
-                                          </label>
+                                            </label>
+
+                                          </div>
 
                                         </div>
 
-                                      )
-                                    )}
-
-                                  </div>
+                                      ))}
 
 
-                                  {/* ALT BUTONLAR */}
+                                      {(
+                                        item.price?.parts||
+                                        []
+                                      ).length===0 &&(
 
-                                  <div
-                                    className="flex justify-end gap-1"
-                                  >
+                                        <div
+                                          className="text-[10px] text-neutral-600"
+                                        >
+                                          İstersen bu ürüne
+                                          ayrı ayrı fiyatlar
+                                          ekleyebilirsin.
+                                        </div>
 
-                                    {item.image && (
+                                      )}
+
+                                    </div>
+
+
+                                    {/* =================================================
+                                        ALT BUTONLAR
+                                    ================================================= */}
+
+                                    <div
+                                      className="flex justify-end gap-1"
+                                    >
+
+                                      {item.image &&(
+
+                                        <button
+                                          onClick={()=>
+                                            updateItem(
+                                              category.id,
+                                              item.id,
+                                              "image",
+                                              null
+                                            )
+                                          }
+                                          className="px-2 py-1 bg-neutral-700 rounded text-[10px]"
+                                        >
+                                          Görseli Sil
+                                        </button>
+
+                                      )}
+
 
                                       <button
                                         onClick={()=>
-                                          updateItem(
+                                          moveItem(
                                             category.id,
                                             item.id,
-                                            "image",
-                                            null
+                                            -1
                                           )
                                         }
-                                        className="px-2 py-1 bg-neutral-700 rounded text-[10px]"
+                                        disabled={
+                                          itemIndex===0
+                                        }
+                                        className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
                                       >
-                                        Görseli Sil
+
+                                        <Icon
+                                          type="up"
+                                          size={12}
+                                        />
+
                                       </button>
 
-                                    )}
+
+                                      <button
+                                        onClick={()=>
+                                          moveItem(
+                                            category.id,
+                                            item.id,
+                                            1
+                                          )
+                                        }
+                                        disabled={
+                                          itemIndex===
+                                          category.items.length-1
+                                        }
+                                        className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
+                                      >
+
+                                        <Icon
+                                          type="down"
+                                          size={12}
+                                        />
+
+                                      </button>
 
 
-                                    <button
-                                      onClick={()=>
-                                        moveItem(
-                                          category.id,
-                                          item.id,
-                                          -1
-                                        )
-                                      }
-                                      disabled={
-                                        itemIndex===0
-                                      }
-                                      className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
-                                    >
-                                      <Icon
-                                        type="up"
-                                        size={12}
-                                      />
-                                    </button>
+                                      <button
+                                        onClick={()=>
+                                          deleteItem(
+                                            category.id,
+                                            item.id
+                                          )
+                                        }
+                                        className="p-1.5 bg-red-950 text-red-400 rounded"
+                                      >
 
+                                        <Icon
+                                          type="trash"
+                                          size={12}
+                                        />
 
-                                    <button
-                                      onClick={()=>
-                                        moveItem(
-                                          category.id,
-                                          item.id,
-                                          1
-                                        )
-                                      }
-                                      disabled={
-                                        itemIndex===
-                                        category.items.length-1
-                                      }
-                                      className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
-                                    >
-                                      <Icon
-                                        type="down"
-                                        size={12}
-                                      />
-                                    </button>
+                                      </button>
 
-
-                                    <button
-                                      onClick={()=>
-                                        deleteItem(
-                                          category.id,
-                                          item.id
-                                        )
-                                      }
-                                      className="p-1.5 bg-red-950 text-red-400 rounded"
-                                    >
-                                      <Icon
-                                        type="trash"
-                                        size={12}
-                                      />
-                                    </button>
+                                    </div>
 
                                   </div>
 
-                                </div>
-
-                              )
-                            )}
-
-
-                            <button
-                              onClick={()=>
-                                addItem(
-                                  category.id
                                 )
-                              }
-                              className="w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
-                            >
-                              <Icon
-                                type="plus"
-                                size={14}
-                              />
-                              Ürün Ekle
-                            </button>
+                              )}
 
-                          </div>
 
-                        )}
+                              <button
+                                onClick={()=>
+                                  addItem(
+                                    category.id
+                                  )
+                                }
+                                className="w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                              >
 
-                      </div>
+                                <Icon
+                                  type="plus"
+                                  size={14}
+                                />
 
-                    )
+                                Ürün Ekle
+
+                              </button>
+
+                            </div>
+
+                          )}
+
+                        </div>
+
+                      );
+
+                    }
                   )}
 
                 </div>
@@ -4512,41 +5433,54 @@ function App(){
                 onClick={save}
                 disabled={
                   saving ||
-                  busy
+                  busy ||
+                  migration.active
                 }
                 className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
                 style={{
-                  background:
+                  backgroundColor:
                     saved
-                      ? "#12B76A"
-                      : theme.accent,
-
+                      ?
+                      "#12B76A"
+                      :
+                      data.theme.accent,
                   animation:
                     saved
-                      ? "pop .3s ease"
-                      : saving
-                        ? "none"
-                        : "pulse 2.2s infinite"
+                      ?
+                      "popSave .5s ease"
+                      :
+                      saving
+                        ?
+                        "none"
+                        :
+                        "pulseGlow 2.2s infinite"
                 }}
               >
 
-                {saved ? (
+                {saved
+                  ?
                   <Icon
                     type="check"
                     size={17}
                   />
-                ) : (
+                  :
                   <Icon
                     type="save"
                     size={17}
                   />
-                )}
+                }
+
 
                 {saved
-                  ? "Kaydedildi!"
-                  : saving
-                    ? "Kaydediliyor..."
-                    : "Kaydet ve Kapat"}
+                  ?
+                  "Kaydedildi!"
+                  :
+                  saving
+                    ?
+                    "Kaydediliyor..."
+                    :
+                    "Kaydet ve Kapat"
+                }
 
               </button>
 
@@ -4559,18 +5493,22 @@ function App(){
       )}
 
     </div>
+
   );
+
 }
 
 
 /* =========================================================
    ADMIN LABEL
-========================================================= */
+   ========================================================= */
 
 function AdminLabel({
   children
 }){
+
   return(
+
     <div
       style={{
         color:"#737373",
@@ -4583,20 +5521,24 @@ function AdminLabel({
     >
       {children}
     </div>
+
   );
+
 }
 
 
 /* =========================================================
-   COLOR INPUT
-========================================================= */
+   RENK INPUT
+   ========================================================= */
 
 function ColorInput({
   label,
   value,
   onChange
 }){
+
   return(
+
     <label
       className="flex items-center justify-between mb-3"
     >
@@ -4607,36 +5549,38 @@ function ColorInput({
         {label}
       </span>
 
+
       <input
         type="color"
         value={
           value ||
           "#000000"
         }
-        onChange={
-          e=>
-            onChange(
-              e.target.value
-            )
+        onChange={event=>
+          onChange(
+            event.target.value
+          )
         }
         className="w-9 h-9 rounded-lg border border-neutral-700 bg-transparent cursor-pointer"
       />
 
     </label>
+
   );
+
 }
 
 
 /* =========================================================
    BAŞLAT
-========================================================= */
+   ========================================================= */
 
 ReactDOM
   .createRoot(
     document.getElementById("root")
   )
   .render(
-    <App />
+    <App/>
   );
 
 </script>
