@@ -820,6 +820,13 @@ const logoRef=useRef(null);
 const bgRef=useRef(null);
 const itemRefs=useRef({});
 
+/* =====================================================
+   SUPABASE REALTIME
+   Veriler değiştiğinde sayfayı yenilemeden günceller.
+   ===================================================== */
+
+const realtimeChannelRef=useRef(null);
+
 function showToast(message){
 setToast(message);
 setTimeout(()=>setToast(""),3000);
@@ -860,6 +867,7 @@ else{
 
 loaded=defaultData();
 
+const insertResult=
 await supabase
 .from("site_data")
 .upsert({
@@ -868,6 +876,10 @@ data:loaded,
 updated_at:
 new Date().toISOString()
 });
+
+if(insertResult.error){
+throw insertResult.error;
+}
 
 }
 
@@ -883,6 +895,144 @@ loaded.stores
 ?.id||
 null
 );
+
+/* =====================================================
+   REALTIME DİNLEYİCİ
+   ===================================================== */
+
+if(!realtimeChannelRef.current){
+
+const channel=
+supabase
+.channel(
+"site-data-realtime-"+SITE_ID
+)
+.on(
+"postgres_changes",
+{
+event:"*",
+schema:"public",
+table:"site_data",
+filter:"id=eq."+SITE_ID
+},
+payload=>{
+
+if(
+!payload||
+!payload.new||
+!payload.new.data
+){
+return;
+}
+
+const realtimeData=
+normalizeData(
+payload.new.data
+);
+
+setData(
+realtimeData
+);
+
+setActiveCat(
+currentActive=>{
+
+const currentCategories=
+realtimeData
+.stores
+?.[store]
+?.categories||
+[];
+
+if(
+currentCategories.some(
+category=>
+category.id===currentActive
+)
+){
+return currentActive;
+}
+
+return(
+currentCategories[0]?.id||
+null
+);
+
+}
+);
+
+setSelectedProduct(
+currentProduct=>{
+
+if(!currentProduct){
+return null;
+}
+
+let found=null;
+
+Object.values(
+realtimeData.stores||{}
+).forEach(storeData=>{
+
+(storeData.categories||[]).forEach(category=>{
+
+const item=
+(category.items||[])
+.find(
+product=>
+product.id===currentProduct.id
+);
+
+if(item){
+found=item;
+}
+
+});
+
+});
+
+return found||null;
+
+}
+);
+
+setSaved(false);
+
+});
+
+channel.subscribe(
+status=>{
+
+console.log(
+"Supabase Realtime:",
+status
+);
+
+if(status==="SUBSCRIBED"){
+console.log(
+"Realtime bağlantısı aktif."
+);
+}
+
+if(status==="CHANNEL_ERROR"){
+console.error(
+"Realtime kanal hatası."
+);
+}
+
+if(status==="TIMED_OUT"){
+console.error(
+"Realtime bağlantısı zaman aşımına uğradı."
+);
+}
+
+}
+);
+
+realtimeChannelRef.current=
+channel;
+
+}
 
 }
 catch(error){
@@ -922,7 +1072,19 @@ setLoading(false);
 load();
 
 return()=>{
+
 cancelled=true;
+
+if(realtimeChannelRef.current){
+
+supabase.removeChannel(
+realtimeChannelRef.current
+);
+
+realtimeChannelRef.current=null;
+
+}
+
 };
 
 },[]);
@@ -2093,28 +2255,6 @@ part.amount
 );
 
 }
-
-/*
-=========================================================
-SADECE BURASI DEĞİŞTİRİLDİ
-=========================================================
-
-Ürünün kartında artık ilk fiyat / minimum fiyat değil,
-TÜM fiyat kalemlerinin toplamı gösterilir.
-
-Örneğin:
-
-Masa       89.999
-Koltuk     25.000
-Dolap      15.000
-
-Kartta:
-
-129.999 ₺
-
-gösterilir.
-=========================================================
-*/
 
 function productMainPrice(item){
 
