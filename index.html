@@ -13,27 +13,67 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
-html,body,#root{margin:0;padding:0;width:100%;min-height:100%}
-body{background:#141416;overflow-x:hidden}
-button,input{font-family:inherit}
-button{cursor:pointer}
-button:disabled{cursor:not-allowed}
-::-webkit-scrollbar{display:none}
+*{
+box-sizing:border-box
+}
+
+html,body,#root{
+margin:0;
+padding:0;
+width:100%;
+min-height:100%
+}
+
+body{
+background:#141416;
+overflow-x:hidden
+}
+
+button,input{
+font-family:inherit
+}
+
+button{
+cursor:pointer
+}
+
+button:disabled{
+cursor:not-allowed
+}
+
+::-webkit-scrollbar{
+display:none
+}
 
 @keyframes fadeIn{
-from{opacity:0;transform:translateY(8px)}
-to{opacity:1;transform:translateY(0)}
+from{
+opacity:0;
+transform:translateY(8px)
+}
+to{
+opacity:1;
+transform:translateY(0)
+}
 }
 
 @keyframes pop{
-0%{transform:scale(.96);opacity:0}
-100%{transform:scale(1);opacity:1}
+0%{
+transform:scale(.96);
+opacity:0
+}
+100%{
+transform:scale(1);
+opacity:1
+}
 }
 
 @keyframes pulse{
-0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}
-50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}
+0%,100%{
+box-shadow:0 0 0 0 rgba(255,255,255,.18)
+}
+50%{
+box-shadow:0 0 0 8px rgba(255,255,255,0)
+}
 }
 
 .admin-input{
@@ -82,6 +122,14 @@ border:1px solid rgba(255,255,255,.08);
 background:rgba(0,0,0,.12);
 }
 
+.currency-menu{
+animation:pop .15s ease;
+}
+
+.category-products{
+animation:fadeIn .18s ease;
+}
+
 @media(max-width:420px){
 .product-grid{
 grid-template-columns:repeat(2,minmax(0,1fr));
@@ -91,6 +139,7 @@ grid-template-columns:repeat(2,minmax(0,1fr));
 </head>
 
 <body>
+
 <div id="root"></div>
 
 <script type="text/babel">
@@ -101,12 +150,19 @@ useEffect,
 useRef
 }=React;
 
-const SUPABASE_URL="https://irudfkepeocdcmocyvpi.supabase.co";
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL=
+"https://irudfkepeocdcmocyvpi.supabase.co";
 
 const SUPABASE_ANON_KEY=
 "sb_publishable_RS0kurqUR1cEE-lHBAdZDA_SRgH-m5X";
 
-const supabase=window.supabase.createClient(
+const supabase=
+window.supabase.createClient(
 SUPABASE_URL,
 SUPABASE_ANON_KEY,
 {
@@ -119,7 +175,14 @@ detectSessionInUrl:false
 );
 
 const SITE_ID=1;
-const STORAGE_BUCKET="catalog-images";
+
+const STORAGE_BUCKET=
+"catalog-images";
+
+
+/* =========================================================
+   MAĞAZALAR
+========================================================= */
 
 const STORES=[
 {
@@ -134,6 +197,11 @@ subtitle:"Outlet Koleksiyon"
 }
 ];
 
+
+/* =========================================================
+   KATEGORİLER
+========================================================= */
+
 const CATS=[
 "VIP Makam Takımları",
 "Makam Takımları",
@@ -145,6 +213,11 @@ const CATS=[
 "Fileli Koltuklar",
 "Aksesuarlar"
 ];
+
+
+/* =========================================================
+   TEMALAR
+========================================================= */
 
 const THEMES=[
 {
@@ -189,6 +262,11 @@ text:"#1C1C1C"
 }
 ];
 
+
+/* =========================================================
+   PARA BİRİMLERİ
+========================================================= */
+
 const CURRENCIES=[
 {
 id:"TRY",
@@ -207,35 +285,75 @@ name:"EUR"
 }
 ];
 
+
+/* =========================================================
+   ID
+========================================================= */
+
 function uid(){
-return Math.random().toString(36).slice(2,10)+
-Date.now().toString(36);
+
+return(
+Math.random()
+.toString(36)
+.slice(2,10)+
+Date.now()
+.toString(36)
+);
+
 }
 
+
+/* =========================================================
+   KATEGORİ OLUŞTUR
+========================================================= */
+
 function createCategory(name){
+
 return{
 id:uid(),
 name:name,
 items:[]
 };
+
 }
+
 
 function createDefaultCategories(){
-return CATS.map(name=>createCategory(name));
+
+return CATS.map(
+name=>
+createCategory(name)
+);
+
 }
+
 
 function createEmptyStore(){
+
 return{
-categories:createDefaultCategories()
+categories:
+createDefaultCategories()
 };
+
 }
 
+
+/* =========================================================
+   DEFAULT DATA
+========================================================= */
+
 function defaultData(){
+
 return{
+
 siteName:"Ofischi",
+
 subtitle:"Ofis Mobilyaları",
+
 eyebrow:"İNEGÖL ÜRETİM",
+
 phone:"+90 500 000 00 00",
+
 pin:"1234",
 
 logo:{
@@ -261,33 +379,56 @@ stores:{
 premium:createEmptyStore(),
 outlet:createEmptyStore()
 }
+
 };
+
 }
+
+
+/* =========================================================
+   FİYAT NORMALİZE
+========================================================= */
 
 function normalizePrice(price){
 
 if(!price){
+
 return{
 contactOnly:true,
 amount:null,
 parts:[]
 };
+
 }
 
 let parts=[];
 
 if(Array.isArray(price.parts)){
-parts=price.parts.map(p=>({
+
+parts=
+price.parts.map(
+p=>({
+
 id:p.id||uid(),
-name:typeof p.name==="string"?p.name:"Ürün",
+
+name:
+typeof p.name==="string"
+?p.name
+:"Ürün",
+
 amount:
 p.amount===null||
 p.amount===undefined||
 p.amount===""
 ?null
 :Number(p.amount),
-contactOnly:!!p.contactOnly
-}));
+
+contactOnly:
+!!p.contactOnly
+
+})
+);
+
 }
 
 if(
@@ -296,15 +437,26 @@ price.amount!==null&&
 price.amount!==undefined&&
 price.amount!==""
 ){
+
 parts.push({
+
 id:uid(),
+
 name:"Ürün",
-amount:Number(price.amount),
-contactOnly:!!price.contactOnly
+
+amount:Number(
+price.amount
+),
+
+contactOnly:
+!!price.contactOnly
+
 });
+
 }
 
 return{
+
 contactOnly:
 !!price.contactOnly&&
 parts.length===0,
@@ -313,13 +465,24 @@ amount:
 price.amount??null,
 
 parts
+
 };
+
 }
 
+
+/* =========================================================
+   ÜRÜN NORMALİZE
+========================================================= */
+
 function normalizeItem(item){
+
 return{
+
 ...item,
-id:item.id||uid(),
+
+id:
+item.id||uid(),
 
 name:
 typeof item.name==="string"
@@ -331,21 +494,37 @@ typeof item.desc==="string"
 ?item.desc
 :"",
 
-dims:item.dims||"",
-image:item.image||null,
+dims:
+item.dims||"",
 
-price:normalizePrice(item.price)
+image:
+item.image||null,
+
+price:
+normalizePrice(item.price)
+
 };
+
 }
+
+
+/* =========================================================
+   KATEGORİ NORMALİZE
+========================================================= */
 
 function normalizeCategories(categories){
 
 if(!Array.isArray(categories)){
+
 return createDefaultCategories();
+
 }
 
-return categories.map(category=>({
-id:category.id||uid(),
+return categories.map(
+category=>({
+
+id:
+category.id||uid(),
 
 name:
 typeof category.name==="string"
@@ -356,23 +535,46 @@ items:
 Array.isArray(category.items)
 ?category.items.map(normalizeItem)
 :[]
-}));
+
+})
+);
+
 }
 
+
+/* =========================================================
+   STORE NORMALİZE
+========================================================= */
+
 function normalizeStore(store){
+
 return{
-categories:normalizeCategories(
+
+categories:
+normalizeCategories(
 store?.categories
 )
+
 };
+
 }
+
+
+/* =========================================================
+   DATA NORMALİZE
+========================================================= */
 
 function normalizeData(input){
 
 const base=defaultData();
 
-if(!input||typeof input!=="object"){
+if(
+!input||
+typeof input!=="object"
+){
+
 return base;
+
 }
 
 const result={
@@ -401,32 +603,49 @@ typeof input.stores==="object"
 ){
 
 result.stores={
-premium:normalizeStore(
+
+premium:
+normalizeStore(
 input.stores.premium
 ),
-outlet:normalizeStore(
+
+outlet:
+normalizeStore(
 input.stores.outlet
 )
+
 };
 
 }
-else if(Array.isArray(input.categories)){
+else if(
+Array.isArray(input.categories)
+){
 
 result.stores={
+
 premium:{
-categories:normalizeCategories(
+categories:
+normalizeCategories(
 input.categories
 )
 },
-outlet:createEmptyStore()
+
+outlet:
+createEmptyStore()
+
 };
 
 }
 else{
 
 result.stores={
-premium:createEmptyStore(),
-outlet:createEmptyStore()
+
+premium:
+createEmptyStore(),
+
+outlet:
+createEmptyStore()
+
 };
 
 }
@@ -447,33 +666,63 @@ typeof input.eyebrow==="string"
 :"İNEGÖL ÜRETİM";
 
 return result;
+
 }
+
+
+/* =========================================================
+   IMAGE
+========================================================= */
 
 function dataUrlToBlob(dataUrl){
 
-const parts=dataUrl.split(",");
-const meta=parts[0]||"";
-const data=parts[1]||"";
+const parts=
+dataUrl.split(",");
 
-const mimeMatch=meta.match(/data:([^;]+)/);
+const meta=
+parts[0]||"";
 
-const mime=mimeMatch
+const data=
+parts[1]||"";
+
+const mimeMatch=
+meta.match(
+/data:([^;]+)/
+);
+
+const mime=
+mimeMatch
 ?mimeMatch[1]
 :"image/jpeg";
 
-const binary=atob(data);
+const binary=
+atob(data);
 
-const bytes=new Uint8Array(binary.length);
+const bytes=
+new Uint8Array(
+binary.length
+);
 
-for(let i=0;i<binary.length;i++){
-bytes[i]=binary.charCodeAt(i);
+for(
+let i=0;
+i<binary.length;
+i++
+){
+
+bytes[i]=
+binary.charCodeAt(i);
+
 }
 
 return new Blob(
 [bytes],
-{type:mime}
-);
+{
+type:mime
 }
+);
+
+}
+
 
 function resizeImg(
 file,
@@ -484,33 +733,51 @@ quality=.78
 return new Promise(
 (resolve,reject)=>{
 
-const reader=new FileReader();
+const reader=
+new FileReader();
 
-reader.onload=event=>{
+reader.onload=
+event=>{
 
-const img=new Image();
+const img=
+new Image();
 
 img.onload=()=>{
 
-let width=img.width;
-let height=img.height;
+let width=
+img.width;
+
+let height=
+img.height;
 
 if(width>maxWidth){
 
-height=Math.round(
-height*(maxWidth/width)
+height=
+Math.round(
+height*
+(maxWidth/width)
 );
 
-width=maxWidth;
+width=
+maxWidth;
+
 }
 
 const canvas=
-document.createElement("canvas");
+document.createElement(
+"canvas"
+);
 
-canvas.width=width;
-canvas.height=height;
+canvas.width=
+width;
 
-const ctx=canvas.getContext("2d");
+canvas.height=
+height;
+
+const ctx=
+canvas.getContext(
+"2d"
+);
 
 ctx.drawImage(
 img,
@@ -529,21 +796,35 @@ quality
 
 };
 
-img.onerror=reject;
+img.onerror=
+reject;
 
-img.src=event.target.result;
+img.src=
+event.target.result;
 
 };
 
-reader.onerror=reject;
+reader.onerror=
+reject;
 
 reader.readAsDataURL(file);
 
 }
 );
+
+
 }
 
-function storagePath(type,id){
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function storagePath(
+type,
+id
+){
+
 return(
 SITE_ID+
 "/"+
@@ -554,7 +835,9 @@ id+
 Date.now()+
 ".jpg"
 );
+
 }
+
 
 async function uploadBlobToStorage(
 blob,
@@ -575,7 +858,9 @@ upsert:false
 );
 
 if(result.error){
+
 throw result.error;
+
 }
 
 return(
@@ -586,7 +871,13 @@ supabase.storage
 ?.publicUrl||
 null
 );
+
 }
+
+
+/* =========================================================
+   ICON
+========================================================= */
 
 function Icon({
 type,
@@ -594,22 +885,39 @@ size=18
 }){
 
 const props={
+
 width:size,
 height:size,
+
 viewBox:"0 0 24 24",
+
 fill:"none",
+
 stroke:"currentColor",
+
 strokeWidth:2,
+
 strokeLinecap:"round",
+
 strokeLinejoin:"round"
+
 };
 
 let content=null;
 
+
 if(type==="settings"){
+
 content=(
+
 <>
-<circle cx="12" cy="12" r="3"/>
+
+<circle
+cx="12"
+cy="12"
+r="3"
+/>
+
 <path d="
 M19.4 15
 a1.7 1.7 0 0 0 .3 1.9
@@ -637,75 +945,138 @@ a1.7 1.7 0 0 0-.3 1.9
 h.1V14h-.1
 a1.7 1.7 0 0 0-1.6 1z
 "/>
+
 </>
+
 );
+
 }
 
-if(type==="x"||type==="close"){
+
+if(
+type==="x"||
+type==="close"
+){
+
 content=(
+
 <>
+
 <path d="M6 6l12 12"/>
+
 <path d="M18 6L6 18"/>
+
 </>
+
 );
+
 }
+
 
 if(type==="plus"){
+
 content=(
+
 <>
+
 <path d="M12 5v14"/>
+
 <path d="M5 12h14"/>
+
 </>
+
 );
+
 }
+
 
 if(type==="trash"){
+
 content=(
+
 <>
+
 <path d="M3 6h18"/>
+
 <path d="M8 6V4h8v2"/>
+
 <path d="M19 6l-1 14H6L5 6"/>
+
 <path d="M10 11v5"/>
+
 <path d="M14 11v5"/>
+
 </>
+
 );
+
 }
+
 
 if(type==="upload"){
+
 content=(
+
 <>
+
 <path d="M12 16V4"/>
+
 <path d="M7 9l5-5 5 5"/>
+
 <path d="M5 20h14"/>
+
 </>
+
 );
+
 }
+
 
 if(type==="up"){
-content=<path d="m18 15-6-6-6 6"/>;
+
+content=
+<path d="m18 15-6-6-6 6"/>;
+
 }
+
 
 if(type==="down"){
-content=<path d="m6 9 6 6 6-6"/>;
+
+content=
+<path d="m6 9 6 6 6-6"/>;
+
 }
 
+
 if(type==="save"){
+
 content=(
+
 <>
+
 <path d="
 M19 21H5a2 2 0 0 1-2-2V5
 a2 2 0 0 1 2-2h11l5 5v11
 a2 2 0 0 1-2 2Z
 "/>
+
 <path d="M17 21v-8H7v8"/>
+
 <path d="M7 3v5h8"/>
+
 </>
+
 );
+
 }
 
+
 if(type==="image"){
+
 content=(
+
 <>
+
 <rect
 x="3"
 y="3"
@@ -713,19 +1084,28 @@ width="18"
 height="18"
 rx="2"
 />
+
 <circle
 cx="8.5"
 cy="8.5"
 r="1.5"
 />
+
 <path d="m21 15-5-5L5 21"/>
+
 </>
+
 );
+
 }
 
+
 if(type==="lock"){
+
 content=(
+
 <>
+
 <rect
 x="4"
 y="10"
@@ -733,19 +1113,30 @@ width="16"
 height="10"
 rx="2"
 />
+
 <path
 d="M8 10V7a4 4 0 0 1 8 0v3"
 />
+
 </>
+
 );
+
 }
+
 
 if(type==="check"){
-content=<path d="m5 12 4 4L19 6"/>;
+
+content=
+<path d="m5 12 4 4L19 6"/>;
+
 }
 
+
 if(type==="phone"){
+
 content=(
+
 <path d="
 M22 16.92v3
 a2 2 0 0 1-2.18 2
@@ -760,106 +1151,244 @@ a2 2 0 0 1 2.11-.45
 c.85.29 1.73.5 2.63.62
 A2 2 0 0 1 22 16.92z
 "/>
+
 );
+
 }
+
 
 if(type==="search"){
+
 content=(
+
 <>
-<circle cx="11" cy="11" r="7"/>
+
+<circle
+cx="11"
+cy="11"
+r="7"
+/>
+
 <path d="m20 20-4-4"/>
+
 </>
+
 );
+
 }
+
 
 if(type==="arrow"){
+
 content=(
+
 <>
+
 <path d="M5 12h14"/>
+
 <path d="m13 6 6 6-6 6"/>
+
 </>
+
 );
+
 }
 
+
 return(
+
 <svg {...props}>
 {content}
 </svg>
+
 );
+
 }
+
+
+/* =========================================================
+   APP
+========================================================= */
 
 function App(){
 
-const [data,setData]=useState(null);
-const [loading,setLoading]=useState(true);
-const [saving,setSaving]=useState(false);
-const [saved,setSaved]=useState(false);
-const [toast,setToast]=useState("");
-const [store,setStore]=useState("premium");
-const [activeCat,setActiveCat]=useState(null);
+const [data,setData]=
+useState(null);
+
+const [loading,setLoading]=
+useState(true);
+
+const [saving,setSaving]=
+useState(false);
+
+const [saved,setSaved]=
+useState(false);
+
+const [toast,setToast]=
+useState("");
+
+const [store,setStore]=
+useState("premium");
+
+const [activeCat,setActiveCat]=
+useState(null);
+
 
 /*
-  YENİ:
-  Her kategorinin ürünlerinin açık/kapalı durumunu ayrı tutuyoruz.
-  Başlangıçta bütün kategoriler kapalı.
+  KATEGORİ AÇIK/KAPALI DURUMU
+
+  Örnek:
+
+  {
+    "kategori-id-1": true,
+    "kategori-id-2": false
+  }
+
+  Böylece her kategori bağımsız açılıp kapanır.
 */
-const [openCategories,setOpenCategories]=useState({});
 
-const [search,setSearch]=useState("");
-const [selectedProduct,setSelectedProduct]=useState(null);
-const [panelOpen,setPanelOpen]=useState(false);
-const [unlocked,setUnlocked]=useState(false);
-const [pinModal,setPinModal]=useState(false);
-const [pinInput,setPinInput]=useState("");
-const [pinError,setPinError]=useState(false);
-const [tab,setTab]=useState("genel");
-const [busy,setBusy]=useState(false);
+const [
+openCategories,
+setOpenCategories
+]=useState({});
 
-const logoRef=useRef(null);
-const bgRef=useRef(null);
-const itemRefs=useRef({});
-const realtimeChannelRef=useRef(null);
+
+/*
+  PARA BİRİMİ MENÜSÜ
+*/
+
+const [
+currencyMenuOpen,
+setCurrencyMenuOpen
+]=useState(false);
+
+
+const [search,setSearch]=
+useState("");
+
+const [
+selectedProduct,
+setSelectedProduct
+]=useState(null);
+
+const [panelOpen,setPanelOpen]=
+useState(false);
+
+const [unlocked,setUnlocked]=
+useState(false);
+
+const [pinModal,setPinModal]=
+useState(false);
+
+const [pinInput,setPinInput]=
+useState("");
+
+const [pinError,setPinError]=
+useState(false);
+
+const [tab,setTab]=
+useState("genel");
+
+const [busy,setBusy]=
+useState(false);
+
+
+const logoRef=
+useRef(null);
+
+const bgRef=
+useRef(null);
+
+const itemRefs=
+useRef({});
+
+const realtimeChannelRef=
+useRef(null);
+
+
+/* =========================================================
+   TOAST
+========================================================= */
 
 function showToast(message){
+
 setToast(message);
-setTimeout(()=>setToast(""),3000);
-}
 
-/*
-  KATEGORİ AÇ / KAPAT
-*/
-function toggleCategory(categoryId){
-
-setOpenCategories(previous=>({
-...previous,
-[categoryId]:!previous[categoryId]
-}));
+setTimeout(
+()=>setToast(""),
+3000
+);
 
 }
 
-/*
-  Kategoriyi aç
-*/
-function openCategory(categoryId){
 
-setOpenCategories(previous=>({
+/* =========================================================
+   KATEGORİ AÇ/KAPAT
+========================================================= */
+
+function toggleCategory(
+categoryId
+){
+
+setOpenCategories(
+previous=>({
+
 ...previous,
+
+[categoryId]:
+!previous[categoryId]
+
+})
+);
+
+}
+
+
+/* =========================================================
+   KATEGORİ AÇ
+========================================================= */
+
+function openCategory(
+categoryId
+){
+
+setOpenCategories(
+previous=>({
+
+...previous,
+
 [categoryId]:true
-}));
+
+})
+);
 
 }
 
-/*
-  Kategoriyi kapat
-*/
-function closeCategory(categoryId){
 
-setOpenCategories(previous=>({
+/* =========================================================
+   KATEGORİ KAPAT
+========================================================= */
+
+function closeCategory(
+categoryId
+){
+
+setOpenCategories(
+previous=>({
+
 ...previous,
+
 [categoryId]:false
-}));
+
+})
+);
 
 }
+
+
+/* =========================================================
+   DATA LOAD
+========================================================= */
 
 useEffect(()=>{
 
@@ -877,7 +1406,9 @@ await supabase
 .maybeSingle();
 
 if(result.error){
+
 throw result.error;
+
 }
 
 let loaded;
@@ -887,26 +1418,35 @@ result.data&&
 result.data.data
 ){
 
-loaded=normalizeData(
+loaded=
+normalizeData(
 result.data.data
 );
 
 }
 else{
 
-loaded=defaultData();
+loaded=
+defaultData();
 
 const insertResult=
 await supabase
 .from("site_data")
 .upsert({
+
 id:SITE_ID,
+
 data:loaded,
-updated_at:new Date().toISOString()
+
+updated_at:
+new Date().toISOString()
+
 });
 
 if(insertResult.error){
+
 throw insertResult.error;
+
 }
 
 }
@@ -924,17 +1464,27 @@ loaded.stores
 null
 );
 
+
 /*
   Bütün kategoriler başlangıçta kapalı.
 */
+
 setOpenCategories({});
 
-if(!realtimeChannelRef.current){
+
+/* =========================================================
+   REALTIME
+========================================================= */
+
+if(
+!realtimeChannelRef.current
+){
 
 const channel=
 supabase
 .channel(
-"site-data-realtime-"+SITE_ID
+"site-data-realtime-"+
+SITE_ID
 )
 .on(
 "postgres_changes",
@@ -951,7 +1501,9 @@ if(
 !payload.new||
 !payload.new.data
 ){
+
 return;
+
 }
 
 const realtimeData=
@@ -959,7 +1511,9 @@ normalizeData(
 payload.new.data
 );
 
-setData(realtimeData);
+setData(
+realtimeData
+);
 
 setActiveCat(
 currentActive=>{
@@ -974,10 +1528,13 @@ realtimeData
 if(
 currentCategories.some(
 category=>
-category.id===currentActive
+category.id===
+currentActive
 )
 ){
+
 return currentActive;
+
 }
 
 return(
@@ -992,31 +1549,45 @@ setSelectedProduct(
 currentProduct=>{
 
 if(!currentProduct){
+
 return null;
+
 }
 
 let found=null;
 
 Object.values(
 realtimeData.stores||{}
-).forEach(storeData=>{
+).forEach(
+storeData=>{
 
-(storeData.categories||[]).forEach(category=>{
+(
+storeData.categories||
+[]
+).forEach(
+category=>{
 
 const item=
-(category.items||[])
-.find(
+(
+category.items||
+[]
+).find(
 product=>
-product.id===currentProduct.id
+product.id===
+currentProduct.id
 );
 
 if(item){
+
 found=item;
+
 }
 
-});
+}
+);
 
-});
+}
+);
 
 return found||null;
 
@@ -1030,14 +1601,17 @@ setSaved(false);
 
 channel.subscribe(
 status=>{
+
 console.log(
 "Supabase Realtime:",
 status
 );
+
 }
 );
 
-realtimeChannelRef.current=channel;
+realtimeChannelRef.current=
+channel;
 
 }
 
@@ -1049,12 +1623,14 @@ console.error(
 error
 );
 
-const fallback=defaultData();
+const fallback=
+defaultData();
 
 setData(fallback);
 
 setActiveCat(
-fallback.stores
+fallback
+.stores
 .premium
 .categories
 [0]?.id||
@@ -1071,7 +1647,9 @@ showToast(
 finally{
 
 if(!cancelled){
+
 setLoading(false);
+
 }
 
 }
@@ -1084,13 +1662,16 @@ return()=>{
 
 cancelled=true;
 
-if(realtimeChannelRef.current){
+if(
+realtimeChannelRef.current
+){
 
 supabase.removeChannel(
 realtimeChannelRef.current
 );
 
-realtimeChannelRef.current=null;
+realtimeChannelRef.current=
+null;
 
 }
 
@@ -1098,10 +1679,18 @@ realtimeChannelRef.current=null;
 
 },[]);
 
+
+/* =========================================================
+   STORE DEĞİŞTİR
+========================================================= */
+
 function changeStore(nextStore){
 
 setStore(nextStore);
+
 setSearch("");
+
+setCurrencyMenuOpen(false);
 
 const categories=
 data?.stores
@@ -1114,19 +1703,29 @@ categories[0]?.id||
 null
 );
 
+
 /*
-  Mağaza değişince kategoriler kapalı.
+  Mağaza değişince tüm kategorileri kapat.
 */
+
 setOpenCategories({});
 
 }
 
+
+/* =========================================================
+   DATA UPDATE
+========================================================= */
+
 function updateData(callback){
 
-setData(previous=>{
+setData(
+previous=>{
 
 if(!previous){
+
 return previous;
+
 }
 
 const copy={
@@ -1137,12 +1736,23 @@ callback(copy);
 
 return copy;
 
-});
+}
+);
+
 }
 
-function setPath(path,value){
 
-updateData(copy=>{
+/* =========================================================
+   PATH UPDATE
+========================================================= */
+
+function setPath(
+path,
+value
+){
+
+updateData(
+copy=>{
 
 let target=copy;
 
@@ -1158,37 +1768,24 @@ target[key]={
 ...(target[key]||{})
 };
 
-target=target[key];
+target=
+target[key];
 
 }
 
-target[path[path.length-1]]=value;
+target[
+path[path.length-1]
+]=value;
 
-});
 }
-
-function cycleCurrency(){
-
-const current=
-data?.currency?.selected||
-"TRY";
-
-const index=
-CURRENCIES.findIndex(
-item=>item.id===current
-);
-
-const next=
-CURRENCIES[
-(index+1)%CURRENCIES.length
-];
-
-setPath(
-["currency","selected"],
-next.id
 );
 
 }
+
+
+/* =========================================================
+   PARA BİRİMİ
+========================================================= */
 
 function getCurrency(){
 
@@ -1206,25 +1803,40 @@ CURRENCIES[0]
 
 }
 
-function convertPrice(amount){
+
+/* =========================================================
+   FİYAT ÇEVİR
+========================================================= */
+
+function convertPrice(
+amount
+){
 
 if(
 amount===null||
 amount===undefined||
 amount===""
 ){
+
 return null;
+
 }
 
 const currency=
 data?.currency?.selected||
 "TRY";
 
-const numeric=Number(amount);
+const numeric=
+Number(amount);
 
-if(!Number.isFinite(numeric)){
+if(
+!Number.isFinite(numeric)
+){
+
 return null;
+
 }
+
 
 if(currency==="USD"){
 
@@ -1234,12 +1846,15 @@ data?.currency?.usdRate
 );
 
 if(!rate||rate<=0){
+
 return null;
+
 }
 
 return numeric/rate;
 
 }
+
 
 if(currency==="EUR"){
 
@@ -1249,24 +1864,36 @@ data?.currency?.eurRate
 );
 
 if(!rate||rate<=0){
+
 return null;
+
 }
 
 return numeric/rate;
 
 }
 
+
 return numeric;
 
 }
 
-function formatAmount(amount){
+
+/* =========================================================
+   FİYAT FORMAT
+========================================================= */
+
+function formatAmount(
+amount
+){
 
 const converted=
 convertPrice(amount);
 
 if(converted===null){
+
 return null;
+
 }
 
 const currency=
@@ -1281,34 +1908,52 @@ const formatted=
 converted.toLocaleString(
 "tr-TR",
 {
-minimumFractionDigits:decimals,
-maximumFractionDigits:decimals
+minimumFractionDigits:
+decimals,
+
+maximumFractionDigits:
+decimals
 }
 );
 
 if(currency.id==="USD"){
+
 return "$"+formatted;
+
 }
 
 if(currency.id==="EUR"){
+
 return "€"+formatted;
+
 }
 
 return formatted+" ₺";
 
 }
 
+
+/* =========================================================
+   SAVE
+========================================================= */
+
 async function save(){
 
-if(!data||saving){
+if(
+!data||
+saving
+){
+
 return;
+
 }
 
 setSaving(true);
 
 try{
 
-const clean=normalizeData(data);
+const clean=
+normalizeData(data);
 
 const result=
 await supabase
@@ -1317,7 +1962,8 @@ await supabase
 {
 id:SITE_ID,
 data:clean,
-updated_at:new Date().toISOString()
+updated_at:
+new Date().toISOString()
 },
 {
 onConflict:"id"
@@ -1325,20 +1971,29 @@ onConflict:"id"
 );
 
 if(result.error){
+
 throw result.error;
+
 }
 
 setData(clean);
+
 setSaved(true);
 
 showToast(
 "Başarıyla kaydedildi"
 );
 
-setTimeout(()=>{
+setTimeout(
+()=>{
+
 setSaved(false);
+
 setPanelOpen(false);
-},800);
+
+},
+800
+);
 
 }
 catch(error){
@@ -1358,42 +2013,72 @@ error?.message||
 
 }
 finally{
+
 setSaving(false);
+
 }
 
 }
+
+
+/* =========================================================
+   ADMIN
+========================================================= */
 
 function openAdmin(){
 
 if(unlocked){
+
 setPanelOpen(true);
+
 return;
+
 }
 
 setPinInput("");
+
 setPinError(false);
+
 setPinModal(true);
 
 }
 
+
+/* =========================================================
+   PIN
+========================================================= */
+
 function tryUnlock(){
 
-const correct=String(
+const correct=
+String(
 data?.pin||"1234"
 );
 
-if(pinInput===correct){
+if(
+pinInput===
+correct
+){
 
 setUnlocked(true);
+
 setPinModal(false);
+
 setPanelOpen(true);
 
 }
 else{
+
 setPinError(true);
+
 }
 
 }
+
+
+/* =========================================================
+   KATEGORİ EKLE
+========================================================= */
 
 function addCategory(){
 
@@ -1402,24 +2087,38 @@ createCategory(
 "Yeni Kategori"
 );
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
 ].categories=[
+
 ...copy.stores[
 store
 ].categories,
+
 category
+
 ];
 
-});
+}
+);
 
-setActiveCat(category.id);
+setActiveCat(
+category.id
+);
 
-openCategory(category.id);
+openCategory(
+category.id
+);
 
 }
+
+
+/* =========================================================
+   KATEGORİ SİL
+========================================================= */
 
 function deleteCategory(id){
 
@@ -1428,10 +2127,13 @@ if(
 "Bu kategori ve içindeki ürünler silinsin mi?"
 )
 ){
+
 return;
+
 }
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1443,7 +2145,8 @@ category=>
 category.id!==id
 );
 
-});
+}
+);
 
 const remaining=
 data.stores[
@@ -1458,22 +2161,34 @@ remaining[0]?.id||
 null
 );
 
-setOpenCategories(previous=>{
+setOpenCategories(
+previous=>{
 
-const copy={...previous};
+const copy={
+...previous
+};
+
 delete copy[id];
+
 return copy;
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   KATEGORİ İSİM
+========================================================= */
 
 function renameCategory(
 id,
 value
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1490,16 +2205,23 @@ name:value
 :category
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   KATEGORİ SIRALA
+========================================================= */
 
 function moveCategory(
 id,
 direction
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 const list=[
 ...copy.stores[
@@ -1520,7 +2242,9 @@ index<0||
 target<0||
 target>=list.length
 ){
+
 return;
+
 }
 
 [
@@ -1533,28 +2257,45 @@ list[index]
 
 copy.stores[
 store
-].categories=list;
+].categories=
+list;
 
-});
+}
+);
 
 }
 
-function addItem(categoryId){
+
+/* =========================================================
+   ÜRÜN EKLE
+========================================================= */
+
+function addItem(
+categoryId
+){
 
 const item={
+
 id:uid(),
+
 name:"Yeni Ürün",
+
 desc:"",
+
 dims:"",
+
 image:null,
+
 price:{
 contactOnly:true,
 amount:null,
 parts:[]
 }
+
 };
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1574,14 +2315,24 @@ item
 :category
 );
 
-});
+}
+);
+
 
 /*
-  Ürün eklenince ilgili kategori otomatik açılsın.
+  Ürün eklenince kategori otomatik açılsın.
 */
-openCategory(categoryId);
+
+openCategory(
+categoryId
+);
 
 }
+
+
+/* =========================================================
+   ÜRÜN GÜNCELLE
+========================================================= */
 
 function updateItem(
 categoryId,
@@ -1590,7 +2341,8 @@ field,
 value
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1603,11 +2355,15 @@ category=>{
 if(
 category.id!==categoryId
 ){
+
 return category;
+
 }
 
 return{
+
 ...category,
+
 items:
 category.items.map(
 item=>
@@ -1618,14 +2374,21 @@ item.id===itemId
 }
 :item
 )
+
 };
 
 }
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   ÜRÜN SİL
+========================================================= */
 
 function deleteItem(
 categoryId,
@@ -1637,10 +2400,13 @@ if(
 "Bu ürün silinsin mi?"
 )
 ){
+
 return;
+
 }
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1661,9 +2427,15 @@ item.id!==itemId
 :category
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   ÜRÜN SIRALA
+========================================================= */
 
 function moveItem(
 categoryId,
@@ -1671,7 +2443,8 @@ itemId,
 direction
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1684,7 +2457,9 @@ category=>{
 if(
 category.id!==categoryId
 ){
+
 return category;
+
 }
 
 const list=[
@@ -1704,7 +2479,9 @@ index<0||
 target<0||
 target>=list.length
 ){
+
 return category;
+
 }
 
 [
@@ -1716,16 +2493,25 @@ list[index]
 ];
 
 return{
+
 ...category,
+
 items:list
+
 };
 
 }
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   FİYAT EKLE
+========================================================= */
 
 function addPricePart(
 categoryId,
@@ -1733,13 +2519,19 @@ itemId
 ){
 
 const part={
+
 id:uid(),
+
 name:"Yeni Parça",
+
 amount:null,
+
 contactOnly:false
+
 };
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1752,11 +2544,15 @@ category=>{
 if(
 category.id!==categoryId
 ){
+
 return category;
+
 }
 
 return{
+
 ...category,
+
 items:
 category.items.map(
 item=>{
@@ -1764,7 +2560,9 @@ item=>{
 if(
 item.id!==itemId
 ){
+
 return item;
+
 }
 
 const oldPrice=
@@ -1773,27 +2571,41 @@ item.price
 );
 
 return{
+
 ...item,
+
 price:{
+
 ...oldPrice,
+
 contactOnly:false,
+
 parts:[
 ...oldPrice.parts,
 part
 ]
+
 }
+
 };
 
 }
 )
+
 };
 
 }
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   FİYAT GÜNCELLE
+========================================================= */
 
 function updatePricePart(
 categoryId,
@@ -1803,7 +2615,8 @@ field,
 value
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1816,11 +2629,15 @@ category=>{
 if(
 category.id!==categoryId
 ){
+
 return category;
+
 }
 
 return{
+
 ...category,
+
 items:
 category.items.map(
 item=>{
@@ -1828,7 +2645,9 @@ item=>{
 if(
 item.id!==itemId
 ){
+
 return item;
+
 }
 
 const price=
@@ -1837,9 +2656,13 @@ item.price
 );
 
 return{
+
 ...item,
+
 price:{
+
 ...price,
+
 parts:
 price.parts.map(
 part=>
@@ -1850,19 +2673,28 @@ part.id===partId
 }
 :part
 )
+
 }
+
 };
 
 }
 )
+
 };
 
 }
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   FİYAT SİL
+========================================================= */
 
 function deletePricePart(
 categoryId,
@@ -1870,7 +2702,8 @@ itemId,
 partId
 ){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.stores[
 store
@@ -1883,11 +2716,15 @@ category=>{
 if(
 category.id!==categoryId
 ){
+
 return category;
+
 }
 
 return{
+
 ...category,
+
 items:
 category.items.map(
 item=>{
@@ -1895,7 +2732,9 @@ item=>{
 if(
 item.id!==itemId
 ){
+
 return item;
+
 }
 
 const price=
@@ -1904,27 +2743,40 @@ item.price
 );
 
 return{
+
 ...item,
+
 price:{
+
 ...price,
+
 parts:
 price.parts.filter(
 part=>
 part.id!==partId
 )
+
 }
+
 };
 
 }
 )
+
 };
 
 }
 );
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   ÜRÜN GÖRSELİ
+========================================================= */
 
 async function uploadItemImage(
 categoryId,
@@ -1936,7 +2788,9 @@ const file=
 event.target.files?.[0];
 
 if(!file){
+
 return;
+
 }
 
 setBusy(true);
@@ -1993,20 +2847,31 @@ finally{
 setBusy(false);
 
 if(event.target){
+
 event.target.value="";
-}
 
 }
 
 }
 
-async function uploadLogo(event){
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+async function uploadLogo(
+event
+){
 
 const file=
 event.target.files?.[0];
 
 if(!file){
+
 return;
+
 }
 
 setBusy(true);
@@ -2058,20 +2923,31 @@ finally{
 setBusy(false);
 
 if(event.target){
+
 event.target.value="";
-}
 
 }
 
 }
 
-async function uploadBackground(event){
+}
+
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
+
+async function uploadBackground(
+event
+){
 
 const file=
 event.target.files?.[0];
 
 if(!file){
+
 return;
+
 }
 
 setBusy(true);
@@ -2123,28 +2999,48 @@ finally{
 setBusy(false);
 
 if(event.target){
+
 event.target.value="";
-}
 
 }
 
 }
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
 
 function applyTheme(theme){
 
-updateData(copy=>{
+updateData(
+copy=>{
 
 copy.theme={
+
 ...copy.theme,
+
 bg:theme.bg,
+
 card:theme.card,
+
 accent:theme.accent,
+
 text:theme.text
+
 };
 
-});
+}
+);
 
 }
+
+
+/* =========================================================
+   RESET
+========================================================= */
 
 function resetDefault(){
 
@@ -2153,12 +3049,16 @@ if(
 "Tüm ayarlar varsayılana döndürülsün mü?"
 )
 ){
+
 return;
+
 }
 
-const fresh=defaultData();
+const fresh=
+defaultData();
 
 setData(fresh);
+
 setStore("premium");
 
 setActiveCat(
@@ -2177,44 +3077,83 @@ showToast(
 
 }
 
+
+/* =========================================================
+   LOADING
+========================================================= */
+
 if(loading){
 
 return(
+
 <div
 style={{
+
 minHeight:"100vh",
+
 background:"#141416",
+
 color:"#aaa",
+
 display:"flex",
+
 alignItems:"center",
+
 justifyContent:"center",
-fontFamily:"Inter,sans-serif"
+
+fontFamily:
+"Inter,sans-serif"
+
 }}
 >
+
 Veriler yükleniyor...
+
 </div>
+
 );
 
 }
+
+
+/* =========================================================
+   DATA YOK
+========================================================= */
 
 if(!data){
 
 return(
+
 <div
 style={{
+
 minHeight:"100vh",
+
 background:"#141416",
+
 color:"#f87171",
+
 display:"flex",
+
 alignItems:"center",
+
 justifyContent:"center"
+
 }}
 >
+
 Site verileri yüklenemedi.
+
 </div>
+
 );
 
 }
+
+
+/* =========================================================
+   CURRENT DATA
+========================================================= */
 
 const currentStore=
 data.stores[store];
@@ -2230,22 +3169,37 @@ category.id===activeCat
 categories[0]||
 null;
 
+
+/* =========================================================
+   TÜM ÜRÜNLER
+========================================================= */
+
 const allProducts=
 categories.flatMap(
 category=>
 category.items.map(
 item=>({
+
 ...item,
+
 categoryName:
 category.name
+
 })
 )
 );
 
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
 const normalizedSearch=
 search
 .trim()
-.toLocaleLowerCase("tr-TR");
+.toLocaleLowerCase(
+"tr-TR"
+);
 
 let visibleProducts;
 
@@ -2256,6 +3210,7 @@ allProducts.filter(
 item=>{
 
 const text=(
+
 item.name+
 " "+
 item.desc+
@@ -2263,7 +3218,9 @@ item.desc+
 item.dims+
 " "+
 item.categoryName
-).toLocaleLowerCase(
+
+)
+.toLocaleLowerCase(
 "tr-TR"
 );
 
@@ -2278,11 +3235,19 @@ normalizedSearch
 else{
 
 visibleProducts=
-activeCategory?.items||[];
+activeCategory?.items||
+[];
 
 }
 
-const theme=data.theme;
+
+const theme=
+data.theme;
+
+
+/* =========================================================
+   PRICE TEXT
+========================================================= */
 
 function priceText(part){
 
@@ -2294,7 +3259,9 @@ part.amount===undefined||
 part.amount===""
 ){
 
-return "Fiyat için iletişime geçin";
+return(
+"Fiyat için iletişime geçin"
+);
 
 }
 
@@ -2306,6 +3273,11 @@ part.amount
 );
 
 }
+
+
+/* =========================================================
+   PRODUCT MAIN PRICE
+========================================================= */
 
 function productMainPrice(item){
 
@@ -2340,7 +3312,9 @@ formatAmount(total)||
 
 }
 
-return "Fiyat için iletişime geçin";
+return(
+"Fiyat için iletişime geçin"
+);
 
 }
 
@@ -2359,18 +3333,30 @@ price.amount
 
 }
 
-return "Fiyat için iletişime geçin";
+return(
+"Fiyat için iletişime geçin"
+);
 
 }
 
-const currency=getCurrency();
+
+const currency=
+getCurrency();
+
+
+/* =========================================================
+   RENDER
+========================================================= */
 
 return(
 
 <div
 style={{
+
 minHeight:"100vh",
-backgroundColor:theme.bg,
+
+backgroundColor:
+theme.bg,
 
 backgroundImage:
 theme.bgImage
@@ -2378,21 +3364,41 @@ theme.bgImage
 :undefined,
 
 backgroundSize:"cover",
+
 backgroundPosition:"center",
+
 color:theme.text,
-fontFamily:"Inter,system-ui,sans-serif"
+
+fontFamily:
+"Inter,system-ui,sans-serif"
+
 }}
 >
 
+
+{/* =====================================================
+    ÜST MENÜ
+===================================================== */}
+
 <div className="fixed top-4 left-4 right-4 z-40">
 
-<div className="max-w-5xl mx-auto flex justify-between items-center gap-3">
+<div
+className="max-w-5xl mx-auto flex justify-between items-center gap-3"
+>
+
+
+{/* MAĞAZALAR */}
 
 <div
 className="flex gap-1 p-1 rounded-full"
 style={{
-background:"rgba(0,0,0,.25)",
-backdropFilter:"blur(15px)"
+
+background:
+"rgba(0,0,0,.25)",
+
+backdropFilter:
+"blur(15px)"
+
 }}
 >
 
@@ -2405,6 +3411,7 @@ changeStore(item.id)
 }
 className="px-4 py-2 rounded-full text-xs font-bold transition"
 style={{
+
 background:
 store===item.id
 ?theme.accent
@@ -2419,28 +3426,179 @@ opacity:
 store===item.id
 ?1
 :.55
+
 }}
 >
+
 {item.name}
+
 </button>
 
 ))}
 
 </div>
 
-<div className="flex items-center gap-2">
+
+{/* SAĞ MENÜ */}
+
+<div
+className="flex items-center gap-2"
+>
+
+
+{/* =================================================
+    PARA BİRİMİ SEÇİMİ
+================================================= */}
+
+<div className="relative">
 
 <button
-onClick={cycleCurrency}
-className="h-10 min-w-[58px] px-3 rounded-full flex items-center justify-center gap-1 font-bold text-sm"
+onClick={()=>
+setCurrencyMenuOpen(
+previous=>
+!previous
+)
+}
+className="h-10 min-w-[58px] px-3 rounded-full flex items-center justify-center gap-1.5 font-bold text-sm"
 style={{
-background:theme.accent,
+
+background:
+theme.accent,
+
 color:"#fff",
-backdropFilter:"blur(15px)"
+
+backdropFilter:
+"blur(15px)"
+
 }}
 >
+
 {currency.symbol}
+
+<Icon
+type={
+currencyMenuOpen
+?"up"
+:"down"
+}
+size={13}
+/>
+
 </button>
+
+
+{/* PARA BİRİMİ MENÜSÜ */}
+
+{currencyMenuOpen&&(
+
+<div
+className="currency-menu absolute right-0 mt-2 w-36 rounded-2xl overflow-hidden shadow-2xl border"
+style={{
+
+background:
+theme.card,
+
+borderColor:
+theme.text+"18",
+
+zIndex:1000
+
+}}
+>
+
+<div
+className="px-3 py-2 text-[9px] uppercase tracking-widest font-bold opacity-40 border-b"
+style={{
+borderColor:
+theme.text+"12"
+}}
+>
+Para Birimi
+</div>
+
+{CURRENCIES.map(c=>(
+
+<button
+key={c.id}
+onClick={()=>{
+
+setPath(
+["currency","selected"],
+c.id
+);
+
+setCurrencyMenuOpen(
+false
+);
+
+}}
+className="w-full px-3 py-3 flex items-center justify-between text-sm font-semibold transition"
+style={{
+
+background:
+currency.id===c.id
+?theme.accent+"18"
+:"transparent",
+
+color:
+theme.text
+
+}}
+>
+
+<span
+className="flex items-center gap-2"
+>
+
+<span
+className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
+style={{
+
+background:
+currency.id===c.id
+?theme.accent
+:theme.accent+"18",
+
+color:
+currency.id===c.id
+?"#fff"
+:theme.accent
+
+}}
+>
+
+{c.symbol}
+
+</span>
+
+<span>
+{c.name}
+</span>
+
+</span>
+
+
+{currency.id===c.id&&(
+
+<Icon
+type="check"
+size={15}
+/>
+
+)}
+
+</button>
+
+))}
+
+</div>
+
+)}
+
+</div>
+
+
+{/* ARAMA */}
 
 <button
 onClick={()=>
@@ -2452,15 +3610,24 @@ search
 }
 className="w-10 h-10 rounded-full flex items-center justify-center"
 style={{
-background:"rgba(0,0,0,.25)",
-backdropFilter:"blur(15px)",
-color:theme.text
+
+background:
+"rgba(0,0,0,.25)",
+
+backdropFilter:
+"blur(15px)",
+
+color:
+theme.text
+
 }}
 >
+
 <Icon
 type="search"
 size={18}
 />
+
 </button>
 
 </div>
@@ -2469,11 +3636,18 @@ size={18}
 
 </div>
 
+
+{/* SEARCH */}
+
 {search!==""&&(
 
-<div className="fixed top-[68px] left-4 right-4 z-40">
+<div
+className="fixed top-[68px] left-4 right-4 z-40"
+>
 
-<div className="max-w-5xl mx-auto relative">
+<div
+className="max-w-5xl mx-auto relative"
+>
 
 <input
 autoFocus
@@ -2496,47 +3670,77 @@ color:theme.text
 
 )}
 
-<header className="px-6 pt-28 pb-8 max-w-5xl mx-auto">
+
+{/* =====================================================
+    HEADER
+===================================================== */}
+
+<header
+className="px-6 pt-28 pb-8 max-w-5xl mx-auto"
+>
 
 <div
 style={{
+
 width:"100%",
+
 display:"flex",
+
 justifyContent:
 data.logo.position==="left"
 ?"flex-start"
 :data.logo.position==="right"
 ?"flex-end"
 :"center",
+
 marginBottom:18
+
 }}
 >
 
 {data.logo.src?(
+
 <img
 src={data.logo.src}
 alt="Ofischi"
 style={{
-width:data.logo.size,
+
+width:
+data.logo.size,
+
 maxWidth:"70vw",
-maxHeight:data.logo.size,
+
+maxHeight:
+data.logo.size,
+
 objectFit:"contain",
+
 display:"block"
+
 }}
 />
-):(
+
+):( 
+
 <div
 style={{
+
 fontSize:50,
+
 fontWeight:800,
-color:theme.accent
+
+color:
+theme.accent
+
 }}
 >
 O
 </div>
+
 )}
 
 </div>
+
 
 <div className="text-center">
 
@@ -2546,20 +3750,34 @@ style={{
 color:theme.accent
 }}
 >
+
 {data.eyebrow}
+
 </div>
 
-<h1 className="text-3xl font-bold leading-tight">
+
+<h1
+className="text-3xl font-bold leading-tight"
+>
+
 {data.siteName}
+
 </h1>
 
-<p className="text-sm opacity-60 mt-2">
+
+<p
+className="text-sm opacity-60 mt-2"
+>
+
 {store==="premium"
 ?"Premium Ofis Mobilyaları"
 :"Outlet Ofis Mobilyaları"}
+
 </p>
 
+
 {data.phone&&(
+
 <a
 href={
 "tel:"+
@@ -2570,76 +3788,119 @@ data.phone.replace(
 }
 className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
 style={{
-background:theme.accent,
+
+background:
+theme.accent,
+
 color:"#fff"
+
 }}
 >
+
 <Icon
 type="phone"
 size={15}
 />
+
 {data.phone}
+
 </a>
+
 )}
 
 </div>
 
 </header>
 
-<div className="max-w-5xl mx-auto px-4 mb-2">
 
-<div className="flex items-center justify-between">
+{/* =====================================================
+    MAĞAZA BAŞLIK
+===================================================== */}
+
+<div
+className="max-w-5xl mx-auto px-4 mb-2"
+>
+
+<div
+className="flex items-center justify-between"
+>
 
 <div>
 
-<div className="text-xl font-bold">
+<div
+className="text-xl font-bold"
+>
+
 {store==="premium"
 ?"Premium"
 :"Outlet"}
+
 </div>
 
-<div className="text-[11px] opacity-45 mt-1">
+
+<div
+className="text-[11px] opacity-45 mt-1"
+>
+
 {currentStore.categories.reduce(
 (total,c)=>
 total+c.items.length,
 0
-)} ürün
+)}
+{" "}
+ürün
+
 </div>
 
 </div>
+
 
 {search.trim()&&(
+
 <button
 onClick={()=>
 setSearch("")
 }
 className="text-xs opacity-60"
 >
+
 Aramayı temizle
+
 </button>
+
 )}
 
 </div>
 
 </div>
 
+
+{/* =====================================================
+    KATEGORİLER
+===================================================== */}
+
 {!search.trim()&&(
 
 <div
 className="sticky top-[64px] z-20 px-4 pt-3 pb-2"
 style={{
-backgroundColor:theme.bg
+backgroundColor:
+theme.bg
 }}
 >
 
-<div className="max-w-5xl mx-auto flex gap-2 overflow-x-auto">
+<div
+className="max-w-5xl mx-auto flex gap-2 overflow-x-auto"
+>
 
-{categories.map(category=>{
+{categories.map(
+category=>{
 
 const active=
 category.id===activeCat;
 
 return(
+
 <button
 key={category.id}
 onClick={()=>
@@ -2649,6 +3910,7 @@ category.id
 }
 className="flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap"
 style={{
+
 background:
 active
 ?theme.accent
@@ -2663,19 +3925,29 @@ opacity:
 active
 ?1
 :.75
+
 }}
 >
+
 {category.name}
+
 </button>
+
 );
 
-})}
+}
+)}
 
 </div>
 
 </div>
 
 )}
+
+
+{/* =====================================================
+    ÜRÜNLER
+===================================================== */}
 
 <main
 className="product-grid px-4 pt-4 pb-28 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
@@ -2684,24 +3956,44 @@ animation:"fadeIn .3s ease"
 }}
 >
 
+
 {search.trim()&&(
-<div className="col-span-full mb-1">
-<div className="text-xs opacity-50">
+
+<div
+className="col-span-full mb-1"
+>
+
+<div
+className="text-xs opacity-50"
+>
+
 "{search.trim()}" için{" "}
 {visibleProducts.length} ürün bulundu
+
 </div>
+
 </div>
+
 )}
 
+
 {visibleProducts.length===0&&(
-<div className="col-span-full text-center py-16 opacity-50">
+
+<div
+className="col-span-full text-center py-16 opacity-50"
+>
+
 {search.trim()
 ?"Aradığınız ürün bulunamadı."
 :"Henüz ürün eklenmedi."}
+
 </div>
+
 )}
 
-{visibleProducts.map(item=>(
+
+{visibleProducts.map(
+item=>(
 
 <article
 key={item.id}
@@ -2710,15 +4002,23 @@ setSelectedProduct(item)
 }
 className="rounded-xl overflow-hidden active:scale-[.98] transition cursor-pointer"
 style={{
-background:theme.card,
+
+background:
+theme.card,
+
 boxShadow:
 "0 3px 15px rgba(0,0,0,.12)"
+
 }}
 >
 
+
 <div
 style={{
-height:data.cardImgSize,
+
+height:
+data.cardImgSize,
+
 backgroundColor:
 theme.accent+"12",
 
@@ -2728,6 +4028,7 @@ item.image
 :undefined,
 
 backgroundSize:"cover",
+
 backgroundPosition:"center",
 
 display:
@@ -2736,36 +4037,60 @@ item.image
 :"flex",
 
 alignItems:"center",
+
 justifyContent:"center"
+
 }}
 >
 
 {!item.image&&(
+
 <Icon
 type="image"
 size={28}
 />
+
 )}
 
 </div>
+
 
 <div className="p-3">
 
-<div className="font-semibold text-sm leading-tight">
+<div
+className="font-semibold text-sm leading-tight"
+>
+
 {item.name}
+
 </div>
+
 
 {item.desc&&(
-<div className="text-[11px] opacity-55 mt-1 leading-snug line-clamp-2">
+
+<div
+className="text-[11px] opacity-55 mt-1 leading-snug line-clamp-2"
+>
+
 {item.desc}
+
 </div>
+
 )}
 
+
 {item.dims&&(
-<div className="text-[10px] opacity-45 mt-1">
+
+<div
+className="text-[10px] opacity-45 mt-1"
+>
+
 {item.dims}
+
 </div>
+
 )}
+
 
 <div
 className="text-[12px] font-bold mt-2"
@@ -2773,15 +4098,23 @@ style={{
 color:theme.accent
 }}
 >
+
 {productMainPrice(item)}
+
 </div>
 
-<div className="mt-2 text-[10px] opacity-45 flex items-center gap-1">
+
+<div
+className="mt-2 text-[10px] opacity-45 flex items-center gap-1"
+>
+
 Detaylı fiyatlar
+
 <Icon
 type="arrow"
 size={11}
 />
+
 </div>
 
 </div>
@@ -2791,6 +4124,11 @@ size={11}
 ))}
 
 </main>
+
+
+{/* =====================================================
+    ÜRÜN DETAY
+===================================================== */}
 
 {selectedProduct&&(
 
@@ -2804,9 +4142,16 @@ setSelectedProduct(null)
 <div
 className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
 style={{
-background:theme.card,
-color:theme.text,
-animation:"pop .22s ease"
+
+background:
+theme.card,
+
+color:
+theme.text,
+
+animation:
+"pop .22s ease"
+
 }}
 onClick={e=>
 e.stopPropagation()
@@ -2817,6 +4162,7 @@ e.stopPropagation()
 
 <div
 style={{
+
 height:270,
 
 backgroundColor:
@@ -2828,6 +4174,7 @@ selectedProduct.image
 :undefined,
 
 backgroundSize:"cover",
+
 backgroundPosition:"center",
 
 display:
@@ -2836,18 +4183,23 @@ selectedProduct.image
 :"flex",
 
 alignItems:"center",
+
 justifyContent:"center"
+
 }}
 >
 
 {!selectedProduct.image&&(
+
 <Icon
 type="image"
 size={40}
 />
+
 )}
 
 </div>
+
 
 <button
 onClick={()=>
@@ -2855,17 +4207,24 @@ setSelectedProduct(null)
 }
 className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
 style={{
-background:"rgba(0,0,0,.55)",
+
+background:
+"rgba(0,0,0,.55)",
+
 color:"#fff"
+
 }}
 >
+
 <Icon
 type="x"
 size={20}
 />
+
 </button>
 
 </div>
+
 
 <div className="p-5">
 
@@ -2875,59 +4234,94 @@ style={{
 color:theme.accent
 }}
 >
+
 {store==="premium"
 ?"PREMIUM"
 :"OUTLET"}
+
 </div>
 
-<h2 className="text-2xl font-bold">
+
+<h2
+className="text-2xl font-bold"
+>
+
 {selectedProduct.name}
+
 </h2>
 
+
 {selectedProduct.desc&&(
-<p className="text-sm opacity-65 mt-2 leading-relaxed">
+
+<p
+className="text-sm opacity-65 mt-2 leading-relaxed"
+>
+
 {selectedProduct.desc}
+
 </p>
+
 )}
 
+
 {selectedProduct.dims&&(
+
 <div
 className="mt-3 px-3 py-2 rounded-xl text-xs"
 style={{
+
 background:
 theme.accent+"12"
+
 }}
 >
+
 Ölçüler:{" "}
+
 <strong>
 {selectedProduct.dims}
 </strong>
+
 </div>
+
 )}
+
 
 <div className="mt-5">
 
-<div className="text-[10px] uppercase tracking-widest font-bold opacity-50 mb-3">
+<div
+className="text-[10px] uppercase tracking-widest font-bold opacity-50 mb-3"
+>
+
 Fiyatlar
+
 </div>
+
 
 {normalizePrice(
 selectedProduct.price
 ).parts.length>0?(
+
 <div className="space-y-2">
 
 {normalizePrice(
 selectedProduct.price
-).parts.map(part=>(
+).parts.map(
+part=>(
 
 <div
 key={part.id}
 className="price-row rounded-xl p-3 flex items-center justify-between gap-3"
 >
 
-<div className="text-sm font-medium">
+<div
+className="text-sm font-medium"
+>
+
 {part.name}
+
 </div>
+
 
 <div
 className="text-sm font-bold whitespace-nowrap"
@@ -2935,30 +4329,44 @@ style={{
 color:theme.accent
 }}
 >
+
 {priceText(part)}
-</div>
 
 </div>
 
-))}
+</div>
 
-</div>
-):(
-<div
-className="rounded-xl p-4 text-center"
-style={{
-background:
-theme.accent+"12",
-color:theme.accent
-}}
->
-Fiyat için iletişime geçin
-</div>
+)
 )}
 
 </div>
 
+):( 
+
+<div
+className="rounded-xl p-4 text-center"
+style={{
+
+background:
+theme.accent+"12",
+
+color:
+theme.accent
+
+}}
+>
+
+Fiyat için iletişime geçin
+
+</div>
+
+)}
+
+</div>
+
+
 {data.phone&&(
+
 <a
 href={
 "tel:"+
@@ -2969,72 +4377,118 @@ data.phone.replace(
 }
 className="mt-5 w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm"
 style={{
-background:theme.accent,
+
+background:
+theme.accent,
+
 color:"#fff"
+
 }}
 >
+
 <Icon
 type="phone"
 size={16}
 />
+
 Fiyat / Bilgi İçin Ara
+
 </a>
-)}
-
-</div>
-
-</div>
-
-</div>
 
 )}
+
+</div>
+
+</div>
+
+</div>
+
+)}
+
+
+{/* =====================================================
+    ADMIN BUTONU
+===================================================== */}
 
 <button
 onClick={openAdmin}
 className="fixed bottom-5 right-[18px] z-30 rounded-full shadow-xl flex items-center justify-center"
 style={{
+
 width:52,
+
 height:52,
-background:theme.text,
-color:theme.bg
+
+background:
+theme.text,
+
+color:
+theme.bg
+
 }}
 >
+
 <Icon
 type="settings"
 size={20}
 />
+
 </button>
 
+
+{/* =====================================================
+    TOAST
+===================================================== */}
+
 {toast&&(
+
 <div
 className="fixed bottom-24 right-[18px] z-[150] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
 >
+
 <Icon
 type="check"
 size={15}
 />
+
 {toast}
+
 </div>
+
 )}
+
+
+{/* =====================================================
+    PIN MODAL
+===================================================== */}
 
 {pinModal&&(
 
-<div className="fixed inset-0 z-[200] bg-black/75 flex items-center justify-center p-4">
+<div
+className="fixed inset-0 z-[200] bg-black/75 flex items-center justify-center p-4"
+>
 
-<div className="w-full max-w-xs bg-neutral-950 border border-neutral-800 rounded-2xl p-6">
+<div
+className="w-full max-w-xs bg-neutral-950 border border-neutral-800 rounded-2xl p-6"
+>
 
-<div className="flex items-center gap-2 mb-4 text-white">
+<div
+className="flex items-center gap-2 mb-4 text-white"
+>
 
 <Icon
 type="lock"
 size={18}
 />
 
-<h2 className="font-bold">
+<h2
+className="font-bold"
+>
 Yönetim Girişi
 </h2>
 
 </div>
+
 
 <input
 autoFocus
@@ -3043,34 +4497,56 @@ inputMode="numeric"
 maxLength={8}
 value={pinInput}
 onChange={e=>{
+
 setPinInput(
 e.target.value.replace(
 /\D/g,
 ""
 )
 );
+
 setPinError(false);
+
 }}
 onKeyDown={e=>{
+
 if(e.key==="Enter"){
+
 tryUnlock();
+
 }
+
 }}
 placeholder="PIN"
 className="admin-input tracking-[.3em]"
 />
 
+
 {pinError&&(
-<div className="text-xs text-red-400 mt-2">
+
+<div
+className="text-xs text-red-400 mt-2"
+>
+
 Hatalı PIN.
+
 </div>
+
 )}
 
-<div className="text-[11px] text-neutral-500 mt-2 mb-4">
+
+<div
+className="text-[11px] text-neutral-500 mt-2 mb-4"
+>
+
 Varsayılan PIN: 1234
+
 </div>
 
-<div className="flex gap-2">
+
+<div
+className="flex gap-2"
+>
 
 <button
 onClick={()=>
@@ -3078,17 +4554,23 @@ setPinModal(false)
 }
 className="flex-1 py-2.5 bg-neutral-800 rounded-lg text-sm text-neutral-300"
 >
+
 Vazgeç
+
 </button>
+
 
 <button
 onClick={tryUnlock}
 className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
 style={{
-background:theme.accent
+background:
+theme.accent
 }}
 >
+
 Giriş Yap
+
 </button>
 
 </div>
@@ -3099,9 +4581,17 @@ Giriş Yap
 
 )}
 
+
+{/* =====================================================
+    ADMIN PANEL
+===================================================== */}
+
 {panelOpen&&unlocked&&(
 
-<div className="fixed inset-0 z-[180] flex justify-end">
+<div
+className="fixed inset-0 z-[180] flex justify-end"
+>
+
 
 <div
 className="flex-1 bg-black/40"
@@ -3110,15 +4600,33 @@ setPanelOpen(false)
 }
 />
 
-<aside className="w-full sm:w-[460px] h-full bg-neutral-950 text-white overflow-y-auto shadow-2xl">
 
-<div className="sticky top-0 z-20 bg-neutral-950 border-b border-neutral-800 px-5 pt-5 pb-3">
+<aside
+className="w-full sm:w-[460px] h-full bg-neutral-950 text-white overflow-y-auto shadow-2xl"
+>
 
-<div className="flex items-center justify-between mb-4">
 
-<h2 className="font-bold text-[17px]">
+{/* ===================================================
+    ADMIN HEADER
+=================================================== */}
+
+<div
+className="sticky top-0 z-20 bg-neutral-950 border-b border-neutral-800 px-5 pt-5 pb-3"
+>
+
+
+<div
+className="flex items-center justify-between mb-4"
+>
+
+<h2
+className="font-bold text-[17px]"
+>
+
 Yönetim Paneli
+
 </h2>
+
 
 <button
 onClick={()=>
@@ -3126,29 +4634,40 @@ setPanelOpen(false)
 }
 className="text-neutral-500"
 >
+
 <Icon
 type="x"
 size={21}
 />
+
 </button>
 
 </div>
 
-<div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-2">
+
+<div
+className="text-[10px] uppercase tracking-widest text-neutral-500 mb-2"
+>
+
 Düzenlenen Mağaza
+
 </div>
 
-<div className="flex gap-1 bg-neutral-900 rounded-xl p-1 mb-3">
+
+<div
+className="flex gap-1 bg-neutral-900 rounded-xl p-1 mb-3"
+>
 
 {STORES.map(s=>(
 
 <button
 key={s.id}
-onClick={()=>{
-changeStore(s.id);
-}}
+onClick={()=>
+changeStore(s.id)
+}
 className="flex-1 py-2.5 rounded-lg text-xs font-bold"
 style={{
+
 background:
 store===s.id
 ?theme.accent
@@ -3158,16 +4677,22 @@ color:
 store===s.id
 ?"#fff"
 :"#999"
+
 }}
 >
+
 {s.name}
+
 </button>
 
 ))}
 
 </div>
 
-<div className="flex gap-1 bg-neutral-900 rounded-xl p-1">
+
+<div
+className="flex gap-1 bg-neutral-900 rounded-xl p-1"
+>
 
 <button
 onClick={()=>
@@ -3175,14 +4700,19 @@ setTab("genel")
 }
 className="flex-1 py-2 rounded-lg text-sm font-semibold"
 style={{
+
 background:
 tab==="genel"
 ?theme.accent
 :"transparent"
+
 }}
 >
+
 Genel
+
 </button>
+
 
 <button
 onClick={()=>
@@ -3190,26 +4720,39 @@ setTab("icerik")
 }
 className="flex-1 py-2 rounded-lg text-sm font-semibold"
 style={{
+
 background:
 tab==="icerik"
 ?theme.accent
 :"transparent"
+
 }}
 >
+
 Ürün Kataloğu
+
 </button>
 
 </div>
 
 </div>
 
+
 <div className="p-5">
+
+
+{/* =================================================
+    GENEL
+================================================= */}
 
 {tab==="genel"&&(
 
 <div>
 
-<label className="block mb-4">
+
+<label
+className="block mb-4"
+>
 
 <AdminLabel>
 Site Adı
@@ -3228,7 +4771,10 @@ e.target.value
 
 </label>
 
-<label className="block mb-4">
+
+<label
+className="block mb-4"
+>
 
 <AdminLabel>
 Üst Etiket
@@ -3247,7 +4793,10 @@ e.target.value
 
 </label>
 
-<label className="block mb-5">
+
+<label
+className="block mb-5"
+>
 
 <AdminLabel>
 Telefon
@@ -3267,19 +4816,38 @@ placeholder="+90 5xx xxx xx xx"
 
 </label>
 
-<div className="h-px bg-neutral-800 my-5"/>
 
-<div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
+<div
+className="h-px bg-neutral-800 my-5"
+/>
+
+
+<div
+className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
+>
+
 Para Birimi
+
 </div>
 
-<div className="bg-neutral-900 rounded-xl p-4 mb-5">
 
-<div className="text-xs text-neutral-400 mb-3">
+<div
+className="bg-neutral-900 rounded-xl p-4 mb-5"
+>
+
+
+<div
+className="text-xs text-neutral-400 mb-3"
+>
+
 Sitedeki fiyatlar TL olarak girilir. Aşağıdaki kurları sen manuel belirlersin.
+
 </div>
 
-<div className="grid grid-cols-3 gap-2 mb-4">
+
+<div
+className="grid grid-cols-3 gap-2 mb-4"
+>
 
 {CURRENCIES.map(c=>(
 
@@ -3293,6 +4861,7 @@ c.id
 }
 className="py-2.5 rounded-lg text-xs font-bold"
 style={{
+
 background:
 currency.id===c.id
 ?theme.accent
@@ -3310,16 +4879,22 @@ currency.id===c.id
 ?theme.accent
 :"#333"
 )
+
 }}
 >
+
 {c.symbol} {c.name}
+
 </button>
 
 ))}
 
 </div>
 
-<label className="block mb-3">
+
+<label
+className="block mb-3"
+>
 
 <AdminLabel>
 1 USD = Kaç TL?
@@ -3343,7 +4918,10 @@ placeholder="Örn: 40"
 
 </label>
 
-<label className="block">
+
+<label
+className="block"
+>
 
 <AdminLabel>
 1 EUR = Kaç TL?
@@ -3369,33 +4947,61 @@ placeholder="Örn: 47"
 
 </div>
 
-<div className="h-px bg-neutral-800 my-5"/>
 
-<div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
+<div
+className="h-px bg-neutral-800 my-5"
+/>
+
+
+{/* LOGO */}
+
+<div
+className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
+>
+
 Logo
+
 </div>
 
-<div className="bg-neutral-900 rounded-xl p-4 mb-3 flex items-center justify-center min-h-[120px]">
+
+<div
+className="bg-neutral-900 rounded-xl p-4 mb-3 flex items-center justify-center min-h-[120px]"
+>
 
 {data.logo.src?(
+
 <img
 src={data.logo.src}
 alt="Logo"
 style={{
+
 maxWidth:"100%",
+
 maxHeight:100,
+
 objectFit:"contain"
+
 }}
 />
-):(
-<div className="text-xs text-neutral-500">
+
+):( 
+
+<div
+className="text-xs text-neutral-500"
+>
+
 Logo eklenmedi
+
 </div>
+
 )}
 
 </div>
 
-<div className="flex gap-2 mb-4">
+
+<div
+className="flex gap-2 mb-4"
+>
 
 <button
 disabled={busy}
@@ -3404,14 +5010,19 @@ logoRef.current?.click()
 }
 className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
 >
+
 <Icon
 type="upload"
 size={14}
 />
+
 Logo Yükle
+
 </button>
 
+
 {data.logo.src&&(
+
 <button
 onClick={()=>
 setPath(
@@ -3421,12 +5032,16 @@ null
 }
 className="px-3 bg-red-950 text-red-400 rounded-lg"
 >
+
 <Icon
 type="trash"
 size={14}
 />
+
 </button>
+
 )}
+
 
 <input
 ref={logoRef}
@@ -3438,9 +5053,11 @@ onChange={uploadLogo}
 
 </div>
 
+
 <AdminLabel>
 Logo Boyutu — {data.logo.size}px
 </AdminLabel>
+
 
 <input
 type="range"
@@ -3450,23 +5067,30 @@ value={data.logo.size}
 onChange={e=>
 setPath(
 ["logo","size"],
-Number(e.target.value)
+Number(
+e.target.value
+)
 )
 }
 className="w-full mb-4"
 />
 
+
 <AdminLabel>
 Logo Konumu
 </AdminLabel>
 
-<div className="flex gap-2 mb-5">
+
+<div
+className="flex gap-2 mb-5"
+>
 
 {[
 ["left","Sol"],
 ["center","Orta"],
 ["right","Sağ"]
-].map(([value,label])=>(
+].map(
+([value,label])=>(
 
 <button
 key={value}
@@ -3478,26 +5102,44 @@ value
 }
 className="flex-1 py-2 rounded-lg text-xs"
 style={{
+
 background:
 data.logo.position===value
 ?theme.accent
 :"#1c1917"
+
 }}
 >
+
 {label}
+
 </button>
 
-))}
+)
+)}
 
 </div>
 
-<div className="h-px bg-neutral-800 my-5"/>
 
-<div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3">
+<div
+className="h-px bg-neutral-800 my-5"
+/>
+
+
+{/* THEMES */}
+
+<div
+className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
+>
+
 Hazır Temalar
+
 </div>
 
-<div className="grid grid-cols-3 gap-2 mb-5">
+
+<div
+className="grid grid-cols-3 gap-2 mb-5"
+>
 
 {THEMES.map(item=>(
 
@@ -3508,37 +5150,57 @@ applyTheme(item)
 }
 className="rounded-xl overflow-hidden border-2"
 style={{
+
 borderColor:
 theme.bg===item.bg&&
 theme.accent===item.accent
 ?item.accent
 :"#292524"
+
 }}
 >
 
 <div
 style={{
+
 height:35,
-background:item.bg,
+
+background:
+item.bg,
+
 display:"flex",
+
 alignItems:"center",
+
 justifyContent:"center"
+
 }}
 >
 
 <span
 style={{
+
 width:15,
+
 height:15,
+
 borderRadius:"50%",
-background:item.accent
+
+background:
+item.accent
+
 }}
 />
 
 </div>
 
-<div className="bg-neutral-900 py-1 text-[9px]">
+
+<div
+className="bg-neutral-900 py-1 text-[9px]"
+>
+
 {item.name}
+
 </div>
 
 </button>
@@ -3546,6 +5208,7 @@ background:item.accent
 ))}
 
 </div>
+
 
 <ColorInput
 label="Arka Plan Rengi"
@@ -3558,6 +5221,7 @@ value
 }
 />
 
+
 <ColorInput
 label="Kart Rengi"
 value={theme.card}
@@ -3568,6 +5232,7 @@ value
 )
 }
 />
+
 
 <ColorInput
 label="Vurgu Rengi"
@@ -3580,6 +5245,7 @@ value
 }
 />
 
+
 <ColorInput
 label="Yazı Rengi"
 value={theme.text}
@@ -3590,7 +5256,10 @@ value
 )
 }/>
 
-<div className="flex gap-2 mb-5">
+
+<div
+className="flex gap-2 mb-5"
+>
 
 <button
 disabled={busy}
@@ -3599,10 +5268,14 @@ bgRef.current?.click()
 }
 className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs"
 >
+
 Arka Plan Görseli
+
 </button>
 
+
 {theme.bgImage&&(
+
 <button
 onClick={()=>
 setPath(
@@ -3612,12 +5285,16 @@ null
 }
 className="px-3 bg-red-950 text-red-400 rounded-lg"
 >
+
 <Icon
 type="trash"
 size={14}
 />
+
 </button>
+
 )}
+
 
 <input
 ref={bgRef}
@@ -3629,9 +5306,11 @@ onChange={uploadBackground}
 
 </div>
 
+
 <AdminLabel>
 Ürün Görsel Yüksekliği — {data.cardImgSize}px
 </AdminLabel>
+
 
 <input
 type="range"
@@ -3641,15 +5320,19 @@ value={data.cardImgSize}
 onChange={e=>
 setPath(
 ["cardImgSize"],
-Number(e.target.value)
+Number(
+e.target.value
+)
 )
 }
 className="w-full mb-5"
 />
 
+
 <AdminLabel>
 Yönetim PIN
 </AdminLabel>
+
 
 <input
 className="admin-input mb-5"
@@ -3670,35 +5353,53 @@ letterSpacing:".3em"
 }}
 />
 
+
 <button
 onClick={resetDefault}
 className="w-full py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs text-neutral-400"
 >
+
 Varsayılan Ayarlara Dön
+
 </button>
+
 
 </div>
 
 )}
 
+
+{/* =================================================
+    ÜRÜN KATALOĞU
+================================================= */}
+
 {tab==="icerik"&&(
 
 <div>
 
+
 <div
 className="mb-4 rounded-xl p-3"
 style={{
+
 background:
 theme.accent+"12",
+
 border:
 "1px solid "+
 theme.accent+"25"
+
 }}
 >
 
-<div className="text-[10px] uppercase tracking-widest opacity-50">
+<div
+className="text-[10px] uppercase tracking-widest opacity-50"
+>
+
 Şu anda düzenleniyor
+
 </div>
+
 
 <div
 className="font-bold mt-1"
@@ -3706,30 +5407,47 @@ style={{
 color:theme.accent
 }}
 >
+
 {store==="premium"
 ?"Premium Mağaza"
 :"Outlet Mağaza"}
+
 </div>
 
-<div className="text-[10px] opacity-40 mt-1">
+
+<div
+className="text-[10px] opacity-40 mt-1"
+>
+
 Premium ve Outlet ürünleri birbirinden bağımsızdır.
+
 </div>
 
 </div>
+
 
 <button
 onClick={addCategory}
 className="w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
 style={{
-background:theme.accent
+background:
+theme.accent
 }}
 >
+
 <Icon
 type="plus"
 size={17}
 />
+
 Yeni Kategori
+
 </button>
+
+
+{/* =================================================
+    KATEGORİ LİSTESİ
+================================================= */}
 
 {categories.map(
 (
@@ -3742,7 +5460,15 @@ key={category.id}
 className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hidden"
 >
 
-<div className="p-2 flex items-center gap-1.5">
+
+{/* =================================================
+    KATEGORİ BAŞLIĞI
+================================================= */}
+
+<div
+className="p-2 flex items-center gap-1.5"
+>
+
 
 <input
 value={category.name}
@@ -3754,10 +5480,14 @@ e.target.value
 }
 className="admin-input"
 style={{
+
 padding:"9px 10px",
+
 fontSize:"13px"
+
 }}
 />
+
 
 <button
 onClick={()=>
@@ -3771,11 +5501,14 @@ categoryIndex===0
 }
 className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
 >
+
 <Icon
 type="up"
 size={14}
 />
+
 </button>
+
 
 <button
 onClick={()=>
@@ -3785,15 +5518,19 @@ category.id,
 )
 }
 disabled={
-categoryIndex===categories.length-1
+categoryIndex===
+categories.length-1
 }
 className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
 >
+
 <Icon
 type="down"
 size={14}
 />
+
 </button>
+
 
 <button
 onClick={()=>
@@ -3803,11 +5540,18 @@ category.id
 }
 className="p-2 bg-red-950 text-red-400 rounded-lg"
 >
+
 <Icon
 type="trash"
 size={14}
 />
+
 </button>
+
+
+{/* =================================================
+    ÜRÜNLER AÇ/KAPAT
+================================================= */}
 
 <button
 onClick={()=>
@@ -3817,6 +5561,7 @@ category.id
 }
 className="px-3 py-2 rounded-lg text-[11px] whitespace-nowrap flex items-center gap-1.5 font-semibold transition"
 style={{
+
 background:
 openCategories[category.id]
 ?theme.accent
@@ -3826,8 +5571,10 @@ color:
 openCategories[category.id]
 ?"#fff"
 :"#aaa"
+
 }}
 >
+
 Ürünler
 
 <Icon
@@ -3843,21 +5590,34 @@ size={13}
 
 </div>
 
-{/*
-  ASIL DEĞİŞİKLİK:
-  Sadece openCategories[category.id] true ise ürünleri gösteriyoruz.
-*/}
+
+{/* =================================================
+    SADECE AÇIKSA ÜRÜNLER GÖSTER
+================================================= */}
+
 {openCategories[category.id]&&(
 
-<div className="p-2 pt-0">
+<div
+className="category-products p-2 pt-0"
+>
+
+
+{/* ÜRÜN YOK */}
 
 {category.items.length===0&&(
 
-<div className="bg-neutral-800 rounded-xl p-4 mb-2 text-center text-xs text-neutral-500">
+<div
+className="bg-neutral-800 rounded-xl p-4 mb-2 text-center text-xs text-neutral-500"
+>
+
 Bu kategoride henüz ürün yok.
+
 </div>
 
 )}
+
+
+{/* ÜRÜNLER */}
 
 {category.items.map(
 (
@@ -3870,7 +5630,13 @@ key={item.id}
 className="bg-neutral-800 rounded-xl p-3 mb-2"
 >
 
-<div className="flex gap-2 mb-2">
+
+<div
+className="flex gap-2 mb-2"
+>
+
+
+{/* GÖRSEL */}
 
 <div
 onClick={()=>
@@ -3882,32 +5648,41 @@ item.id
 }
 className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
 style={{
+
 backgroundImage:
 item.image
 ?`url(${item.image})`
 :undefined,
+
 backgroundSize:"cover",
+
 backgroundPosition:"center"
+
 }}
 >
 
 {!item.image&&(
+
 <Icon
 type="image"
 size={18}
 />
+
 )}
 
 </div>
+
 
 <input
 type="file"
 accept="image/*"
 className="hidden"
 ref={element=>{
+
 itemRefs.current[
 item.id
 ]=element;
+
 }}
 onChange={e=>
 uploadItemImage(
@@ -3918,7 +5693,11 @@ e
 }
 />
 
-<div className="flex-1">
+
+<div
+className="flex-1"
+>
+
 
 <input
 value={item.name}
@@ -3933,11 +5712,16 @@ e.target.value
 placeholder="Ürün adı"
 className="admin-input"
 style={{
+
 padding:"8px 9px",
+
 fontSize:"12px",
+
 marginBottom:"6px"
+
 }}
 />
+
 
 <input
 value={item.dims}
@@ -3952,14 +5736,20 @@ e.target.value
 placeholder="Ölçüler: 200x90x75 cm"
 className="admin-input"
 style={{
+
 padding:"8px 9px",
+
 fontSize:"12px"
+
 }}
 />
 
 </div>
 
 </div>
+
+
+{/* AÇIKLAMA */}
 
 <input
 value={item.desc}
@@ -3974,15 +5764,30 @@ e.target.value
 placeholder="Ürün özellikleri"
 className="admin-input"
 style={{
+
 padding:"8px 9px",
+
 fontSize:"12px",
+
 marginBottom:"10px"
+
 }}
 />
 
-<div className="rounded-xl border border-neutral-700 bg-neutral-900 p-3 mb-2">
 
-<div className="flex items-center justify-between mb-3">
+{/* =================================================
+    AYRI FİYATLAR
+================================================= */}
+
+<div
+className="rounded-xl border border-neutral-700 bg-neutral-900 p-3 mb-2"
+>
+
+
+<div
+className="flex items-center justify-between mb-3"
+>
+
 
 <div>
 
@@ -3992,14 +5797,22 @@ style={{
 color:theme.accent
 }}
 >
+
 Ayrı Fiyatlar
+
 </div>
 
-<div className="text-[9px] text-neutral-500 mt-1">
+
+<div
+className="text-[9px] text-neutral-500 mt-1"
+>
+
 Ürünün parçalarını ayrı ayrı fiyatlandır.
+
 </div>
 
 </div>
+
 
 <button
 onClick={()=>
@@ -4010,41 +5823,53 @@ item.id
 }
 className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
 style={{
-background:theme.accent
+background:
+theme.accent
 }}
 >
+
 <Icon
 type="plus"
 size={12}
 />
+
 Fiyat Ekle
+
 </button>
 
 </div>
+
 
 {normalizePrice(
 item.price
 ).parts.length===0&&(
 
-<div className="text-[10px] text-neutral-500 py-2 text-center">
+<div
+className="text-[10px] text-neutral-500 py-2 text-center"
+>
+
 Henüz fiyat kalemi eklenmedi.
+
 </div>
 
 )}
 
+
 {normalizePrice(
 item.price
 ).parts.map(
-(
-part
-)=>(
+part=>(
 
 <div
 key={part.id}
 className="bg-neutral-800 rounded-lg p-2 mb-2"
 >
 
-<div className="flex gap-2">
+
+<div
+className="flex gap-2"
+>
+
 
 <input
 value={part.name}
@@ -4060,10 +5885,14 @@ e.target.value
 placeholder="Örn: Masa"
 className="admin-input"
 style={{
+
 padding:"8px",
+
 fontSize:"11px"
+
 }}
 />
+
 
 <input
 type="number"
@@ -4089,15 +5918,21 @@ e.target.value
 placeholder="₺"
 className="admin-input"
 style={{
+
 width:"105px",
+
 padding:"8px",
+
 fontSize:"11px",
+
 opacity:
 part.contactOnly
 ?.4
 :1
+
 }}
 />
+
 
 <button
 onClick={()=>
@@ -4109,15 +5944,20 @@ part.id
 }
 className="px-2 bg-red-950 text-red-400 rounded-lg"
 >
+
 <Icon
 type="trash"
 size={13}
 />
+
 </button>
 
 </div>
 
-<label className="flex items-center gap-2 mt-2 text-[10px] text-neutral-400">
+
+<label
+className="flex items-center gap-2 mt-2 text-[10px] text-neutral-400"
+>
 
 <input
 type="checkbox"
@@ -4146,9 +5986,18 @@ Fiyat için iletişime geçin
 
 </div>
 
-<div className="flex justify-end gap-1">
+
+{/* =================================================
+    ÜRÜN ALT BUTONLARI
+================================================= */}
+
+<div
+className="flex justify-end gap-1"
+>
+
 
 {item.image&&(
+
 <button
 onClick={()=>
 updateItem(
@@ -4160,9 +6009,13 @@ null
 }
 className="px-2 py-1 bg-neutral-700 rounded text-[10px]"
 >
+
 Görseli Sil
+
 </button>
+
 )}
+
 
 <button
 onClick={()=>
@@ -4177,11 +6030,14 @@ itemIndex===0
 }
 className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
 >
+
 <Icon
 type="up"
 size={12}
 />
+
 </button>
+
 
 <button
 onClick={()=>
@@ -4192,15 +6048,19 @@ item.id,
 )
 }
 disabled={
-itemIndex===category.items.length-1
+itemIndex===
+category.items.length-1
 }
 className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
 >
+
 <Icon
 type="down"
 size={12}
 />
+
 </button>
+
 
 <button
 onClick={()=>
@@ -4211,10 +6071,12 @@ item.id
 }
 className="p-1.5 bg-red-950 text-red-400 rounded"
 >
+
 <Icon
 type="trash"
 size={12}
 />
+
 </button>
 
 </div>
@@ -4223,6 +6085,11 @@ size={12}
 
 )
 )}
+
+
+{/* =================================================
+    ÜRÜN EKLE
+================================================= */}
 
 <button
 onClick={()=>
@@ -4232,12 +6099,16 @@ category.id
 }
 className="w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
 >
+
 <Icon
 type="plus"
 size={14}
 />
+
 Ürün Ekle
+
 </button>
+
 
 </div>
 
@@ -4252,9 +6123,17 @@ size={14}
 
 )}
 
+
 </div>
 
-<div className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800 p-4">
+
+{/* =================================================
+    KAYDET
+================================================= */}
+
+<div
+className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800 p-4"
+>
 
 <button
 onClick={save}
@@ -4264,6 +6143,7 @@ busy
 }
 className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
 style={{
+
 background:
 saved
 ?"#12B76A"
@@ -4275,20 +6155,27 @@ saved
 :saving
 ?"none"
 :"pulse 2.2s infinite"
+
 }}
 >
 
+
 {saved?(
+
 <Icon
 type="check"
 size={17}
 />
+
 ):(
+
 <Icon
 type="save"
 size={17}
 />
+
 )}
+
 
 {saved
 ?"Kaydedildi!"
@@ -4300,6 +6187,7 @@ size={17}
 
 </div>
 
+
 </aside>
 
 </div>
@@ -4307,39 +6195,73 @@ size={17}
 )}
 
 </div>
+
 );
+
 }
+
+
+/* =========================================================
+   ADMIN LABEL
+========================================================= */
 
 function AdminLabel({
 children
 }){
+
 return(
+
 <div
 style={{
+
 color:"#737373",
+
 fontSize:"10px",
+
 fontWeight:700,
+
 letterSpacing:".08em",
+
 textTransform:"uppercase",
+
 marginBottom:"6px"
+
 }}
 >
+
 {children}
+
 </div>
+
 );
+
 }
+
+
+/* =========================================================
+   COLOR INPUT
+========================================================= */
 
 function ColorInput({
 label,
 value,
 onChange
 }){
-return(
-<label className="flex items-center justify-between mb-3">
 
-<span className="text-xs text-neutral-400">
+return(
+
+<label
+className="flex items-center justify-between mb-3"
+>
+
+<span
+className="text-xs text-neutral-400"
+>
+
 {label}
+
 </span>
+
 
 <input
 type="color"
@@ -4356,8 +6278,15 @@ className="w-9 h-9 rounded-lg border border-neutral-700 bg-transparent cursor-po
 />
 
 </label>
+
 );
+
 }
+
+
+/* =========================================================
+   REACT START
+========================================================= */
 
 ReactDOM
 .createRoot(
@@ -4368,5 +6297,6 @@ document.getElementById("root")
 );
 
 </script>
+
 </body>
 </html>
