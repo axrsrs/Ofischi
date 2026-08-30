@@ -13,9 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-box-sizing:border-box
-}
+*{box-sizing:border-box}
 
 html,body,#root{
 margin:0;
@@ -46,34 +44,18 @@ display:none
 }
 
 @keyframes fadeIn{
-from{
-opacity:0;
-transform:translateY(8px)
-}
-to{
-opacity:1;
-transform:translateY(0)
-}
+from{opacity:0;transform:translateY(8px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 @keyframes pop{
-0%{
-transform:scale(.96);
-opacity:0
-}
-100%{
-transform:scale(1);
-opacity:1
-}
+0%{transform:scale(.96);opacity:0}
+100%{transform:scale(1);opacity:1}
 }
 
 @keyframes pulse{
-0%,100%{
-box-shadow:0 0 0 0 rgba(255,255,255,.18)
-}
-50%{
-box-shadow:0 0 0 8px rgba(255,255,255,0)
-}
+0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}
+50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}
 }
 
 .admin-input{
@@ -102,7 +84,7 @@ background:rgba(0,0,0,.18);
 border:1px solid rgba(255,255,255,.12);
 color:inherit;
 border-radius:14px;
-padding:12px 42px 12px 42px;
+padding:12px 42px;
 outline:none;
 backdrop-filter:blur(14px);
 }
@@ -128,6 +110,22 @@ animation:pop .15s ease;
 
 .category-products{
 animation:fadeIn .18s ease;
+}
+
+.media-slider{
+touch-action:pan-y;
+-webkit-user-select:none;
+user-select:none;
+}
+
+.media-dot{
+transition:all .2s ease;
+}
+
+.product-gallery{
+touch-action:pan-y;
+-webkit-user-select:none;
+user-select:none;
 }
 
 @media(max-width:420px){
@@ -304,7 +302,7 @@ Date.now()
 
 
 /* =========================================================
-   KATEGORİ OLUŞTUR
+   KATEGORİ
 ========================================================= */
 
 function createCategory(name){
@@ -374,6 +372,13 @@ selected:"TRY",
 usdRate:40,
 eurRate:47
 },
+
+/*
+  YENİ:
+  Logo altında gösterilecek medya slaytı.
+  Eski verilerde bu alan yoksa boş kalır.
+*/
+heroMedia:[],
 
 stores:{
 premium:createEmptyStore(),
@@ -477,6 +482,51 @@ parts
 
 function normalizeItem(item){
 
+/*
+  ÇOK ÖNEMLİ:
+  Eski sistemde yalnızca "image" vardı.
+  Eski image kesinlikle korunuyor.
+*/
+
+let oldImage=
+item?.image||null;
+
+let images=[];
+
+if(Array.isArray(item?.images)){
+
+images=
+item.images.filter(
+x=>
+typeof x==="string"&&
+x.trim()!==""
+);
+
+}
+
+if(
+images.length===0&&
+oldImage
+){
+
+images=[oldImage];
+
+}
+
+if(
+oldImage&&
+!images.includes(oldImage)
+){
+
+images.unshift(oldImage);
+
+}
+
+const firstImage=
+images[0]||
+oldImage||
+null;
+
 return{
 
 ...item,
@@ -497,13 +547,70 @@ typeof item.desc==="string"
 dims:
 item.dims||"",
 
-image:
-item.image||null,
+/*
+  Eski alan korunuyor.
+*/
+image:firstImage,
+
+/*
+  Yeni çoklu görsel alanı.
+*/
+images:images,
 
 price:
 normalizePrice(item.price)
 
 };
+
+}
+
+
+/* =========================================================
+   MEDYA NORMALİZE
+========================================================= */
+
+function normalizeHeroMedia(media){
+
+if(!Array.isArray(media)){
+
+return[];
+
+}
+
+return media
+.map(item=>{
+
+if(typeof item==="string"){
+
+return{
+id:uid(),
+url:item,
+type:"image"
+};
+
+}
+
+return{
+
+id:item.id||uid(),
+
+url:
+typeof item.url==="string"
+?item.url
+:"",
+
+type:
+item.type==="video"
+?"video"
+:"image"
+
+};
+
+})
+.filter(
+item=>
+item.url
+);
 
 }
 
@@ -597,6 +704,15 @@ result.currency={
 ...(input.currency||{})
 };
 
+/*
+  YENİ MEDYA ALANI.
+  Eski datada yoksa boş gelir.
+*/
+result.heroMedia=
+normalizeHeroMedia(
+input.heroMedia
+);
+
 if(
 input.stores&&
 typeof input.stores==="object"
@@ -615,7 +731,6 @@ input.stores.outlet
 )
 
 };
-
 }
 else if(
 Array.isArray(input.categories)
@@ -671,7 +786,7 @@ return result;
 
 
 /* =========================================================
-   IMAGE
+   IMAGE DATA URL
 ========================================================= */
 
 function dataUrlToBlob(dataUrl){
@@ -723,6 +838,10 @@ type:mime
 
 }
 
+
+/* =========================================================
+   RESIZE IMAGE
+========================================================= */
 
 function resizeImg(
 file,
@@ -813,16 +932,14 @@ reader.readAsDataURL(file);
 );
 
 
-}
-
-
 /* =========================================================
-   STORAGE
+   STORAGE PATH
 ========================================================= */
 
 function storagePath(
 type,
-id
+id,
+extension="jpg"
 ){
 
 return(
@@ -833,15 +950,25 @@ type+
 id+
 "-"+
 Date.now()+
-".jpg"
+"-"+
+Math.random()
+.toString(36)
+.slice(2,7)+
+"."+
+extension
 );
 
 }
 
 
+/* =========================================================
+   IMAGE STORAGE
+========================================================= */
+
 async function uploadBlobToStorage(
 blob,
-path
+path,
+contentType="image/jpeg"
 ){
 
 const result=
@@ -851,7 +978,49 @@ await supabase.storage
 path,
 blob,
 {
-contentType:"image/jpeg",
+contentType,
+cacheControl:"31536000",
+upsert:false
+}
+);
+
+if(result.error){
+
+throw result.error;
+
+}
+
+return(
+supabase.storage
+.from(STORAGE_BUCKET)
+.getPublicUrl(path)
+?.data
+?.publicUrl||
+null
+);
+
+}
+
+
+/* =========================================================
+   DOSYA STORAGE
+========================================================= */
+
+async function uploadFileToStorage(
+file,
+path
+){
+
+const result=
+await supabase.storage
+.from(STORAGE_BUCKET)
+.upload(
+path,
+file,
+{
+contentType:
+file.type||
+"application/octet-stream",
 cacheControl:"31536000",
 upsert:false
 }
@@ -912,11 +1081,7 @@ content=(
 
 <>
 
-<circle
-cx="12"
-cy="12"
-r="3"
-/>
+<circle cx="12" cy="12" r="3"/>
 
 <path d="
 M19.4 15
@@ -941,6 +1106,7 @@ a1.7 1.7 0 0 0 1 1.6
 1.7 1.7 0 0 0 1.9-.3
 l.1-.1 1.7 1.7-.1.1
 a1.7 1.7 0 0 0-.3 1.9
+1.7 1.7 0 0 0-.3 1.9
 1.7 1.7 0 0 0 1.6 1.1
 h.1V14h-.1
 a1.7 1.7 0 0 0-1.6 1z
@@ -963,7 +1129,6 @@ content=(
 <>
 
 <path d="M6 6l12 12"/>
-
 <path d="M18 6L6 18"/>
 
 </>
@@ -980,7 +1145,6 @@ content=(
 <>
 
 <path d="M12 5v14"/>
-
 <path d="M5 12h14"/>
 
 </>
@@ -997,13 +1161,9 @@ content=(
 <>
 
 <path d="M3 6h18"/>
-
 <path d="M8 6V4h8v2"/>
-
 <path d="M19 6l-1 14H6L5 6"/>
-
 <path d="M10 11v5"/>
-
 <path d="M14 11v5"/>
 
 </>
@@ -1020,9 +1180,7 @@ content=(
 <>
 
 <path d="M12 16V4"/>
-
 <path d="M7 9l5-5 5 5"/>
-
 <path d="M5 20h14"/>
 
 </>
@@ -1061,7 +1219,6 @@ a2 2 0 0 1-2 2Z
 "/>
 
 <path d="M17 21v-8H7v8"/>
-
 <path d="M7 3v5h8"/>
 
 </>
@@ -1092,6 +1249,29 @@ r="1.5"
 />
 
 <path d="m21 15-5-5L5 21"/>
+
+</>
+
+);
+
+}
+
+
+if(type==="video"){
+
+content=(
+
+<>
+
+<rect
+x="3"
+y="4"
+width="18"
+height="16"
+rx="2"
+/>
+
+<path d="m10 9 5 3-5 3V9Z"/>
 
 </>
 
@@ -1185,7 +1365,6 @@ content=(
 <>
 
 <path d="M5 12h14"/>
-
 <path d="m13 6 6 6-6 6"/>
 
 </>
@@ -1195,11 +1374,550 @@ content=(
 }
 
 
+if(type==="left"){
+
+content=
+<path d="m15 18-6-6 6-6"/>;
+}
+
+
+if(type==="right"){
+
+content=
+<path d="m9 18 6-6-6-6"/>;
+}
+
+
 return(
 
 <svg {...props}>
 {content}
 </svg>
+
+);
+
+}
+
+
+/* =========================================================
+   MEDIA SLIDER
+========================================================= */
+
+function HeroMediaSlider({
+media,
+theme
+}){
+
+const [index,setIndex]=
+useState(0);
+
+const touchStart=
+useRef(null);
+
+const touchEnd=
+useRef(null);
+
+const timerRef=
+useRef(null);
+
+useEffect(()=>{
+
+if(index>=media.length){
+
+setIndex(0);
+
+}
+
+},[media.length,index]);
+
+
+useEffect(()=>{
+
+if(media.length<=1){
+
+return;
+
+}
+
+timerRef.current=
+setInterval(
+()=>{
+
+setIndex(
+previous=>
+(previous+1)%media.length
+);
+
+},
+6000
+);
+
+return()=>{
+
+clearInterval(
+timerRef.current
+);
+
+};
+
+},[media.length]);
+
+
+if(!media.length){
+
+return null;
+
+}
+
+const current=
+media[index];
+
+
+/* SWIPE */
+
+function handleTouchStart(e){
+
+touchStart.current=
+e.changedTouches[0].clientX;
+
+}
+
+function handleTouchEnd(e){
+
+touchEnd.current=
+e.changedTouches[0].clientX;
+
+if(
+touchStart.current===null||
+touchEnd.current===null
+){
+
+return;
+
+}
+
+const distance=
+touchStart.current-
+touchEnd.current;
+
+if(Math.abs(distance)>45){
+
+if(distance>0){
+
+setIndex(
+previous=>
+(previous+1)%media.length
+);
+
+}
+else{
+
+setIndex(
+previous=>
+(previous-1+media.length)%media.length
+);
+
+}
+
+}
+
+touchStart.current=null;
+touchEnd.current=null;
+
+}
+
+
+return(
+
+<div
+className="max-w-5xl mx-auto px-4 mb-7"
+>
+
+<div
+className="relative overflow-hidden rounded-2xl shadow-xl media-slider"
+style={{
+
+height:"clamp(190px,48vw,380px)",
+
+background:
+theme.accent+"12",
+
+border:
+"1px solid "+
+theme.text+"10"
+
+}}
+
+onTouchStart={handleTouchStart}
+onTouchEnd={handleTouchEnd}
+>
+
+{current.type==="video"?(
+
+<video
+key={current.id}
+src={current.url}
+autoPlay
+muted
+playsInline
+loop
+preload="metadata"
+className="w-full h-full object-cover"
+style={{
+display:"block"
+}}
+/>
+
+):( 
+
+<img
+key={current.id}
+src={current.url}
+alt=""
+draggable="false"
+className="w-full h-full object-cover"
+style={{
+display:"block"
+}}
+/>
+
+)}
+
+
+{media.length>1&&(
+
+<>
+
+<button
+onClick={()=>
+setIndex(
+previous=>
+(previous-1+media.length)%media.length
+)
+}
+className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+style={{
+background:"rgba(0,0,0,.45)",
+color:"#fff"
+}}
+>
+
+<Icon
+type="left"
+size={18}
+/>
+
+</button>
+
+
+<button
+onClick={()=>
+setIndex(
+previous=>
+(previous+1)%media.length
+)
+}
+className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+style={{
+background:"rgba(0,0,0,.45)",
+color:"#fff"
+}}
+>
+
+<Icon
+type="right"
+size={18}
+/>
+
+</button>
+
+
+<div
+className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full"
+style={{
+background:"rgba(0,0,0,.42)",
+backdropFilter:"blur(8px)"
+}}
+>
+
+{media.map(
+(item,i)=>(
+
+<button
+key={item.id}
+onClick={()=>
+setIndex(i)
+}
+className="media-dot"
+style={{
+
+width:
+i===index?18:6,
+
+height:6,
+
+borderRadius:99,
+
+background:
+i===index
+?"#fff"
+:"rgba(255,255,255,.5)"
+
+}}
+/>
+
+)
+)}
+
+</div>
+
+</>
+
+)}
+
+</div>
+
+</div>
+
+);
+
+}
+
+
+/* =========================================================
+   ÜRÜN GALERİSİ
+========================================================= */
+
+function ProductGallery({
+item,
+theme,
+height=270
+}){
+
+const images=
+Array.isArray(item.images)&&
+item.images.length
+?item.images
+:item.image
+?[item.image]
+:[];
+
+const [index,setIndex]=
+useState(0);
+
+const touchStart=
+useRef(null);
+
+const touchEnd=
+useRef(null);
+
+useEffect(()=>{
+
+if(index>=images.length){
+
+setIndex(0);
+
+}
+
+},[images.length,index]);
+
+
+if(!images.length){
+
+return(
+
+<div
+style={{
+
+height,
+
+backgroundColor:
+theme.accent+"12",
+
+display:"flex",
+
+alignItems:"center",
+
+justifyContent:"center"
+
+}}
+>
+
+<Icon
+type="image"
+size={40}
+/>
+
+</div>
+
+);
+
+}
+
+
+function swipeStart(e){
+
+touchStart.current=
+e.changedTouches[0].clientX;
+
+}
+
+function swipeEnd(e){
+
+touchEnd.current=
+e.changedTouches[0].clientX;
+
+if(
+touchStart.current===null||
+touchEnd.current===null
+){
+
+return;
+
+}
+
+const distance=
+touchStart.current-
+touchEnd.current;
+
+if(Math.abs(distance)>45){
+
+if(distance>0){
+
+setIndex(
+previous=>
+(previous+1)%images.length
+);
+
+}
+else{
+
+setIndex(
+previous=>
+(previous-1+images.length)%images.length
+);
+
+}
+
+}
+
+touchStart.current=null;
+touchEnd.current=null;
+
+}
+
+
+return(
+
+<div
+className="relative product-gallery"
+style={{
+height,
+backgroundColor:
+theme.accent+"12"
+}}
+onTouchStart={swipeStart}
+onTouchEnd={swipeEnd}
+>
+
+<img
+src={images[index]}
+alt={item.name||""}
+draggable="false"
+className="w-full h-full object-cover"
+/>
+
+
+{images.length>1&&(
+
+<>
+
+<button
+onClick={()=>
+setIndex(
+previous=>
+(previous-1+images.length)%images.length
+)
+}
+className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+style={{
+background:"rgba(0,0,0,.5)",
+color:"#fff"
+}}
+>
+
+<Icon
+type="left"
+size={18}
+/>
+
+</button>
+
+
+<button
+onClick={()=>
+setIndex(
+previous=>
+(previous+1)%images.length
+)
+}
+className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center"
+style={{
+background:"rgba(0,0,0,.5)",
+color:"#fff"
+}}
+>
+
+<Icon
+type="right"
+size={18}
+/>
+
+</button>
+
+
+<div
+className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 rounded-full"
+style={{
+background:"rgba(0,0,0,.45)"
+}}
+>
+
+{images.map(
+(_,i)=>(
+
+<button
+key={i}
+onClick={()=>
+setIndex(i)
+}
+style={{
+
+width:
+i===index?18:6,
+
+height:6,
+
+borderRadius:99,
+
+background:
+i===index
+?"#fff"
+:"rgba(255,255,255,.5)"
+
+}}
+/>
+
+)
+)}
+
+</div>
+
+</>
+
+)}
+
+</div>
 
 );
 
@@ -1233,35 +1951,15 @@ useState("premium");
 const [activeCat,setActiveCat]=
 useState(null);
 
-
-/*
-  KATEGORİ AÇIK/KAPALI DURUMU
-
-  Örnek:
-
-  {
-    "kategori-id-1": true,
-    "kategori-id-2": false
-  }
-
-  Böylece her kategori bağımsız açılıp kapanır.
-*/
-
 const [
 openCategories,
 setOpenCategories
 ]=useState({});
 
-
-/*
-  PARA BİRİMİ MENÜSÜ
-*/
-
 const [
 currencyMenuOpen,
 setCurrencyMenuOpen
 ]=useState(false);
-
 
 const [search,setSearch]=
 useState("");
@@ -1292,7 +1990,6 @@ useState("genel");
 const [busy,setBusy]=
 useState(false);
 
-
 const logoRef=
 useRef(null);
 
@@ -1301,6 +1998,15 @@ useRef(null);
 
 const itemRefs=
 useRef({});
+
+const multipleItemRefs=
+useRef({});
+
+const heroImageRef=
+useRef(null);
+
+const heroVideoRef=
+useRef(null);
 
 const realtimeChannelRef=
 useRef(null);
@@ -1323,63 +2029,40 @@ setTimeout(
 
 
 /* =========================================================
-   KATEGORİ AÇ/KAPAT
+   CATEGORY
 ========================================================= */
 
-function toggleCategory(
-categoryId
-){
+function toggleCategory(categoryId){
 
 setOpenCategories(
 previous=>({
-
 ...previous,
-
 [categoryId]:
 !previous[categoryId]
-
 })
 );
 
 }
 
 
-/* =========================================================
-   KATEGORİ AÇ
-========================================================= */
-
-function openCategory(
-categoryId
-){
+function openCategory(categoryId){
 
 setOpenCategories(
 previous=>({
-
 ...previous,
-
 [categoryId]:true
-
 })
 );
 
 }
 
 
-/* =========================================================
-   KATEGORİ KAPAT
-========================================================= */
-
-function closeCategory(
-categoryId
-){
+function closeCategory(categoryId){
 
 setOpenCategories(
 previous=>({
-
 ...previous,
-
 [categoryId]:false
-
 })
 );
 
@@ -1433,14 +2116,10 @@ const insertResult=
 await supabase
 .from("site_data")
 .upsert({
-
 id:SITE_ID,
-
 data:loaded,
-
 updated_at:
 new Date().toISOString()
-
 });
 
 if(insertResult.error){
@@ -1463,11 +2142,6 @@ loaded.stores
 ?.id||
 null
 );
-
-
-/*
-  Bütün kategoriler başlangıçta kapalı.
-*/
 
 setOpenCategories({});
 
@@ -1599,16 +2273,7 @@ setSaved(false);
 }
 );
 
-channel.subscribe(
-status=>{
-
-console.log(
-"Supabase Realtime:",
-status
-);
-
-}
-);
+channel.subscribe();
 
 realtimeChannelRef.current=
 channel;
@@ -1629,8 +2294,7 @@ defaultData();
 setData(fallback);
 
 setActiveCat(
-fallback
-.stores
+fallback.stores
 .premium
 .categories
 [0]?.id||
@@ -1670,8 +2334,7 @@ supabase.removeChannel(
 realtimeChannelRef.current
 );
 
-realtimeChannelRef.current=
-null;
+realtimeChannelRef.current=null;
 
 }
 
@@ -1681,7 +2344,7 @@ null;
 
 
 /* =========================================================
-   STORE DEĞİŞTİR
+   STORE
 ========================================================= */
 
 function changeStore(nextStore){
@@ -1702,11 +2365,6 @@ setActiveCat(
 categories[0]?.id||
 null
 );
-
-
-/*
-  Mağaza değişince tüm kategorileri kapat.
-*/
 
 setOpenCategories({});
 
@@ -1743,13 +2401,10 @@ return copy;
 
 
 /* =========================================================
-   PATH UPDATE
+   PATH
 ========================================================= */
 
-function setPath(
-path,
-value
-){
+function setPath(path,value){
 
 updateData(
 copy=>{
@@ -1768,8 +2423,7 @@ target[key]={
 ...(target[key]||{})
 };
 
-target=
-target[key];
+target=target[key];
 
 }
 
@@ -1784,7 +2438,7 @@ path[path.length-1]
 
 
 /* =========================================================
-   PARA BİRİMİ
+   CURRENCY
 ========================================================= */
 
 function getCurrency(){
@@ -1805,12 +2459,10 @@ CURRENCIES[0]
 
 
 /* =========================================================
-   FİYAT ÇEVİR
+   PRICE
 ========================================================= */
 
-function convertPrice(
-amount
-){
+function convertPrice(amount){
 
 if(
 amount===null||
@@ -1829,14 +2481,11 @@ data?.currency?.selected||
 const numeric=
 Number(amount);
 
-if(
-!Number.isFinite(numeric)
-){
+if(!Number.isFinite(numeric)){
 
 return null;
 
 }
-
 
 if(currency==="USD"){
 
@@ -1855,7 +2504,6 @@ return numeric/rate;
 
 }
 
-
 if(currency==="EUR"){
 
 const rate=
@@ -1873,19 +2521,12 @@ return numeric/rate;
 
 }
 
-
 return numeric;
 
 }
 
 
-/* =========================================================
-   FİYAT FORMAT
-========================================================= */
-
-function formatAmount(
-amount
-){
+function formatAmount(amount){
 
 const converted=
 convertPrice(amount);
@@ -1910,7 +2551,6 @@ converted.toLocaleString(
 {
 minimumFractionDigits:
 decimals,
-
 maximumFractionDigits:
 decimals
 }
@@ -2044,10 +2684,6 @@ setPinModal(true);
 }
 
 
-/* =========================================================
-   PIN
-========================================================= */
-
 function tryUnlock(){
 
 const correct=
@@ -2077,7 +2713,7 @@ setPinError(true);
 
 
 /* =========================================================
-   KATEGORİ EKLE
+   CATEGORY ADD
 ========================================================= */
 
 function addCategory(){
@@ -2117,7 +2753,7 @@ category.id
 
 
 /* =========================================================
-   KATEGORİ SİL
+   CATEGORY DELETE
 ========================================================= */
 
 function deleteCategory(id){
@@ -2178,14 +2814,7 @@ return copy;
 }
 
 
-/* =========================================================
-   KATEGORİ İSİM
-========================================================= */
-
-function renameCategory(
-id,
-value
-){
+function renameCategory(id,value){
 
 updateData(
 copy=>{
@@ -2211,14 +2840,7 @@ name:value
 }
 
 
-/* =========================================================
-   KATEGORİ SIRALA
-========================================================= */
-
-function moveCategory(
-id,
-direction
-){
+function moveCategory(id,direction){
 
 updateData(
 copy=>{
@@ -2267,12 +2889,10 @@ list;
 
 
 /* =========================================================
-   ÜRÜN EKLE
+   ITEM ADD
 ========================================================= */
 
-function addItem(
-categoryId
-){
+function addItem(categoryId){
 
 const item={
 
@@ -2285,6 +2905,8 @@ desc:"",
 dims:"",
 
 image:null,
+
+images:[],
 
 price:{
 contactOnly:true,
@@ -2318,20 +2940,13 @@ item
 }
 );
 
-
-/*
-  Ürün eklenince kategori otomatik açılsın.
-*/
-
-openCategory(
-categoryId
-);
+openCategory(categoryId);
 
 }
 
 
 /* =========================================================
-   ÜRÜN GÜNCELLE
+   ITEM UPDATE
 ========================================================= */
 
 function updateItem(
@@ -2387,7 +3002,7 @@ item.id===itemId
 
 
 /* =========================================================
-   ÜRÜN SİL
+   ITEM DELETE
 ========================================================= */
 
 function deleteItem(
@@ -2434,7 +3049,7 @@ item.id!==itemId
 
 
 /* =========================================================
-   ÜRÜN SIRALA
+   ITEM MOVE
 ========================================================= */
 
 function moveItem(
@@ -2495,7 +3110,6 @@ list[index]
 return{
 
 ...category,
-
 items:list
 
 };
@@ -2510,7 +3124,7 @@ items:list
 
 
 /* =========================================================
-   FİYAT EKLE
+   PRICE ADD
 ========================================================= */
 
 function addPricePart(
@@ -2604,7 +3218,7 @@ part
 
 
 /* =========================================================
-   FİYAT GÜNCELLE
+   PRICE UPDATE
 ========================================================= */
 
 function updatePricePart(
@@ -2693,7 +3307,7 @@ part.id===partId
 
 
 /* =========================================================
-   FİYAT SİL
+   PRICE DELETE
 ========================================================= */
 
 function deletePricePart(
@@ -2775,7 +3389,7 @@ part.id!==partId
 
 
 /* =========================================================
-   ÜRÜN GÖRSELİ
+   TEK ÜRÜN GÖRSELİ
 ========================================================= */
 
 async function uploadItemImage(
@@ -2818,18 +3432,98 @@ itemId
 const url=
 await uploadBlobToStorage(
 blob,
-path
+path,
+"image/jpeg"
 );
 
-updateItem(
-categoryId,
-itemId,
-"image",
-url
+updateData(
+copy=>{
+
+copy.stores[
+store
+].categories=
+copy.stores[
+store
+].categories.map(
+category=>{
+
+if(
+category.id!==categoryId
+){
+
+return category;
+
+}
+
+return{
+
+...category,
+
+items:
+category.items.map(
+item=>{
+
+if(
+item.id!==itemId
+){
+
+return item;
+
+}
+
+const current=
+Array.isArray(item.images)
+?item.images
+:[];
+
+const oldImage=
+item.image;
+
+let images=[
+...current
+];
+
+if(
+oldImage&&
+!images.includes(oldImage)
+){
+
+images.unshift(oldImage);
+
+}
+
+if(
+!images.includes(url)
+){
+
+images.push(url);
+
+}
+
+return{
+
+...item,
+
+image:
+images[0]||url,
+
+images
+
+};
+
+}
+)
+
+};
+
+}
+);
+
+}
 );
 
 showToast(
-"Görsel yüklendi. Kaydet'e basın."
+"Görsel eklendi. Kaydet'e basın."
 );
 
 }
@@ -2858,12 +3552,297 @@ event.target.value="";
 
 
 /* =========================================================
+   ÇOKLU ÜRÜN GÖRSELİ
+========================================================= */
+
+async function uploadMultipleItemImages(
+categoryId,
+itemId,
+event
+){
+
+const files=
+Array.from(
+event.target.files||[]
+);
+
+if(!files.length){
+
+return;
+
+}
+
+setBusy(true);
+
+try{
+
+const urls=[];
+
+for(
+const file of files
+){
+
+if(
+!file.type.startsWith("image/")
+){
+
+continue;
+
+}
+
+const compressed=
+await resizeImg(
+file,
+1000,
+.76
+);
+
+const blob=
+dataUrlToBlob(
+compressed
+);
+
+const url=
+await uploadBlobToStorage(
+blob,
+storagePath(
+"products",
+itemId
+),
+"image/jpeg"
+);
+
+if(url){
+
+urls.push(url);
+
+}
+
+}
+
+if(!urls.length){
+
+throw new Error(
+"Geçerli görsel bulunamadı"
+);
+
+}
+
+updateData(
+copy=>{
+
+copy.stores[
+store
+].categories=
+copy.stores[
+store
+].categories.map(
+category=>{
+
+if(
+category.id!==categoryId
+){
+
+return category;
+
+}
+
+return{
+
+...category,
+
+items:
+category.items.map(
+item=>{
+
+if(
+item.id!==itemId
+){
+
+return item;
+
+}
+
+let images=
+Array.isArray(item.images)
+?[...item.images]
+:[];
+
+if(
+item.image&&
+!images.includes(item.image)
+){
+
+images.unshift(
+item.image
+);
+
+}
+
+urls.forEach(
+url=>{
+
+if(!images.includes(url)){
+
+images.push(url);
+
+}
+
+}
+);
+
+return{
+
+...item,
+
+image:
+images[0]||
+item.image||
+null,
+
+images
+
+};
+
+}
+)
+
+};
+
+}
+);
+
+}
+);
+
+showToast(
+urls.length+
+" görsel eklendi. Kaydet'e basın."
+);
+
+}
+catch(error){
+
+console.error(error);
+
+showToast(
+"Görseller yüklenemedi."
+);
+
+}
+finally{
+
+setBusy(false);
+
+if(event.target){
+
+event.target.value="";
+
+}
+
+}
+
+}
+
+
+/* =========================================================
+   ÜRÜN GÖRSEL SİL
+========================================================= */
+
+function deleteItemImage(
+categoryId,
+itemId,
+imageUrl
+){
+
+updateData(
+copy=>{
+
+copy.stores[
+store
+].categories=
+copy.stores[
+store
+].categories.map(
+category=>{
+
+if(
+category.id!==categoryId
+){
+
+return category;
+
+}
+
+return{
+
+...category,
+
+items:
+category.items.map(
+item=>{
+
+if(
+item.id!==itemId
+){
+
+return item;
+
+}
+
+let images=
+Array.isArray(item.images)
+?[...item.images]
+:[];
+
+if(
+images.length===0&&
+item.image
+){
+
+images=[
+item.image
+];
+
+}
+
+images=
+images.filter(
+url=>
+url!==imageUrl
+);
+
+return{
+
+...item,
+
+images,
+
+image:
+images[0]||
+null
+
+};
+
+}
+)
+
+};
+
+}
+);
+
+}
+);
+
+}
+
+
+/* =========================================================
    LOGO
 ========================================================= */
 
-async function uploadLogo(
-event
-){
+async function uploadLogo(event){
 
 const file=
 event.target.files?.[0];
@@ -2896,7 +3875,8 @@ blob,
 storagePath(
 "logo",
 "logo"
-)
+),
+"image/jpeg"
 );
 
 setPath(
@@ -2937,9 +3917,7 @@ event.target.value="";
    BACKGROUND
 ========================================================= */
 
-async function uploadBackground(
-event
-){
+async function uploadBackground(event){
 
 const file=
 event.target.files?.[0];
@@ -2972,7 +3950,8 @@ blob,
 storagePath(
 "background",
 "background"
-)
+),
+"image/jpeg"
 );
 
 setPath(
@@ -3010,6 +3989,329 @@ event.target.value="";
 
 
 /* =========================================================
+   YENİ: HERO RESİM
+========================================================= */
+
+async function uploadHeroImages(event){
+
+const files=
+Array.from(
+event.target.files||[]
+);
+
+if(!files.length){
+
+return;
+
+}
+
+setBusy(true);
+
+try{
+
+const uploaded=[];
+
+for(
+const file of files
+){
+
+if(
+!file.type.startsWith("image/")
+){
+
+continue;
+
+}
+
+const compressed=
+await resizeImg(
+file,
+1600,
+.78
+);
+
+const blob=
+dataUrlToBlob(
+compressed
+);
+
+const url=
+await uploadBlobToStorage(
+blob,
+storagePath(
+"hero",
+"image"
+),
+"image/jpeg"
+);
+
+if(url){
+
+uploaded.push({
+
+id:uid(),
+
+url,
+
+type:"image"
+
+});
+
+}
+
+}
+
+if(!uploaded.length){
+
+throw new Error(
+"Resim yüklenemedi"
+);
+
+}
+
+updateData(
+copy=>{
+
+copy.heroMedia=[
+...(copy.heroMedia||[]),
+...uploaded
+];
+
+}
+);
+
+showToast(
+uploaded.length+
+" medya eklendi. Kaydet'e basın."
+);
+
+}
+catch(error){
+
+console.error(error);
+
+showToast(
+"Resimler yüklenemedi."
+);
+
+}
+finally{
+
+setBusy(false);
+
+if(event.target){
+
+event.target.value="";
+
+}
+
+}
+
+}
+
+
+/* =========================================================
+   YENİ: HERO VİDEO
+========================================================= */
+
+async function uploadHeroVideos(event){
+
+const files=
+Array.from(
+event.target.files||[]
+);
+
+if(!files.length){
+
+return;
+
+}
+
+setBusy(true);
+
+try{
+
+const uploaded=[];
+
+for(
+const file of files
+){
+
+if(
+!file.type.startsWith("video/")
+){
+
+continue;
+
+}
+
+const extension=
+(
+file.name.split(".").pop()||
+"mp4"
+)
+.toLowerCase()
+.replace(
+/[^a-z0-9]/g,
+""
+);
+
+const path=
+storagePath(
+"hero-videos",
+"video",
+extension
+);
+
+const url=
+await uploadFileToStorage(
+file,
+path
+);
+
+if(url){
+
+uploaded.push({
+
+id:uid(),
+
+url,
+
+type:"video"
+
+});
+
+}
+
+}
+
+if(!uploaded.length){
+
+throw new Error(
+"Video yüklenemedi"
+);
+
+}
+
+updateData(
+copy=>{
+
+copy.heroMedia=[
+...(copy.heroMedia||[]),
+...uploaded
+];
+
+}
+);
+
+showToast(
+uploaded.length+
+" video eklendi. Kaydet'e basın."
+);
+
+}
+catch(error){
+
+console.error(error);
+
+showToast(
+"Videolar yüklenemedi."
+);
+
+}
+finally{
+
+setBusy(false);
+
+if(event.target){
+
+event.target.value="";
+
+}
+
+}
+
+}
+
+
+/* =========================================================
+   HERO MEDYA SİL
+========================================================= */
+
+function deleteHeroMedia(id){
+
+updateData(
+copy=>{
+
+copy.heroMedia=
+(copy.heroMedia||[])
+.filter(
+item=>
+item.id!==id
+);
+
+}
+);
+
+showToast(
+"Medya kaldırıldı. Kaydet'e basın."
+);
+
+}
+
+
+/* =========================================================
+   HERO MEDYA SIRALA
+========================================================= */
+
+function moveHeroMedia(
+id,
+direction
+){
+
+updateData(
+copy=>{
+
+const list=[
+...(copy.heroMedia||[])
+];
+
+const index=
+list.findIndex(
+item=>
+item.id===id
+);
+
+const target=
+index+direction;
+
+if(
+index<0||
+target<0||
+target>=list.length
+){
+
+return;
+
+}
+
+[
+list[index],
+list[target]
+]=[
+list[target],
+list[index]
+];
+
+copy.heroMedia=list;
+
+}
+);
+
+}
+
+
+/* =========================================================
    THEME
 ========================================================= */
 
@@ -3023,11 +4325,8 @@ copy.theme={
 ...copy.theme,
 
 bg:theme.bg,
-
 card:theme.card,
-
 accent:theme.accent,
-
 text:theme.text
 
 };
@@ -3090,19 +4389,12 @@ return(
 style={{
 
 minHeight:"100vh",
-
 background:"#141416",
-
 color:"#aaa",
-
 display:"flex",
-
 alignItems:"center",
-
 justifyContent:"center",
-
-fontFamily:
-"Inter,sans-serif"
+fontFamily:"Inter,sans-serif"
 
 }}
 >
@@ -3116,10 +4408,6 @@ Veriler yükleniyor...
 }
 
 
-/* =========================================================
-   DATA YOK
-========================================================= */
-
 if(!data){
 
 return(
@@ -3128,15 +4416,10 @@ return(
 style={{
 
 minHeight:"100vh",
-
 background:"#141416",
-
 color:"#f87171",
-
 display:"flex",
-
 alignItems:"center",
-
 justifyContent:"center"
 
 }}
@@ -3171,7 +4454,7 @@ null;
 
 
 /* =========================================================
-   TÜM ÜRÜNLER
+   ALL PRODUCTS
 ========================================================= */
 
 const allProducts=
@@ -3181,7 +4464,6 @@ category.items.map(
 item=>({
 
 ...item,
-
 categoryName:
 category.name
 
@@ -3387,8 +4669,6 @@ className="max-w-5xl mx-auto flex justify-between items-center gap-3"
 >
 
 
-{/* MAĞAZALAR */}
-
 <div
 className="flex gap-1 p-1 rounded-full"
 style={{
@@ -3439,16 +4719,10 @@ store===item.id
 </div>
 
 
-{/* SAĞ MENÜ */}
-
 <div
 className="flex items-center gap-2"
 >
 
-
-{/* =================================================
-    PARA BİRİMİ SEÇİMİ
-================================================= */}
 
 <div className="relative">
 
@@ -3465,10 +4739,7 @@ style={{
 background:
 theme.accent,
 
-color:"#fff",
-
-backdropFilter:
-"blur(15px)"
+color:"#fff"
 
 }}
 >
@@ -3486,8 +4757,6 @@ size={13}
 
 </button>
 
-
-{/* PARA BİRİMİ MENÜSÜ */}
 
 {currencyMenuOpen&&(
 
@@ -3513,7 +4782,9 @@ borderColor:
 theme.text+"12"
 }}
 >
+
 Para Birimi
+
 </div>
 
 {CURRENCIES.map(c=>(
@@ -3532,7 +4803,7 @@ false
 );
 
 }}
-className="w-full px-3 py-3 flex items-center justify-between text-sm font-semibold transition"
+className="w-full px-3 py-3 flex items-center justify-between text-sm font-semibold"
 style={{
 
 background:
@@ -3598,8 +4869,6 @@ size={15}
 </div>
 
 
-{/* ARAMA */}
-
 <button
 onClick={()=>
 setSearch(
@@ -3637,7 +4906,9 @@ size={18}
 </div>
 
 
-{/* SEARCH */}
+{/* =====================================================
+    SEARCH
+===================================================== */}
 
 {search!==""&&(
 
@@ -3676,7 +4947,7 @@ color:theme.text
 ===================================================== */}
 
 <header
-className="px-6 pt-28 pb-8 max-w-5xl mx-auto"
+className="px-6 pt-28 pb-6 max-w-5xl mx-auto"
 >
 
 <div
@@ -3726,15 +4997,14 @@ display:"block"
 style={{
 
 fontSize:50,
-
 fontWeight:800,
-
-color:
-theme.accent
+color:theme.accent
 
 }}
 >
+
 O
+
 </div>
 
 )}
@@ -3811,6 +5081,16 @@ size={15}
 </div>
 
 </header>
+
+
+{/* =====================================================
+    YENİ: LOGO ALTINDA MEDYA SLAYTI
+===================================================== */}
+
+<HeroMediaSlider
+media={data.heroMedia||[]}
+theme={theme}
+/>
 
 
 {/* =====================================================
@@ -4013,46 +5293,11 @@ boxShadow:
 >
 
 
-<div
-style={{
-
-height:
-data.cardImgSize,
-
-backgroundColor:
-theme.accent+"12",
-
-backgroundImage:
-item.image
-?`url(${item.image})`
-:undefined,
-
-backgroundSize:"cover",
-
-backgroundPosition:"center",
-
-display:
-item.image
-?"block"
-:"flex",
-
-alignItems:"center",
-
-justifyContent:"center"
-
-}}
->
-
-{!item.image&&(
-
-<Icon
-type="image"
-size={28}
+<ProductGallery
+item={item}
+theme={theme}
+height={data.cardImgSize}
 />
-
-)}
-
-</div>
 
 
 <div className="p-3">
@@ -4160,45 +5405,11 @@ e.stopPropagation()
 
 <div className="relative">
 
-<div
-style={{
-
-height:270,
-
-backgroundColor:
-theme.accent+"12",
-
-backgroundImage:
-selectedProduct.image
-?`url(${selectedProduct.image})`
-:undefined,
-
-backgroundSize:"cover",
-
-backgroundPosition:"center",
-
-display:
-selectedProduct.image
-?"block"
-:"flex",
-
-alignItems:"center",
-
-justifyContent:"center"
-
-}}
->
-
-{!selectedProduct.image&&(
-
-<Icon
-type="image"
-size={40}
+<ProductGallery
+item={selectedProduct}
+theme={theme}
+height={270}
 />
-
-)}
-
-</div>
 
 
 <button
@@ -4416,14 +5627,9 @@ className="fixed bottom-5 right-[18px] z-30 rounded-full shadow-xl flex items-ce
 style={{
 
 width:52,
-
 height:52,
-
-background:
-theme.text,
-
-color:
-theme.bg
+background:theme.text,
+color:theme.bg
 
 }}
 >
@@ -4459,7 +5665,7 @@ size={15}
 
 
 {/* =====================================================
-    PIN MODAL
+    PIN
 ===================================================== */}
 
 {pinModal&&(
@@ -4484,7 +5690,9 @@ size={18}
 <h2
 className="font-bold"
 >
+
 Yönetim Girişi
+
 </h2>
 
 </div>
@@ -4564,8 +5772,7 @@ Vazgeç
 onClick={tryUnlock}
 className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -4592,7 +5799,6 @@ Giriş Yap
 className="fixed inset-0 z-[180] flex justify-end"
 >
 
-
 <div
 className="flex-1 bg-black/40"
 onClick={()=>
@@ -4613,7 +5819,6 @@ className="w-full sm:w-[460px] h-full bg-neutral-950 text-white overflow-y-auto 
 <div
 className="sticky top-0 z-20 bg-neutral-950 border-b border-neutral-800 px-5 pt-5 pb-3"
 >
-
 
 <div
 className="flex items-center justify-between mb-4"
@@ -4817,10 +6022,12 @@ placeholder="+90 5xx xxx xx xx"
 </label>
 
 
-<div
-className="h-px bg-neutral-800 my-5"
-/>
+<div className="h-px bg-neutral-800 my-5"/>
 
+
+{/* =================================================
+    PARA BİRİMİ
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -4834,7 +6041,6 @@ Para Birimi
 <div
 className="bg-neutral-900 rounded-xl p-4 mb-5"
 >
-
 
 <div
 className="text-xs text-neutral-400 mb-3"
@@ -4913,7 +6119,6 @@ setPath(
 e.target.value
 )
 }
-placeholder="Örn: 40"
 />
 
 </label>
@@ -4940,7 +6145,6 @@ setPath(
 e.target.value
 )
 }
-placeholder="Örn: 47"
 />
 
 </label>
@@ -4948,12 +6152,12 @@ placeholder="Örn: 47"
 </div>
 
 
-<div
-className="h-px bg-neutral-800 my-5"
-/>
+<div className="h-px bg-neutral-800 my-5"/>
 
 
-{/* LOGO */}
+{/* =================================================
+    LOGO
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -4976,9 +6180,7 @@ alt="Logo"
 style={{
 
 maxWidth:"100%",
-
 maxHeight:100,
-
 objectFit:"contain"
 
 }}
@@ -5121,12 +6323,256 @@ data.logo.position===value
 </div>
 
 
+{/* =================================================
+    YENİ MEDYA SLAYTI YÖNETİMİ
+================================================= */}
+
+<div className="h-px bg-neutral-800 my-5"/>
+
 <div
-className="h-px bg-neutral-800 my-5"
+className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
+>
+
+Logo Altı Medya Slaytı
+
+</div>
+
+
+<div
+className="bg-neutral-900 rounded-xl p-4 mb-4"
+>
+
+<div
+className="text-xs text-neutral-400 leading-relaxed mb-3"
+>
+
+İstersen fotoğraf veya video ekleyebilirsin. Birden fazla medya eklediğinde sitede otomatik slayt olarak değişir. Hiç medya eklemezsen bu alan sitede görünmez.
+
+</div>
+
+
+<div
+className="grid grid-cols-2 gap-2"
+>
+
+<button
+disabled={busy}
+onClick={()=>
+heroImageRef.current?.click()
+}
+className="py-2.5 rounded-lg bg-neutral-800 border border-neutral-700 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40"
+>
+
+<Icon
+type="image"
+size={15}
+/>
+
+Fotoğraf Ekle
+
+</button>
+
+
+<button
+disabled={busy}
+onClick={()=>
+heroVideoRef.current?.click()
+}
+className="py-2.5 rounded-lg bg-neutral-800 border border-neutral-700 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40"
+>
+
+<Icon
+type="video"
+size={15}
+/>
+
+Video Ekle
+
+</button>
+
+
+<input
+ref={heroImageRef}
+type="file"
+accept="image/png,image/jpeg,image/webp"
+multiple
+className="hidden"
+onChange={uploadHeroImages}
 />
 
 
-{/* THEMES */}
+<input
+ref={heroVideoRef}
+type="file"
+accept="video/mp4,video/webm,video/quicktime"
+multiple
+className="hidden"
+onChange={uploadHeroVideos}
+/>
+
+</div>
+
+</div>
+
+
+{/* MEDYA LİSTESİ */}
+
+{(data.heroMedia||[]).length>0&&(
+
+<div className="space-y-2 mb-5">
+
+{data.heroMedia.map(
+(
+media,
+index
+)=>(
+
+<div
+key={media.id}
+className="bg-neutral-900 border border-neutral-800 rounded-xl p-2 flex gap-2 items-center"
+>
+
+<div
+className="w-20 h-14 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0"
+>
+
+{media.type==="video"?(
+
+<video
+src={media.url}
+muted
+playsInline
+className="w-full h-full object-cover"
+/>
+
+):( 
+
+<img
+src={media.url}
+alt=""
+className="w-full h-full object-cover"
+/>
+
+)}
+
+</div>
+
+
+<div className="flex-1 min-w-0">
+
+<div className="text-[10px] font-bold text-neutral-300 flex items-center gap-1">
+
+{media.type==="video"?(
+
+<>
+<Icon
+type="video"
+size={12}
+/>
+Video
+</>
+
+):( 
+
+<>
+<Icon
+type="image"
+size={12}
+/>
+Fotoğraf
+</>
+
+)}
+
+</div>
+
+
+<div className="text-[9px] text-neutral-600 mt-1 truncate">
+
+Slayt {index+1}
+
+</div>
+
+</div>
+
+
+<div className="flex gap-1">
+
+<button
+onClick={()=>
+moveHeroMedia(
+media.id,
+-1
+)
+}
+disabled={index===0}
+className="p-1.5 bg-neutral-800 rounded disabled:opacity-20"
+>
+
+<Icon
+type="left"
+size={12}
+/>
+
+</button>
+
+
+<button
+onClick={()=>
+moveHeroMedia(
+media.id,
+1
+)
+}
+disabled={
+index===
+data.heroMedia.length-1
+}
+className="p-1.5 bg-neutral-800 rounded disabled:opacity-20"
+>
+
+<Icon
+type="right"
+size={12}
+/>
+
+</button>
+
+
+<button
+onClick={()=>
+deleteHeroMedia(
+media.id
+)
+}
+className="p-1.5 bg-red-950 text-red-400 rounded"
+>
+
+<Icon
+type="trash"
+size={12}
+/>
+
+</button>
+
+</div>
+
+</div>
+
+)
+)}
+
+</div>
+
+)}
+
+
+<div className="h-px bg-neutral-800 my-5"/>
+
+
+{/* =================================================
+    TEMALAR
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -5164,14 +6610,9 @@ theme.accent===item.accent
 style={{
 
 height:35,
-
-background:
-item.bg,
-
+background:item.bg,
 display:"flex",
-
 alignItems:"center",
-
 justifyContent:"center"
 
 }}
@@ -5181,13 +6622,9 @@ justifyContent:"center"
 style={{
 
 width:15,
-
 height:15,
-
 borderRadius:"50%",
-
-background:
-item.accent
+background:item.accent
 
 }}
 />
@@ -5430,8 +6867,7 @@ Premium ve Outlet ürünleri birbirinden bağımsızdır.
 onClick={addCategory}
 className="w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -5446,7 +6882,7 @@ Yeni Kategori
 
 
 {/* =================================================
-    KATEGORİ LİSTESİ
+    KATEGORİLER
 ================================================= */}
 
 {categories.map(
@@ -5461,14 +6897,9 @@ className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hid
 >
 
 
-{/* =================================================
-    KATEGORİ BAŞLIĞI
-================================================= */}
-
 <div
 className="p-2 flex items-center gap-1.5"
 >
-
 
 <input
 value={category.name}
@@ -5480,11 +6911,8 @@ e.target.value
 }
 className="admin-input"
 style={{
-
 padding:"9px 10px",
-
 fontSize:"13px"
-
 }}
 />
 
@@ -5549,10 +6977,6 @@ size={14}
 </button>
 
 
-{/* =================================================
-    ÜRÜNLER AÇ/KAPAT
-================================================= */}
-
 <button
 onClick={()=>
 toggleCategory(
@@ -5592,7 +7016,7 @@ size={13}
 
 
 {/* =================================================
-    SADECE AÇIKSA ÜRÜNLER GÖSTER
+    ÜRÜNLER
 ================================================= */}
 
 {openCategories[category.id]&&(
@@ -5601,8 +7025,6 @@ size={13}
 className="category-products p-2 pt-0"
 >
 
-
-{/* ÜRÜN YOK */}
 
 {category.items.length===0&&(
 
@@ -5617,8 +7039,6 @@ Bu kategoride henüz ürün yok.
 )}
 
 
-{/* ÜRÜNLER */}
-
 {category.items.map(
 (
 item,
@@ -5631,51 +7051,90 @@ className="bg-neutral-800 rounded-xl p-3 mb-2"
 >
 
 
+{/* =================================================
+    ÜRÜN GÖRSELLERİ
+================================================= */}
+
 <div
-className="flex gap-2 mb-2"
+className="mb-3"
 >
 
+<div
+className="flex gap-2 overflow-x-auto pb-1"
+>
 
-{/* GÖRSEL */}
+{(
+Array.isArray(item.images)
+?item.images
+:item.image
+?[item.image]
+:[]
+).map(
+(
+imageUrl,
+imageIndex
+)=>(
 
 <div
+key={imageUrl+imageIndex}
+className="relative w-20 h-20 rounded-lg overflow-hidden bg-neutral-700 flex-shrink-0"
+>
+
+<img
+src={imageUrl}
+alt=""
+className="w-full h-full object-cover"
+/>
+
+
+<button
+onClick={()=>
+deleteItemImage(
+category.id,
+item.id,
+imageUrl
+)
+}
+className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-red-400 flex items-center justify-center"
+>
+
+<Icon
+type="x"
+size={11}
+/>
+
+</button>
+
+</div>
+
+)
+)}
+
+
+<button
+disabled={busy}
 onClick={()=>
 itemRefs
 .current[
 item.id
-]
-?.click()
+]?.click()
 }
-className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
-style={{
-
-backgroundImage:
-item.image
-?`url(${item.image})`
-:undefined,
-
-backgroundSize:"cover",
-
-backgroundPosition:"center"
-
-}}
+className="w-20 h-20 rounded-lg bg-neutral-700 border border-dashed border-neutral-600 flex-shrink-0 flex flex-col items-center justify-center text-[9px] text-neutral-400 disabled:opacity-40"
 >
 
-{!item.image&&(
-
 <Icon
-type="image"
-size={18}
+type="plus"
+size={17}
 />
 
-)}
+Fotoğraf
 
-</div>
+</button>
 
 
 <input
 type="file"
-accept="image/*"
+accept="image/png,image/jpeg,image/webp"
 className="hidden"
 ref={element=>{
 
@@ -5694,10 +7153,71 @@ e
 />
 
 
-<div
-className="flex-1"
+<button
+disabled={busy}
+onClick={()=>
+multipleItemRefs
+.current[
+item.id
+]?.click()
+}
+className="w-20 h-20 rounded-lg bg-neutral-700 border border-dashed border-neutral-600 flex-shrink-0 flex flex-col items-center justify-center text-[9px] text-neutral-400 disabled:opacity-40"
 >
 
+<Icon
+type="image"
+size={17}
+/>
+
+Çoklu
+
+</button>
+
+
+<input
+type="file"
+accept="image/png,image/jpeg,image/webp"
+multiple
+className="hidden"
+ref={element=>{
+
+multipleItemRefs.current[
+item.id
+]=element;
+
+}}
+onChange={e=>
+uploadMultipleItemImages(
+category.id,
+item.id,
+e
+)
+}
+/>
+
+</div>
+
+
+<div
+className="text-[9px] text-neutral-500 mt-1"
+>
+
+Fotoğrafa basarak tekli ekle, "Çoklu" ile birden fazla fotoğraf seç.
+
+</div>
+
+</div>
+
+
+{/* =================================================
+    ÜRÜN BİLGİLERİ
+================================================= */}
+
+<div
+className="flex gap-2 mb-2"
+>
+
+<div className="flex-1">
 
 <input
 value={item.name}
@@ -5714,9 +7234,7 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px",
-
 marginBottom:"6px"
 
 }}
@@ -5738,7 +7256,6 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px"
 
 }}
@@ -5766,9 +7283,7 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px",
-
 marginBottom:"10px"
 
 }}
@@ -5776,18 +7291,16 @@ marginBottom:"10px"
 
 
 {/* =================================================
-    AYRI FİYATLAR
+    FİYATLAR
 ================================================= */}
 
 <div
 className="rounded-xl border border-neutral-700 bg-neutral-900 p-3 mb-2"
 >
 
-
 <div
 className="flex items-center justify-between mb-3"
 >
-
 
 <div>
 
@@ -5823,8 +7336,7 @@ item.id
 }
 className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -5865,11 +7377,9 @@ key={part.id}
 className="bg-neutral-800 rounded-lg p-2 mb-2"
 >
 
-
 <div
 className="flex gap-2"
 >
-
 
 <input
 value={part.name}
@@ -5887,7 +7397,6 @@ className="admin-input"
 style={{
 
 padding:"8px",
-
 fontSize:"11px"
 
 }}
@@ -5920,15 +7429,10 @@ className="admin-input"
 style={{
 
 width:"105px",
-
 padding:"8px",
-
 fontSize:"11px",
-
 opacity:
-part.contactOnly
-?.4
-:1
+part.contactOnly?.4:1
 
 }}
 />
@@ -5988,33 +7492,12 @@ Fiyat için iletişime geçin
 
 
 {/* =================================================
-    ÜRÜN ALT BUTONLARI
+    ALT BUTONLAR
 ================================================= */}
 
 <div
 className="flex justify-end gap-1"
 >
-
-
-{item.image&&(
-
-<button
-onClick={()=>
-updateItem(
-category.id,
-item.id,
-"image",
-null
-)
-}
-className="px-2 py-1 bg-neutral-700 rounded text-[10px]"
->
-
-Görseli Sil
-
-</button>
-
-)}
 
 
 <button
@@ -6159,7 +7642,6 @@ saved
 }}
 >
 
-
 {saved?(
 
 <Icon
@@ -6167,7 +7649,7 @@ type="check"
 size={17}
 />
 
-):(
+):( 
 
 <Icon
 type="save"
@@ -6215,15 +7697,10 @@ return(
 style={{
 
 color:"#737373",
-
 fontSize:"10px",
-
 fontWeight:700,
-
 letterSpacing:".08em",
-
 textTransform:"uppercase",
-
 marginBottom:"6px"
 
 }}
