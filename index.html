@@ -82,10 +82,6 @@ border:1px solid rgba(255,255,255,.08);
 background:rgba(0,0,0,.12);
 }
 
-.category-products{
-animation:fadeIn .2s ease;
-}
-
 @media(max-width:420px){
 .product-grid{
 grid-template-columns:repeat(2,minmax(0,1fr));
@@ -123,7 +119,6 @@ detectSessionInUrl:false
 );
 
 const SITE_ID=1;
-
 const STORAGE_BUCKET="catalog-images";
 
 const STORES=[
@@ -284,11 +279,11 @@ let parts=[];
 if(Array.isArray(price.parts)){
 parts=price.parts.map(p=>({
 id:p.id||uid(),
-name:p.name||"Ürün",
+name:typeof p.name==="string"?p.name:"Ürün",
 amount:
-p.amount===""||
 p.amount===null||
-p.amount===undefined
+p.amount===undefined||
+p.amount===""
 ?null
 :Number(p.amount),
 contactOnly:!!p.contactOnly
@@ -460,9 +455,7 @@ const parts=dataUrl.split(",");
 const meta=parts[0]||"";
 const data=parts[1]||"";
 
-const mimeMatch=meta.match(
-/data:([^;]+)/
-);
+const mimeMatch=meta.match(/data:([^;]+)/);
 
 const mime=mimeMatch
 ?mimeMatch[1]
@@ -470,15 +463,9 @@ const mime=mimeMatch
 
 const binary=atob(data);
 
-const bytes=new Uint8Array(
-binary.length
-);
+const bytes=new Uint8Array(binary.length);
 
-for(
-let i=0;
-i<binary.length;
-i++
-){
+for(let i=0;i<binary.length;i++){
 bytes[i]=binary.charCodeAt(i);
 }
 
@@ -809,14 +796,14 @@ const [saving,setSaving]=useState(false);
 const [saved,setSaved]=useState(false);
 const [toast,setToast]=useState("");
 const [store,setStore]=useState("premium");
-
 const [activeCat,setActiveCat]=useState(null);
 
-/* YENİ:
-   Admin panelindeki açık kategori artık activeCat'ten bağımsız.
-   Böylece public taraftaki kategori seçimi bozulmaz.
+/*
+  YENİ:
+  Her kategorinin ürünlerinin açık/kapalı durumunu ayrı tutuyoruz.
+  Başlangıçta bütün kategoriler kapalı.
 */
-const [openCategoryId,setOpenCategoryId]=useState(null);
+const [openCategories,setOpenCategories]=useState({});
 
 const [search,setSearch]=useState("");
 const [selectedProduct,setSelectedProduct]=useState(null);
@@ -831,10 +818,47 @@ const [busy,setBusy]=useState(false);
 const logoRef=useRef(null);
 const bgRef=useRef(null);
 const itemRefs=useRef({});
+const realtimeChannelRef=useRef(null);
 
 function showToast(message){
 setToast(message);
 setTimeout(()=>setToast(""),3000);
+}
+
+/*
+  KATEGORİ AÇ / KAPAT
+*/
+function toggleCategory(categoryId){
+
+setOpenCategories(previous=>({
+...previous,
+[categoryId]:!previous[categoryId]
+}));
+
+}
+
+/*
+  Kategoriyi aç
+*/
+function openCategory(categoryId){
+
+setOpenCategories(previous=>({
+...previous,
+[categoryId]:true
+}));
+
+}
+
+/*
+  Kategoriyi kapat
+*/
+function closeCategory(categoryId){
+
+setOpenCategories(previous=>({
+...previous,
+[categoryId]:false
+}));
+
 }
 
 useEffect(()=>{
@@ -872,14 +896,18 @@ else{
 
 loaded=defaultData();
 
+const insertResult=
 await supabase
 .from("site_data")
 .upsert({
 id:SITE_ID,
 data:loaded,
-updated_at:
-new Date().toISOString()
+updated_at:new Date().toISOString()
 });
+
+if(insertResult.error){
+throw insertResult.error;
+}
 
 }
 
@@ -887,16 +915,131 @@ if(cancelled)return;
 
 setData(loaded);
 
-const firstCategory=
+setActiveCat(
 loaded.stores
 ?.premium
 ?.categories
 ?.[0]
 ?.id||
-null;
+null
+);
 
-setActiveCat(firstCategory);
-setOpenCategoryId(null);
+/*
+  Bütün kategoriler başlangıçta kapalı.
+*/
+setOpenCategories({});
+
+if(!realtimeChannelRef.current){
+
+const channel=
+supabase
+.channel(
+"site-data-realtime-"+SITE_ID
+)
+.on(
+"postgres_changes",
+{
+event:"*",
+schema:"public",
+table:"site_data",
+filter:"id=eq."+SITE_ID
+},
+payload=>{
+
+if(
+!payload||
+!payload.new||
+!payload.new.data
+){
+return;
+}
+
+const realtimeData=
+normalizeData(
+payload.new.data
+);
+
+setData(realtimeData);
+
+setActiveCat(
+currentActive=>{
+
+const currentCategories=
+realtimeData
+.stores
+?.[store]
+?.categories||
+[];
+
+if(
+currentCategories.some(
+category=>
+category.id===currentActive
+)
+){
+return currentActive;
+}
+
+return(
+currentCategories[0]?.id||
+null
+);
+
+}
+);
+
+setSelectedProduct(
+currentProduct=>{
+
+if(!currentProduct){
+return null;
+}
+
+let found=null;
+
+Object.values(
+realtimeData.stores||{}
+).forEach(storeData=>{
+
+(storeData.categories||[]).forEach(category=>{
+
+const item=
+(category.items||[])
+.find(
+product=>
+product.id===currentProduct.id
+);
+
+if(item){
+found=item;
+}
+
+});
+
+});
+
+return found||null;
+
+}
+);
+
+setSaved(false);
+
+}
+);
+
+channel.subscribe(
+status=>{
+console.log(
+"Supabase Realtime:",
+status
+);
+}
+);
+
+realtimeChannelRef.current=channel;
+
+}
 
 }
 catch(error){
@@ -918,7 +1061,7 @@ fallback.stores
 null
 );
 
-setOpenCategoryId(null);
+setOpenCategories({});
 
 showToast(
 "Veritabanı bağlantısı kontrol edilmeli"
@@ -938,7 +1081,19 @@ setLoading(false);
 load();
 
 return()=>{
+
 cancelled=true;
+
+if(realtimeChannelRef.current){
+
+supabase.removeChannel(
+realtimeChannelRef.current
+);
+
+realtimeChannelRef.current=null;
+
+}
+
 };
 
 },[]);
@@ -959,8 +1114,11 @@ categories[0]?.id||
 null
 );
 
-/* Mağaza değişince hiçbir kategori açık kalmasın */
-setOpenCategoryId(null);
+/*
+  Mağaza değişince kategoriler kapalı.
+*/
+setOpenCategories({});
+
 }
 
 function updateData(callback){
@@ -1004,9 +1162,7 @@ target=target[key];
 
 }
 
-target[
-path[path.length-1]
-]=value;
+target[path[path.length-1]]=value;
 
 });
 }
@@ -1024,14 +1180,14 @@ item=>item.id===current
 
 const next=
 CURRENCIES[
-(index+1)%
-CURRENCIES.length
+(index+1)%CURRENCIES.length
 ];
 
 setPath(
 ["currency","selected"],
 next.id
 );
+
 }
 
 function getCurrency(){
@@ -1047,6 +1203,7 @@ data?.currency?.selected||
 )||
 CURRENCIES[0]
 );
+
 }
 
 function convertPrice(amount){
@@ -1081,6 +1238,7 @@ return null;
 }
 
 return numeric/rate;
+
 }
 
 if(currency==="EUR"){
@@ -1095,9 +1253,11 @@ return null;
 }
 
 return numeric/rate;
+
 }
 
 return numeric;
+
 }
 
 function formatAmount(amount){
@@ -1135,6 +1295,7 @@ return "€"+formatted;
 }
 
 return formatted+" ₺";
+
 }
 
 async function save(){
@@ -1156,8 +1317,7 @@ await supabase
 {
 id:SITE_ID,
 data:clean,
-updated_at:
-new Date().toISOString()
+updated_at:new Date().toISOString()
 },
 {
 onConflict:"id"
@@ -1213,6 +1373,7 @@ return;
 setPinInput("");
 setPinError(false);
 setPinModal(true);
+
 }
 
 function tryUnlock(){
@@ -1254,8 +1415,10 @@ category
 
 });
 
-/* Yeni kategori otomatik açılır */
-setOpenCategoryId(category.id);
+setActiveCat(category.id);
+
+openCategory(category.id);
+
 }
 
 function deleteCategory(id){
@@ -1295,10 +1458,14 @@ remaining[0]?.id||
 null
 );
 
-/* Silinen kategori açıksa kapat */
-if(openCategoryId===id){
-setOpenCategoryId(null);
-}
+setOpenCategories(previous=>{
+
+const copy={...previous};
+delete copy[id];
+return copy;
+
+});
+
 }
 
 function renameCategory(
@@ -1324,6 +1491,7 @@ name:value
 );
 
 });
+
 }
 
 function moveCategory(
@@ -1368,6 +1536,7 @@ store
 ].categories=list;
 
 });
+
 }
 
 function addItem(categoryId){
@@ -1407,8 +1576,11 @@ item
 
 });
 
-/* Ürün eklenince ilgili kategori açık kalır */
-setOpenCategoryId(categoryId);
+/*
+  Ürün eklenince ilgili kategori otomatik açılsın.
+*/
+openCategory(categoryId);
+
 }
 
 function updateItem(
@@ -1452,6 +1624,7 @@ item.id===itemId
 );
 
 });
+
 }
 
 function deleteItem(
@@ -1489,6 +1662,7 @@ item.id!==itemId
 );
 
 });
+
 }
 
 function moveItem(
@@ -1550,6 +1724,7 @@ items:list
 );
 
 });
+
 }
 
 function addPricePart(
@@ -1617,6 +1792,7 @@ part
 );
 
 });
+
 }
 
 function updatePricePart(
@@ -1685,6 +1861,7 @@ part.id===partId
 );
 
 });
+
 }
 
 function deletePricePart(
@@ -1746,6 +1923,7 @@ part.id!==partId
 );
 
 });
+
 }
 
 async function uploadItemImage(
@@ -1819,6 +1997,7 @@ event.target.value="";
 }
 
 }
+
 }
 
 async function uploadLogo(event){
@@ -1883,6 +2062,7 @@ event.target.value="";
 }
 
 }
+
 }
 
 async function uploadBackground(event){
@@ -1947,6 +2127,7 @@ event.target.value="";
 }
 
 }
+
 }
 
 function applyTheme(theme){
@@ -1962,6 +2143,7 @@ text:theme.text
 };
 
 });
+
 }
 
 function resetDefault(){
@@ -1987,11 +2169,12 @@ fresh.stores
 null
 );
 
-setOpenCategoryId(null);
+setOpenCategories({});
 
 showToast(
 "Varsayılan ayarlar yüklendi. Kaydedin."
 );
+
 }
 
 if(loading){
@@ -2255,7 +2438,6 @@ background:theme.accent,
 color:"#fff",
 backdropFilter:"blur(15px)"
 }}
-title="Para birimini değiştir"
 >
 {currency.symbol}
 </button>
@@ -3603,8 +3785,7 @@ category.id,
 )
 }
 disabled={
-categoryIndex===
-categories.length-1
+categoryIndex===categories.length-1
 }
 className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
 >
@@ -3628,64 +3809,51 @@ size={14}
 />
 </button>
 
-<!--
-    BURASI DEĞİŞTİ:
-    Ürünler butonu artık aç/kapat şeklinde çalışıyor.
-    Aynı kategoriye tekrar basınca kapanıyor.
-    Başka kategoriye basınca önceki kapanıyor.
--->
-
 <button
-onClick={()=>{
-setOpenCategoryId(
-openCategoryId===category.id
-?null
-:category.id
-);
-}}
-className="px-2.5 py-2 rounded-lg text-[11px] whitespace-nowrap font-semibold flex items-center gap-1.5"
+onClick={()=>
+toggleCategory(
+category.id
+)
+}
+className="px-3 py-2 rounded-lg text-[11px] whitespace-nowrap flex items-center gap-1.5 font-semibold transition"
 style={{
 background:
-openCategoryId===category.id
+openCategories[category.id]
 ?theme.accent
 :"#262626",
 
 color:
-openCategoryId===category.id
+openCategories[category.id]
 ?"#fff"
 :"#aaa"
 }}
 >
-{openCategoryId===category.id?(
-<>
-<Icon
-type="up"
-size={12}
-/>
-Kapat
-</>
-):(
-<>
-<Icon
-type="down"
-size={12}
-/>
 Ürünler
-</>
-)}
+
+<Icon
+type={
+openCategories[category.id]
+?"up"
+:"down"
+}
+size={13}
+/>
+
 </button>
 
 </div>
 
-{openCategoryId===category.id&&(
+{/*
+  ASIL DEĞİŞİKLİK:
+  Sadece openCategories[category.id] true ise ürünleri gösteriyoruz.
+*/}
+{openCategories[category.id]&&(
 
-<div
-className="p-2 pt-0 category-products"
->
+<div className="p-2 pt-0">
 
 {category.items.length===0&&(
 
-<div className="text-center py-5 text-[11px] text-neutral-500">
+<div className="bg-neutral-800 rounded-xl p-4 mb-2 text-center text-xs text-neutral-500">
 Bu kategoride henüz ürün yok.
 </div>
 
@@ -3842,8 +4010,7 @@ item.id
 }
 className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 <Icon
@@ -4025,8 +4192,7 @@ item.id,
 )
 }
 disabled={
-itemIndex===
-category.items.length-1
+itemIndex===category.items.length-1
 }
 className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
 >
@@ -4202,6 +4368,5 @@ document.getElementById("root")
 );
 
 </script>
-
 </body>
 </html>
