@@ -82,6 +82,10 @@ border:1px solid rgba(255,255,255,.08);
 background:rgba(0,0,0,.12);
 }
 
+.category-products{
+animation:fadeIn .2s ease;
+}
+
 @media(max-width:420px){
 .product-grid{
 grid-template-columns:repeat(2,minmax(0,1fr));
@@ -805,7 +809,15 @@ const [saving,setSaving]=useState(false);
 const [saved,setSaved]=useState(false);
 const [toast,setToast]=useState("");
 const [store,setStore]=useState("premium");
+
 const [activeCat,setActiveCat]=useState(null);
+
+/* YENİ:
+   Admin panelindeki açık kategori artık activeCat'ten bağımsız.
+   Böylece public taraftaki kategori seçimi bozulmaz.
+*/
+const [openCategoryId,setOpenCategoryId]=useState(null);
+
 const [search,setSearch]=useState("");
 const [selectedProduct,setSelectedProduct]=useState(null);
 const [panelOpen,setPanelOpen]=useState(false);
@@ -819,13 +831,6 @@ const [busy,setBusy]=useState(false);
 const logoRef=useRef(null);
 const bgRef=useRef(null);
 const itemRefs=useRef({});
-
-/* =====================================================
-   SUPABASE REALTIME
-   Veriler değiştiğinde sayfayı yenilemeden günceller.
-   ===================================================== */
-
-const realtimeChannelRef=useRef(null);
 
 function showToast(message){
 setToast(message);
@@ -867,7 +872,6 @@ else{
 
 loaded=defaultData();
 
-const insertResult=
 await supabase
 .from("site_data")
 .upsert({
@@ -877,162 +881,22 @@ updated_at:
 new Date().toISOString()
 });
 
-if(insertResult.error){
-throw insertResult.error;
-}
-
 }
 
 if(cancelled)return;
 
 setData(loaded);
 
-setActiveCat(
+const firstCategory=
 loaded.stores
 ?.premium
 ?.categories
 ?.[0]
 ?.id||
-null
-);
+null;
 
-/* =====================================================
-   REALTIME DİNLEYİCİ
-   ===================================================== */
-
-if(!realtimeChannelRef.current){
-
-const channel=
-supabase
-.channel(
-"site-data-realtime-"+SITE_ID
-)
-.on(
-"postgres_changes",
-{
-event:"*",
-schema:"public",
-table:"site_data",
-filter:"id=eq."+SITE_ID
-},
-payload=>{
-
-if(
-!payload||
-!payload.new||
-!payload.new.data
-){
-return;
-}
-
-const realtimeData=
-normalizeData(
-payload.new.data
-);
-
-setData(
-realtimeData
-);
-
-setActiveCat(
-currentActive=>{
-
-const currentCategories=
-realtimeData
-.stores
-?.[store]
-?.categories||
-[];
-
-if(
-currentCategories.some(
-category=>
-category.id===currentActive
-)
-){
-return currentActive;
-}
-
-return(
-currentCategories[0]?.id||
-null
-);
-
-}
-);
-
-setSelectedProduct(
-currentProduct=>{
-
-if(!currentProduct){
-return null;
-}
-
-let found=null;
-
-Object.values(
-realtimeData.stores||{}
-).forEach(storeData=>{
-
-(storeData.categories||[]).forEach(category=>{
-
-const item=
-(category.items||[])
-.find(
-product=>
-product.id===currentProduct.id
-);
-
-if(item){
-found=item;
-}
-
-});
-
-});
-
-return found||null;
-
-}
-);
-
-setSaved(false);
-
-});
-
-channel.subscribe(
-status=>{
-
-console.log(
-"Supabase Realtime:",
-status
-);
-
-if(status==="SUBSCRIBED"){
-console.log(
-"Realtime bağlantısı aktif."
-);
-}
-
-if(status==="CHANNEL_ERROR"){
-console.error(
-"Realtime kanal hatası."
-);
-}
-
-if(status==="TIMED_OUT"){
-console.error(
-"Realtime bağlantısı zaman aşımına uğradı."
-);
-}
-
-}
-);
-
-realtimeChannelRef.current=
-channel;
-
-}
+setActiveCat(firstCategory);
+setOpenCategoryId(null);
 
 }
 catch(error){
@@ -1054,6 +918,8 @@ fallback.stores
 null
 );
 
+setOpenCategoryId(null);
+
 showToast(
 "Veritabanı bağlantısı kontrol edilmeli"
 );
@@ -1072,19 +938,7 @@ setLoading(false);
 load();
 
 return()=>{
-
 cancelled=true;
-
-if(realtimeChannelRef.current){
-
-supabase.removeChannel(
-realtimeChannelRef.current
-);
-
-realtimeChannelRef.current=null;
-
-}
-
 };
 
 },[]);
@@ -1104,6 +958,9 @@ setActiveCat(
 categories[0]?.id||
 null
 );
+
+/* Mağaza değişince hiçbir kategori açık kalmasın */
+setOpenCategoryId(null);
 }
 
 function updateData(callback){
@@ -1397,7 +1254,8 @@ category
 
 });
 
-setActiveCat(category.id);
+/* Yeni kategori otomatik açılır */
+setOpenCategoryId(category.id);
 }
 
 function deleteCategory(id){
@@ -1436,6 +1294,11 @@ setActiveCat(
 remaining[0]?.id||
 null
 );
+
+/* Silinen kategori açıksa kapat */
+if(openCategoryId===id){
+setOpenCategoryId(null);
+}
 }
 
 function renameCategory(
@@ -1543,6 +1406,9 @@ item
 );
 
 });
+
+/* Ürün eklenince ilgili kategori açık kalır */
+setOpenCategoryId(categoryId);
 }
 
 function updateItem(
@@ -2120,6 +1986,8 @@ fresh.stores
 [0]?.id||
 null
 );
+
+setOpenCategoryId(null);
 
 showToast(
 "Varsayılan ayarlar yüklendi. Kaydedin."
@@ -3760,22 +3628,68 @@ size={14}
 />
 </button>
 
+<!--
+    BURASI DEĞİŞTİ:
+    Ürünler butonu artık aç/kapat şeklinde çalışıyor.
+    Aynı kategoriye tekrar basınca kapanıyor.
+    Başka kategoriye basınca önceki kapanıyor.
+-->
+
 <button
-onClick={()=>
-setActiveCat(
-category.id
-)
-}
-className="px-2.5 py-2 bg-neutral-800 rounded-lg text-[11px] whitespace-nowrap"
+onClick={()=>{
+setOpenCategoryId(
+openCategoryId===category.id
+?null
+:category.id
+);
+}}
+className="px-2.5 py-2 rounded-lg text-[11px] whitespace-nowrap font-semibold flex items-center gap-1.5"
+style={{
+background:
+openCategoryId===category.id
+?theme.accent
+:"#262626",
+
+color:
+openCategoryId===category.id
+?"#fff"
+:"#aaa"
+}}
 >
+{openCategoryId===category.id?(
+<>
+<Icon
+type="up"
+size={12}
+/>
+Kapat
+</>
+):(
+<>
+<Icon
+type="down"
+size={12}
+/>
 Ürünler
+</>
+)}
 </button>
 
 </div>
 
-{activeCat===category.id&&(
+{openCategoryId===category.id&&(
 
-<div className="p-2 pt-0">
+<div
+className="p-2 pt-0 category-products"
+>
+
+{category.items.length===0&&(
+
+<div className="text-center py-5 text-[11px] text-neutral-500">
+Bu kategoride henüz ürün yok.
+</div>
+
+)}
 
 {category.items.map(
 (
