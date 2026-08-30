@@ -328,11 +328,31 @@ createCategory(name)
 }
 
 
-function createEmptyStore(){
+/* =========================================================
+   MAĞAZA OLUŞTUR
+========================================================= */
+
+function createEmptyStore(logo=null){
 
 return{
+
+logo:{
+src:
+logo?.src||
+null,
+
+size:
+logo?.size||
+110,
+
+position:
+logo?.position||
+"left"
+},
+
 categories:
 createDefaultCategories()
+
 };
 
 }
@@ -356,11 +376,17 @@ phone:"+90 500 000 00 00",
 
 pin:"1234",
 
+
+/*
+  Eski logo alanı korunuyor.
+  Eski veriler kaybolmasın diye tutulmaya devam ediyor.
+*/
 logo:{
 src:"./ofischi_logo_transparent.png",
 size:110,
 position:"left"
 },
+
 
 theme:{
 ...THEMES[0],
@@ -375,9 +401,26 @@ usdRate:40,
 eurRate:47
 },
 
+
+/*
+  Premium ve Outlet artık ayrı logo bilgisine sahip.
+*/
 stores:{
-premium:createEmptyStore(),
-outlet:createEmptyStore()
+
+premium:
+createEmptyStore({
+src:"./ofischi_logo_transparent.png",
+size:110,
+position:"left"
+}),
+
+outlet:
+createEmptyStore({
+src:null,
+size:110,
+position:"left"
+})
+
 }
 
 };
@@ -543,12 +586,57 @@ Array.isArray(category.items)
 
 
 /* =========================================================
+   LOGO NORMALİZE
+========================================================= */
+
+function normalizeLogo(
+logo,
+fallback=null
+){
+
+const source=
+logo||
+fallback||
+{};
+
+return{
+
+src:
+source.src||
+null,
+
+size:
+Number(source.size)||
+110,
+
+position:
+source.position==="right"
+?"right"
+:source.position==="center"
+?"center"
+:"left"
+
+};
+
+}
+
+
+/* =========================================================
    STORE NORMALİZE
 ========================================================= */
 
-function normalizeStore(store){
+function normalizeStore(
+store,
+legacyLogo=null
+){
 
 return{
+
+logo:
+normalizeLogo(
+store?.logo,
+legacyLogo
+),
 
 categories:
 normalizeCategories(
@@ -566,7 +654,8 @@ store?.categories
 
 function normalizeData(input){
 
-const base=defaultData();
+const base=
+defaultData();
 
 if(
 !input||
@@ -577,41 +666,78 @@ return base;
 
 }
 
+
+/*
+  Önce mevcut bütün ana veriler korunuyor.
+*/
 const result={
 ...base,
 ...input
 };
 
+
+/*
+  Eski logo alanı korunuyor.
+*/
 result.logo={
 ...base.logo,
 ...(input.logo||{})
 };
 
+
+/*
+  Tema korunuyor.
+*/
 result.theme={
 ...base.theme,
 ...(input.theme||{})
 };
 
+
+/*
+  Para birimi korunuyor.
+*/
 result.currency={
 ...base.currency,
 ...(input.currency||{})
 };
+
+
+/*
+  =========================================================
+  MAĞAZALAR
+  =========================================================
+
+  Eğer yeni sistemde store logo bilgileri varsa onları kullanır.
+
+  Eğer eski sistemde sadece data.logo varsa,
+  eski logo otomatik olarak Premium ve Outlet'e
+  başlangıç logosu olarak aktarılır.
+
+  Böylece eski logo kaybolmaz.
+*/
 
 if(
 input.stores&&
 typeof input.stores==="object"
 ){
 
+const legacyLogo=
+input.logo||
+base.logo;
+
 result.stores={
 
 premium:
 normalizeStore(
-input.stores.premium
+input.stores.premium,
+legacyLogo
 ),
 
 outlet:
 normalizeStore(
-input.stores.outlet
+input.stores.outlet,
+legacyLogo
 )
 
 };
@@ -621,34 +747,71 @@ else if(
 Array.isArray(input.categories)
 ){
 
+/*
+  Eski kategori yapısını da koruyoruz.
+*/
+
+const legacyLogo=
+input.logo||
+base.logo;
+
 result.stores={
 
 premium:{
+
+logo:
+normalizeLogo(
+legacyLogo
+),
+
 categories:
 normalizeCategories(
 input.categories
 )
+
 },
 
-outlet:
-createEmptyStore()
+outlet:{
+
+logo:
+normalizeLogo(
+legacyLogo
+),
+
+categories:
+createDefaultCategories()
+
+}
 
 };
 
 }
 else{
 
+const legacyLogo=
+input.logo||
+base.logo;
+
 result.stores={
 
 premium:
-createEmptyStore(),
+createEmptyStore(
+legacyLogo
+),
 
 outlet:
-createEmptyStore()
+createEmptyStore(
+legacyLogo
+)
 
 };
 
 }
+
+
+/*
+  Metin alanları korunuyor.
+*/
 
 result.siteName=
 typeof input.siteName==="string"
@@ -664,6 +827,24 @@ result.eyebrow=
 typeof input.eyebrow==="string"
 ?input.eyebrow
 :"İNEGÖL ÜRETİM";
+
+
+/*
+  Logo alanlarının eksik kalması durumunda
+  güvenli varsayılanlar.
+*/
+
+result.stores.premium.logo=
+normalizeLogo(
+result.stores.premium.logo,
+result.logo
+);
+
+result.stores.outlet.logo=
+normalizeLogo(
+result.stores.outlet.logo,
+result.logo
+);
 
 return result;
 
@@ -1234,28 +1415,11 @@ const [activeCat,setActiveCat]=
 useState(null);
 
 
-/*
-  KATEGORİ AÇIK/KAPALI DURUMU
-
-  Örnek:
-
-  {
-    "kategori-id-1": true,
-    "kategori-id-2": false
-  }
-
-  Böylece her kategori bağımsız açılıp kapanır.
-*/
-
 const [
 openCategories,
 setOpenCategories
 ]=useState({});
 
-
-/*
-  PARA BİRİMİ MENÜSÜ
-*/
 
 const [
 currencyMenuOpen,
@@ -1266,10 +1430,12 @@ setCurrencyMenuOpen
 const [search,setSearch]=
 useState("");
 
+
 const [
 selectedProduct,
 setSelectedProduct
 ]=useState(null);
+
 
 const [panelOpen,setPanelOpen]=
 useState(false);
@@ -1463,11 +1629,6 @@ loaded.stores
 ?.id||
 null
 );
-
-
-/*
-  Bütün kategoriler başlangıçta kapalı.
-*/
 
 setOpenCategories({});
 
@@ -1702,11 +1863,6 @@ setActiveCat(
 categories[0]?.id||
 null
 );
-
-
-/*
-  Mağaza değişince tüm kategorileri kapat.
-*/
 
 setOpenCategories({});
 
@@ -1952,8 +2108,19 @@ setSaving(true);
 
 try{
 
+/*
+  Kaydetmeden önce normalize ediyoruz.
+  Bu işlem mevcut ürün/kategori verilerini silmez.
+*/
+
 const clean=
 normalizeData(data);
+
+
+/*
+  Eski logo alanı korunuyor.
+  Yeni mağaza logoları da korunuyor.
+*/
 
 const result=
 await supabase
@@ -2317,11 +2484,6 @@ item
 
 }
 );
-
-
-/*
-  Ürün eklenince kategori otomatik açılsın.
-*/
 
 openCategory(
 categoryId
@@ -2890,22 +3052,46 @@ dataUrlToBlob(
 compressed
 );
 
+
+/*
+  Premium ve Outlet için ayrı storage yolu.
+*/
+
+const path=
+storagePath(
+"logo",
+store+"-logo"
+);
+
 const url=
 await uploadBlobToStorage(
 blob,
-storagePath(
-"logo",
-"logo"
-)
+path
 );
 
+
+/*
+  SADECE seçili mağazanın logosu değişiyor.
+*/
+
 setPath(
-["logo","src"],
+["stores",store,"logo","src"],
 url
 );
 
+
+/*
+  Eski root logo alanına dokunmuyoruz.
+  Böylece mevcut eski veri de korunuyor.
+*/
+
 showToast(
-"Logo yüklendi."
+(
+store==="premium"
+?"Premium"
+:"Outlet"
+)+
+" logosu yüklendi. Kaydet'e basın."
 );
 
 }
@@ -3344,6 +3530,21 @@ const currency=
 getCurrency();
 
 
+/*
+  =========================================================
+  SEÇİLİ MAĞAZANIN LOGOSU
+  =========================================================
+*/
+
+const currentLogo=
+data.stores[
+store
+]?.logo||
+normalizeLogo(
+data.logo
+);
+
+
 /* =========================================================
    RENDER
 ========================================================= */
@@ -3486,8 +3687,6 @@ size={13}
 
 </button>
 
-
-{/* PARA BİRİMİ MENÜSÜ */}
 
 {currencyMenuOpen&&(
 
@@ -3687,9 +3886,9 @@ width:"100%",
 display:"flex",
 
 justifyContent:
-data.logo.position==="left"
+currentLogo.position==="left"
 ?"flex-start"
-:data.logo.position==="right"
+:currentLogo.position==="right"
 ?"flex-end"
 :"center",
 
@@ -3698,20 +3897,24 @@ marginBottom:18
 }}
 >
 
-{data.logo.src?(
+{currentLogo.src?(
 
 <img
-src={data.logo.src}
-alt="Ofischi"
+src={currentLogo.src}
+alt={
+store==="premium"
+?"Premium"
+:"Outlet"
+}
 style={{
 
 width:
-data.logo.size,
+currentLogo.size,
 
 maxWidth:"70vw",
 
 maxHeight:
-data.logo.size,
+currentLogo.size,
 
 objectFit:"contain",
 
@@ -4835,7 +5038,6 @@ Para Birimi
 className="bg-neutral-900 rounded-xl p-4 mb-5"
 >
 
-
 <div
 className="text-xs text-neutral-400 mb-3"
 >
@@ -4953,13 +5155,33 @@ className="h-px bg-neutral-800 my-5"
 />
 
 
-{/* LOGO */}
+{/* =================================================
+    LOGO
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
 >
 
-Logo
+{store==="premium"
+?"Premium Logo"
+:"Outlet Logo"}
+
+</div>
+
+
+<div
+className="text-[10px] text-neutral-500 mb-3"
+>
+
+Şu anda{" "}
+<strong className="text-neutral-300">
+{store==="premium"
+?"Premium"
+:"Outlet"}
+</strong>
+{" "}
+logosunu düzenliyorsun.
 
 </div>
 
@@ -4968,11 +5190,17 @@ Logo
 className="bg-neutral-900 rounded-xl p-4 mb-3 flex items-center justify-center min-h-[120px]"
 >
 
-{data.logo.src?(
+{data.stores[store]?.logo?.src?(
 
 <img
-src={data.logo.src}
-alt="Logo"
+src={
+data.stores[store].logo.src
+}
+alt={
+store==="premium"
+?"Premium Logo"
+:"Outlet Logo"
+}
 style={{
 
 maxWidth:"100%",
@@ -4990,7 +5218,9 @@ objectFit:"contain"
 className="text-xs text-neutral-500"
 >
 
-Logo eklenmedi
+{store==="premium"
+?"Premium logosu eklenmedi"
+:"Outlet logosu eklenmedi"}
 
 </div>
 
@@ -5016,17 +5246,19 @@ type="upload"
 size={14}
 />
 
-Logo Yükle
+{store==="premium"
+?"Premium Logo Yükle"
+:"Outlet Logo Yükle"}
 
 </button>
 
 
-{data.logo.src&&(
+{data.stores[store]?.logo?.src&&(
 
 <button
 onClick={()=>
 setPath(
-["logo","src"],
+["stores",store,"logo","src"],
 null
 )
 }
@@ -5055,7 +5287,8 @@ onChange={uploadLogo}
 
 
 <AdminLabel>
-Logo Boyutu — {data.logo.size}px
+Logo Boyutu —{" "}
+{data.stores[store]?.logo?.size||110}px
 </AdminLabel>
 
 
@@ -5063,10 +5296,13 @@ Logo Boyutu — {data.logo.size}px
 type="range"
 min="40"
 max="260"
-value={data.logo.size}
+value={
+data.stores[store]?.logo?.size||
+110
+}
 onChange={e=>
 setPath(
-["logo","size"],
+["stores",store,"logo","size"],
 Number(
 e.target.value
 )
@@ -5096,7 +5332,7 @@ className="flex gap-2 mb-5"
 key={value}
 onClick={()=>
 setPath(
-["logo","position"],
+["stores",store,"logo","position"],
 value
 )
 }
@@ -5104,7 +5340,7 @@ className="flex-1 py-2 rounded-lg text-xs"
 style={{
 
 background:
-data.logo.position===value
+data.stores[store]?.logo?.position===value
 ?theme.accent
 :"#1c1917"
 
@@ -5461,9 +5697,7 @@ className="bg-neutral-900 border border-neutral-800 rounded-xl mb-3 overflow-hid
 >
 
 
-{/* =================================================
-    KATEGORİ BAŞLIĞI
-================================================= */}
+{/* KATEGORİ BAŞLIĞI */}
 
 <div
 className="p-2 flex items-center gap-1.5"
@@ -5549,10 +5783,6 @@ size={14}
 </button>
 
 
-{/* =================================================
-    ÜRÜNLER AÇ/KAPAT
-================================================= */}
-
 <button
 onClick={()=>
 toggleCategory(
@@ -5591,9 +5821,7 @@ size={13}
 </div>
 
 
-{/* =================================================
-    SADECE AÇIKSA ÜRÜNLER GÖSTER
-================================================= */}
+{/* ÜRÜNLER */}
 
 {openCategories[category.id]&&(
 
@@ -5601,8 +5829,6 @@ size={13}
 className="category-products p-2 pt-0"
 >
 
-
-{/* ÜRÜN YOK */}
 
 {category.items.length===0&&(
 
@@ -5616,8 +5842,6 @@ Bu kategoride henüz ürün yok.
 
 )}
 
-
-{/* ÜRÜNLER */}
 
 {category.items.map(
 (
@@ -5775,9 +5999,7 @@ marginBottom:"10px"
 />
 
 
-{/* =================================================
-    AYRI FİYATLAR
-================================================= */}
+{/* AYRI FİYATLAR */}
 
 <div
 className="rounded-xl border border-neutral-700 bg-neutral-900 p-3 mb-2"
@@ -5987,9 +6209,7 @@ Fiyat için iletişime geçin
 </div>
 
 
-{/* =================================================
-    ÜRÜN ALT BUTONLARI
-================================================= */}
+{/* ÜRÜN ALT BUTONLARI */}
 
 <div
 className="flex justify-end gap-1"
@@ -6087,9 +6307,7 @@ size={12}
 )}
 
 
-{/* =================================================
-    ÜRÜN EKLE
-================================================= */}
+{/* ÜRÜN EKLE */}
 
 <button
 onClick={()=>
@@ -6127,9 +6345,9 @@ size={14}
 </div>
 
 
-{/* =================================================
+{/* =====================================================
     KAYDET
-================================================= */}
+===================================================== */}
 
 <div
 className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800 p-4"
