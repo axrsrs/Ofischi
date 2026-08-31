@@ -208,7 +208,6 @@ animation:fadeIn .18s ease;
 
 /* =========================================================
    KATEGORİ BAR
-   ARKA PLAN TAMAMEN ŞEFFAF
 ========================================================= */
 
 .category-bar{
@@ -1102,11 +1101,51 @@ result.logo
 
 result.stores.outlet.logo=
 normalizeLogo(
-result.stores.outlet.logo,
-result.logo
+result.stores.outlet.logo
 );
 
 return result;
+
+}
+
+
+/* =========================================================
+   DEEP CLONE
+========================================================= */
+
+function cloneData(value){
+
+if(value===null||value===undefined){
+return value;
+}
+
+try{
+
+if(
+typeof structuredClone==="function"
+){
+
+return structuredClone(value);
+
+}
+
+return JSON.parse(
+JSON.stringify(value)
+);
+
+}
+catch(error){
+
+console.error(
+"DATA CLONE HATASI:",
+error
+);
+
+return JSON.parse(
+JSON.stringify(value)
+);
+
+}
 
 }
 
@@ -1220,6 +1259,18 @@ canvas.getContext(
 "2d"
 );
 
+if(!ctx){
+
+reject(
+new Error(
+"Canvas oluşturulamadı"
+)
+);
+
+return;
+
+}
+
 ctx.drawImage(
 img,
 0,
@@ -1237,16 +1288,26 @@ quality
 
 };
 
-img.onerror=
-reject;
+img.onerror=()=>{
+reject(
+new Error(
+"Görsel okunamadı"
+)
+);
+};
 
 img.src=
 event.target.result;
 
 };
 
-reader.onerror=
-reject;
+reader.onerror=()=>{
+reject(
+new Error(
+"Dosya okunamadı"
+)
+);
+};
 
 reader.readAsDataURL(file);
 
@@ -1302,10 +1363,13 @@ throw result.error;
 
 }
 
-return(
+const publicResult=
 supabase.storage
 .from(STORAGE_BUCKET)
-.getPublicUrl(path)
+.getPublicUrl(path);
+
+return(
+publicResult
 ?.data
 ?.publicUrl||
 null
@@ -1723,6 +1787,20 @@ useRef({});
 const realtimeChannelRef=
 useRef(null);
 
+/*
+  Realtime callback içinde güncel mağazayı
+  kullanabilmek için ref tutuluyor.
+*/
+const storeRef=
+useRef(store);
+
+useEffect(()=>{
+
+storeRef.current=
+store;
+
+},[store]);
+
 
 /* =========================================================
    TOAST
@@ -1776,27 +1854,6 @@ previous=>({
 ...previous,
 
 [categoryId]:true
-
-})
-);
-
-}
-
-
-/* =========================================================
-   KATEGORİ KAPAT
-========================================================= */
-
-function closeCategory(
-categoryId
-){
-
-setOpenCategories(
-previous=>({
-
-...previous,
-
-[categoryId]:false
 
 })
 );
@@ -1928,13 +1985,21 @@ setData(
 realtimeData
 );
 
+
+/*
+  Artık callback eski "premium" değerini
+  kullanmıyor.
+*/
+const currentStore=
+storeRef.current;
+
 setActiveCat(
 currentActive=>{
 
 const currentCategories=
 realtimeData
 .stores
-?.[store]
+?.[currentStore]
 ?.categories||
 [];
 
@@ -1958,6 +2023,7 @@ null
 }
 );
 
+
 setSelectedProduct(
 currentProduct=>{
 
@@ -1969,13 +2035,14 @@ return null;
 
 let found=null;
 
-Object.values(
-realtimeData.stores||{}
-).forEach(
-storeData=>{
+const currentStoreData=
+realtimeData
+.stores
+?.[currentStore];
 
 (
-storeData.categories||
+currentStoreData
+?.categories||
 []
 ).forEach(
 category=>{
@@ -1995,9 +2062,6 @@ if(item){
 found=item;
 
 }
-
-}
-);
 
 }
 );
@@ -2123,6 +2187,7 @@ setOpenCategories({});
 
 /* =========================================================
    DATA UPDATE
+   Nested mutation problemi düzeltildi.
 ========================================================= */
 
 function updateData(callback){
@@ -2136,9 +2201,8 @@ return previous;
 
 }
 
-const copy={
-...previous
-};
+const copy=
+cloneData(previous);
 
 callback(copy);
 
@@ -2172,9 +2236,21 @@ i++
 
 const key=path[i];
 
+if(
+!target[key]||
+typeof target[key]!=="object"
+){
+
+target[key]={};
+
+}
+else{
+
 target[key]={
-...(target[key]||{})
+...target[key]
 };
+
+}
 
 target=
 target[key];
@@ -2349,7 +2425,8 @@ async function save(){
 
 if(
 !data||
-saving
+saving||
+busy
 ){
 
 return;
@@ -2361,7 +2438,9 @@ setSaving(true);
 try{
 
 const clean=
-normalizeData(data);
+normalizeData(
+cloneData(data)
+);
 
 const result=
 await supabase
@@ -2388,19 +2467,21 @@ setData(clean);
 
 setSaved(true);
 
+/*
+  Kayıt başarılı olduğu anda
+  panel direkt kapanıyor.
+*/
+setPanelOpen(false);
+
 showToast(
 "Başarıyla kaydedildi"
 );
 
 setTimeout(
 ()=>{
-
 setSaved(false);
-
-setPanelOpen(false);
-
 },
-800
+1200
 );
 
 }
@@ -2498,16 +2579,18 @@ createCategory(
 updateData(
 copy=>{
 
-copy.stores[
-store
-].categories=[
+const storeData=
+copy.stores[store];
 
-...copy.stores[
-store
-].categories,
+if(!storeData){
 
+return;
+
+}
+
+storeData.categories=[
+...storeData.categories,
 category
-
 ];
 
 }
@@ -2540,28 +2623,38 @@ return;
 
 }
 
+const currentCategories=
+data
+?.stores
+?.[store]
+?.categories||
+[];
+
+const remaining=
+currentCategories.filter(
+category=>
+category.id!==id
+);
+
 updateData(
 copy=>{
 
-copy.stores[
-store
-].categories=
-copy.stores[
-store
-].categories.filter(
+if(
+!copy.stores[store]
+){
+
+return;
+
+}
+
+copy.stores[store].categories=
+copy.stores[store]
+.categories.filter(
 category=>
 category.id!==id
 );
 
 }
-);
-
-const remaining=
-data.stores[
-store
-].categories.filter(
-category=>
-category.id!==id
 );
 
 setActiveCat(
@@ -3224,6 +3317,14 @@ blob,
 path
 );
 
+if(!url){
+
+throw new Error(
+"Görsel URL'si alınamadı."
+);
+
+}
+
 updateItem(
 categoryId,
 itemId,
@@ -3238,7 +3339,10 @@ showToast(
 }
 catch(error){
 
-console.error(error);
+console.error(
+"GÖRSEL YÜKLEME HATASI:",
+error
+);
 
 showToast(
 "Görsel yüklenemedi."
@@ -3305,6 +3409,14 @@ blob,
 path
 );
 
+if(!url){
+
+throw new Error(
+"Logo URL'si alınamadı."
+);
+
+}
+
 setPath(
 ["stores",store,"logo","src"],
 url
@@ -3322,7 +3434,10 @@ store==="premium"
 }
 catch(error){
 
-console.error(error);
+console.error(
+"LOGO YÜKLEME HATASI:",
+error
+);
 
 showToast(
 "Logo yüklenemedi."
@@ -3386,19 +3501,30 @@ storagePath(
 )
 );
 
+if(!url){
+
+throw new Error(
+"Arka plan URL'si alınamadı."
+);
+
+}
+
 setPath(
 ["theme","bgImage"],
 url
 );
 
 showToast(
-"Arka plan yüklendi."
+"Arka plan yüklendi. Kaydet'e basın."
 );
 
 }
 catch(error){
 
-console.error(error);
+console.error(
+"ARKA PLAN YÜKLEME HATASI:",
+error
+);
 
 showToast(
 "Arka plan yüklenemedi."
@@ -6170,9 +6296,11 @@ category.id,
 item.id,
 e
 )
-}
 />
+}
 
+
+/* ÜRÜN BİLGİ */
 
 <div
 className="flex-1"
