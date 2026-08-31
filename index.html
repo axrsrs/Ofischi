@@ -13,120 +13,75 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 html,body,#root{
 margin:0;
 padding:0;
 width:100%;
-min-height:100%;
+min-height:100%
 }
 
 body{
 background:#141416;
 overflow-x:hidden;
+-webkit-font-smoothing:antialiased;
 }
 
 button,input{
-font-family:inherit;
+font-family:inherit
 }
 
 button{
-cursor:pointer;
+cursor:pointer
 }
 
 button:disabled{
-cursor:not-allowed;
+cursor:not-allowed
 }
 
 ::-webkit-scrollbar{
-display:none;
+display:none
 }
 
 @keyframes fadeIn{
-from{
-opacity:0;
-transform:translateY(8px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
+from{opacity:0;transform:translateY(8px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 @keyframes pop{
-0%{
-transform:scale(.96);
-opacity:0;
-}
-100%{
-transform:scale(1);
-opacity:1;
-}
+0%{transform:scale(.96);opacity:0}
+100%{transform:scale(1);opacity:1}
 }
 
 @keyframes pulse{
-0%,100%{
-box-shadow:0 0 0 0 rgba(255,255,255,.18);
-}
-50%{
-box-shadow:0 0 0 8px rgba(255,255,255,0);
-}
+0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}
+50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}
 }
 
 @keyframes categoryEnter{
-0%{
-opacity:0;
-transform:translateY(10px) scale(.95);
-}
-100%{
-opacity:1;
-transform:translateY(0) scale(1);
-}
+0%{opacity:0;transform:translateY(10px) scale(.95)}
+100%{opacity:1;transform:translateY(0) scale(1)}
 }
 
 @keyframes categoryGlow{
-0%,100%{
-opacity:.35;
-transform:scaleX(.65);
-}
-50%{
-opacity:1;
-transform:scaleX(1);
-}
+0%,100%{opacity:.35;transform:scaleX(.65)}
+50%{opacity:1;transform:scaleX(1)}
 }
 
 @keyframes categoryLight{
-0%{
-left:-120%;
-}
-100%{
-left:140%;
-}
+0%{left:-120%}
+100%{left:140%}
 }
 
 @keyframes productEnter{
-0%{
-opacity:0;
-transform:translateY(15px) scale(.975);
-}
-100%{
-opacity:1;
-transform:translateY(0) scale(1);
-}
+0%{opacity:0;transform:translateY(15px) scale(.975)}
+100%{opacity:1;transform:translateY(0) scale(1)}
 }
 
 @keyframes categoryProductsIn{
-0%{
-opacity:0;
-transform:translateY(8px);
-}
-100%{
-opacity:1;
-transform:translateY(0);
-}
+0%{opacity:0;transform:translateY(8px)}
+100%{opacity:1;transform:translateY(0)}
 }
 
 .admin-input{
@@ -141,7 +96,7 @@ font-size:13px;
 }
 
 .admin-input:focus{
-border-color:#737373;
+border-color:#737373
 }
 
 .no-select{
@@ -155,7 +110,7 @@ background:rgba(0,0,0,.18);
 border:1px solid rgba(255,255,255,.12);
 color:inherit;
 border-radius:14px;
-padding:12px 42px 12px 42px;
+padding:12px 42px;
 outline:none;
 backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);
@@ -163,7 +118,7 @@ backdrop-filter:blur(14px);
 
 .search-input::placeholder{
 color:currentColor;
-opacity:.45;
+opacity:.45
 }
 
 .modal-backdrop{
@@ -178,19 +133,19 @@ background:rgba(0,0,0,.12);
 }
 
 .currency-menu{
-animation:pop .15s ease;
+animation:pop .15s ease
 }
 
 .category-products{
-animation:fadeIn .18s ease;
+animation:fadeIn .18s ease
 }
 
 .category-bar{
-background:transparent !important;
-background-color:transparent !important;
-box-shadow:none !important;
-backdrop-filter:none !important;
--webkit-backdrop-filter:none !important;
+background:transparent!important;
+background-color:transparent!important;
+box-shadow:none!important;
+backdrop-filter:none!important;
+-webkit-backdrop-filter:none!important;
 }
 
 .category-scroll{
@@ -203,7 +158,7 @@ scrollbar-width:none;
 }
 
 .category-scroll::-webkit-scrollbar{
-display:none;
+display:none
 }
 
 .category-chip{
@@ -235,8 +190,7 @@ top:0;
 left:-120%;
 width:70%;
 height:100%;
-background:
-linear-gradient(
+background:linear-gradient(
 100deg,
 transparent,
 rgba(255,255,255,.22),
@@ -247,11 +201,11 @@ pointer-events:none;
 }
 
 .category-chip:hover::before{
-animation:categoryLight .65s ease forwards;
+animation:categoryLight .65s ease forwards
 }
 
 .category-chip:active{
-transform:scale(.94);
+transform:scale(.94)
 }
 
 .category-chip.active{
@@ -279,11 +233,7 @@ position:relative;
 overflow:hidden;
 transform:translateZ(0);
 will-change:transform;
-animation:
-productEnter
-.45s
-cubic-bezier(.22,1,.36,1)
-both;
+animation:productEnter .45s cubic-bezier(.22,1,.36,1) both;
 transition:
 transform .28s cubic-bezier(.22,1,.36,1),
 box-shadow .28s ease;
@@ -296,19 +246,16 @@ position:absolute;
 inset:0;
 pointer-events:none;
 border-radius:inherit;
-box-shadow:
-inset 0 1px 0 rgba(255,255,255,.05);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 .product-card:active{
-transform:
-scale(.965)
-translateY(1px);
+transform:scale(.965) translateY(1px)
 }
 
 .product-image{
 position:relative;
-overflow:hidden;
+overflow:hidden
 }
 
 .product-image::after{
@@ -318,8 +265,7 @@ top:0;
 left:-130%;
 width:70%;
 height:100%;
-background:
-linear-gradient(
+background:linear-gradient(
 105deg,
 transparent 15%,
 rgba(255,255,255,.09) 48%,
@@ -330,29 +276,22 @@ pointer-events:none;
 }
 
 .product-card:hover .product-image::after{
-animation:
-categoryLight .8s ease forwards;
+animation:categoryLight .8s ease forwards
 }
 
 .category-products-view{
-animation:
-categoryProductsIn
-.32s
-cubic-bezier(.22,1,.36,1);
+animation:categoryProductsIn .32s cubic-bezier(.22,1,.36,1)
 }
 
 @media(max-width:420px){
-
 .product-grid{
-grid-template-columns:
-repeat(2,minmax(0,1fr));
+grid-template-columns:repeat(2,minmax(0,1fr))
 }
 
 .category-chip{
 padding:9px 13px;
-font-size:11.5px;
+font-size:11.5px
 }
-
 }
 </style>
 </head>
@@ -393,17 +332,16 @@ detectSessionInUrl:false
 }
 );
 
-const SITE_ID = 1;
+const SITE_ID=1;
 
-const STORAGE_BUCKET =
-"catalog-images";
+const STORAGE_BUCKET="catalog-images";
 
 
 /* =========================================================
    MAĞAZALAR
 ========================================================= */
 
-const STORES = [
+const STORES=[
 {
 id:"premium",
 name:"Premium",
@@ -421,7 +359,7 @@ subtitle:"Outlet Koleksiyon"
    KATEGORİLER
 ========================================================= */
 
-const CATS = [
+const CATS=[
 "VIP Makam Takımları",
 "Makam Takımları",
 "Personel Takımları",
@@ -438,7 +376,7 @@ const CATS = [
    TEMALAR
 ========================================================= */
 
-const THEMES = [
+const THEMES=[
 {
 id:"graphite",
 name:"Grafit",
@@ -486,7 +424,7 @@ text:"#1C1C1C"
    PARA BİRİMLERİ
 ========================================================= */
 
-const CURRENCIES = [
+const CURRENCIES=[
 {
 id:"TRY",
 symbol:"₺",
@@ -536,12 +474,10 @@ items:[]
 
 }
 
-
 function createDefaultCategories(){
 
 return CATS.map(
-name =>
-createCategory(name)
+name=>createCategory(name)
 );
 
 }
@@ -554,31 +490,24 @@ createCategory(name)
 function createEmptyStore(logo=null){
 
 return{
-
 logo:{
-src:
-logo?.src ||
-null,
-
-size:
-logo?.size ||
-110,
-
+src:logo?.src||null,
+size:Number(logo?.size)||110,
 position:
-logo?.position ||
-"left"
+logo?.position==="right"
+?"right"
+:logo?.position==="center"
+?"center"
+:"left"
 },
-
-categories:
-createDefaultCategories()
-
+categories:createDefaultCategories()
 };
 
 }
 
 
 /* =========================================================
-   DEFAULT DATA
+   DEFAULT
 ========================================================= */
 
 function defaultData(){
@@ -615,21 +544,17 @@ eurRate:47
 },
 
 stores:{
-
-premium:
-createEmptyStore({
+premium:createEmptyStore({
 src:"./ofischi_logo_transparent.png",
 size:110,
 position:"left"
 }),
 
-outlet:
-createEmptyStore({
+outlet:createEmptyStore({
 src:null,
 size:110,
 position:"left"
 })
-
 }
 
 };
@@ -657,26 +582,24 @@ let parts=[];
 
 if(Array.isArray(price.parts)){
 
-parts =
-price.parts.map(
-p => ({
+parts=price.parts.map(
+p=>({
 
-id:p.id || uid(),
+id:p.id||uid(),
 
 name:
-typeof p.name === "string"
+typeof p.name==="string"
 ?p.name
 :"Ürün",
 
 amount:
-p.amount === null ||
-p.amount === undefined ||
-p.amount === ""
+p.amount===null||
+p.amount===undefined||
+p.amount===""
 ?null
 :Number(p.amount),
 
-contactOnly:
-!!p.contactOnly
+contactOnly:!!p.contactOnly
 
 })
 );
@@ -684,10 +607,10 @@ contactOnly:
 }
 
 if(
-parts.length === 0 &&
-price.amount !== null &&
-price.amount !== undefined &&
-price.amount !== ""
+parts.length===0&&
+price.amount!==null&&
+price.amount!==undefined&&
+price.amount!==""
 ){
 
 parts.push({
@@ -696,12 +619,9 @@ id:uid(),
 
 name:"Ürün",
 
-amount:Number(
-price.amount
-),
+amount:Number(price.amount),
 
-contactOnly:
-!!price.contactOnly
+contactOnly:!!price.contactOnly
 
 });
 
@@ -710,13 +630,12 @@ contactOnly:
 return{
 
 contactOnly:
-!!price.contactOnly &&
-parts.length === 0,
+!!price.contactOnly&&parts.length===0,
 
 amount:
-price.amount ?? null,
+price.amount??null,
 
-parts
+parts:parts
 
 };
 
@@ -729,31 +648,32 @@ parts
 
 function normalizeItem(item){
 
+item=item||{};
+
 return{
 
 ...item,
 
-id:
-item.id || uid(),
+id:item.id||uid(),
 
 name:
-typeof item.name === "string"
+typeof item.name==="string"
 ?item.name
 :"Yeni Ürün",
 
 desc:
-typeof item.desc === "string"
+typeof item.desc==="string"
 ?item.desc
 :"",
 
 dims:
-item.dims || "",
+typeof item.dims==="string"
+?item.dims
+:"",
 
-image:
-item.image || null,
+image:item.image||null,
 
-price:
-normalizePrice(item.price)
+price:normalizePrice(item.price)
 
 };
 
@@ -773,15 +693,14 @@ return createDefaultCategories();
 }
 
 return categories.map(
-category => ({
+category=>({
 
-id:
-category.id || uid(),
+id:category.id||uid(),
 
 name:
-typeof category.name === "string"
+typeof category.name==="string"
 ?category.name
-:(category.name?.tr || "Yeni Kategori"),
+:(category.name?.tr||"Yeni Kategori"),
 
 items:
 Array.isArray(category.items)
@@ -803,25 +722,21 @@ logo,
 fallback=null
 ){
 
-const source =
-logo ||
-fallback ||
+const source=
+logo||
+fallback||
 {};
 
 return{
 
-src:
-source.src ||
-null,
+src:source.src||null,
 
-size:
-Number(source.size) ||
-110,
+size:Number(source.size)||110,
 
 position:
-source.position === "right"
+source.position==="right"
 ?"right"
-:source.position === "center"
+:source.position==="center"
 ?"center"
 :"left"
 
@@ -841,14 +756,12 @@ legacyLogo=null
 
 return{
 
-logo:
-normalizeLogo(
+logo:normalizeLogo(
 store?.logo,
 legacyLogo
 ),
 
-categories:
-normalizeCategories(
+categories:normalizeCategories(
 store?.categories
 )
 
@@ -863,57 +776,53 @@ store?.categories
 
 function normalizeData(input){
 
-const base =
-defaultData();
+const base=defaultData();
 
 if(
-!input ||
-typeof input !== "object"
+!input||
+typeof input!=="object"
 ){
 
 return base;
 
 }
 
-const result = {
+const result={
 ...base,
 ...input
 };
 
-result.logo = {
+result.logo={
 ...base.logo,
-...(input.logo || {})
+...(input.logo||{})
 };
 
-result.theme = {
+result.theme={
 ...base.theme,
-...(input.theme || {})
+...(input.theme||{})
 };
 
-result.currency = {
+result.currency={
 ...base.currency,
-...(input.currency || {})
+...(input.currency||{})
 };
 
 if(
-input.stores &&
-typeof input.stores === "object"
+input.stores&&
+typeof input.stores==="object"
 ){
 
-const legacyLogo =
-input.logo ||
-base.logo;
+const legacyLogo=
+input.logo||base.logo;
 
-result.stores = {
+result.stores={
 
-premium:
-normalizeStore(
+premium:normalizeStore(
 input.stores.premium,
 legacyLogo
 ),
 
-outlet:
-normalizeStore(
+outlet:normalizeStore(
 input.stores.outlet,
 legacyLogo
 )
@@ -921,40 +830,23 @@ legacyLogo
 };
 
 }
-else if(
-Array.isArray(input.categories)
-){
+else if(Array.isArray(input.categories)){
 
-const legacyLogo =
-input.logo ||
-base.logo;
+const legacyLogo=
+input.logo||base.logo;
 
-result.stores = {
+result.stores={
 
 premium:{
-
-logo:
-normalizeLogo(
-legacyLogo
-),
-
-categories:
-normalizeCategories(
+logo:normalizeLogo(legacyLogo),
+categories:normalizeCategories(
 input.categories
 )
-
 },
 
 outlet:{
-
-logo:
-normalizeLogo(
-legacyLogo
-),
-
-categories:
-createDefaultCategories()
-
+logo:normalizeLogo(legacyLogo),
+categories:createDefaultCategories()
 }
 
 };
@@ -962,48 +854,54 @@ createDefaultCategories()
 }
 else{
 
-const legacyLogo =
-input.logo ||
-base.logo;
+const legacyLogo=
+input.logo||base.logo;
 
-result.stores = {
+result.stores={
 
-premium:
-createEmptyStore(
-legacyLogo
-),
+premium:createEmptyStore(legacyLogo),
 
-outlet:
-createEmptyStore(
-legacyLogo
-)
+outlet:createEmptyStore(legacyLogo)
 
 };
 
 }
 
-result.siteName =
-typeof input.siteName === "string"
+result.siteName=
+typeof input.siteName==="string"
 ?input.siteName
 :"Ofischi";
 
-result.subtitle =
-typeof input.subtitle === "string"
+result.subtitle=
+typeof input.subtitle==="string"
 ?input.subtitle
 :"Ofis Mobilyaları";
 
-result.eyebrow =
-typeof input.eyebrow === "string"
+result.eyebrow=
+typeof input.eyebrow==="string"
 ?input.eyebrow
 :"İNEGÖL ÜRETİM";
 
-result.stores.premium.logo =
+result.phone=
+typeof input.phone==="string"
+?input.phone
+:"";
+
+result.pin=
+typeof input.pin==="string"
+?input.pin
+:"1234";
+
+result.cardImgSize=
+Number(input.cardImgSize)||180;
+
+result.stores.premium.logo=
 normalizeLogo(
 result.stores.premium.logo,
 result.logo
 );
 
-result.stores.outlet.logo =
+result.stores.outlet.logo=
 normalizeLogo(
 result.stores.outlet.logo,
 result.logo
@@ -1015,37 +913,28 @@ return result;
 
 
 /* =========================================================
-   IMAGE → BLOB
+   IMAGE
 ========================================================= */
 
 function dataUrlToBlob(dataUrl){
 
-const parts =
-dataUrl.split(",");
+const parts=dataUrl.split(",");
 
-const meta =
-parts[0] || "";
+const meta=parts[0]||"";
+const data=parts[1]||"";
 
-const data =
-parts[1] || "";
+const mimeMatch=
+meta.match(/data:([^;]+)/);
 
-const mimeMatch =
-meta.match(
-/data:([^;]+)/
-);
-
-const mime =
+const mime=
 mimeMatch
 ?mimeMatch[1]
 :"image/jpeg";
 
-const binary =
-atob(data);
+const binary=atob(data);
 
-const bytes =
-new Uint8Array(
-binary.length
-);
+const bytes=
+new Uint8Array(binary.length);
 
 for(
 let i=0;
@@ -1053,24 +942,18 @@ i<binary.length;
 i++
 ){
 
-bytes[i] =
+bytes[i]=
 binary.charCodeAt(i);
 
 }
 
 return new Blob(
 [bytes],
-{
-type:mime
-}
+{type:mime}
 );
 
 }
 
-
-/* =========================================================
-   IMAGE RESIZE
-========================================================= */
 
 function resizeImg(
 file,
@@ -1081,58 +964,44 @@ quality=.78
 return new Promise(
 (resolve,reject)=>{
 
-const reader =
-new FileReader();
+const reader=new FileReader();
 
-reader.onload =
-event => {
+reader.onload=event=>{
 
-const img =
-new Image();
+const img=new Image();
 
-img.onload = () => {
+img.onload=()=>{
 
-let width =
-img.width;
+let width=img.width;
+let height=img.height;
 
-let height =
-img.height;
+if(
+width>maxWidth
+){
 
-if(width > maxWidth){
-
-height =
+height=
 Math.round(
-height *
-(maxWidth / width)
+height*
+(maxWidth/width)
 );
 
-width =
-maxWidth;
+width=maxWidth;
 
 }
 
-const canvas =
-document.createElement(
-"canvas"
-);
+const canvas=
+document.createElement("canvas");
 
-canvas.width =
-width;
+canvas.width=width;
+canvas.height=height;
 
-canvas.height =
-height;
-
-const ctx =
-canvas.getContext(
-"2d"
-);
+const ctx=
+canvas.getContext("2d");
 
 if(!ctx){
 
 reject(
-new Error(
-"Canvas oluşturulamadı"
-)
+new Error("Canvas desteklenmiyor")
 );
 
 return;
@@ -1156,26 +1025,21 @@ quality
 
 };
 
-img.onerror =
-() =>
+img.onerror=()=>{
 reject(
-new Error(
-"Görsel okunamadı"
-)
+new Error("Görsel okunamadı")
 );
+};
 
-img.src =
-event.target.result;
+img.src=event.target.result;
 
 };
 
-reader.onerror =
-() =>
+reader.onerror=()=>{
 reject(
-new Error(
-"Dosya okunamadı"
-)
+new Error("Dosya okunamadı")
 );
+};
 
 reader.readAsDataURL(file);
 
@@ -1194,13 +1058,13 @@ id
 ){
 
 return(
-SITE_ID +
-"/" +
-type +
-"/" +
-id +
-"-" +
-Date.now() +
+SITE_ID+
+"/"+
+type+
+"/"+
+id+
+"-"+
+Date.now()+
 ".jpg"
 );
 
@@ -1212,7 +1076,7 @@ blob,
 path
 ){
 
-const result =
+const result=
 await supabase.storage
 .from(STORAGE_BUCKET)
 .upload(
@@ -1231,22 +1095,14 @@ throw result.error;
 
 }
 
-const publicUrl =
+return(
 supabase.storage
 .from(STORAGE_BUCKET)
 .getPublicUrl(path)
 ?.data
-?.publicUrl;
-
-if(!publicUrl){
-
-throw new Error(
-"Public URL alınamadı"
+?.publicUrl||
+null
 );
-
-}
-
-return publicUrl;
 
 }
 
@@ -1260,39 +1116,26 @@ type,
 size=18
 }){
 
-const props = {
-
+const props={
 width:size,
 height:size,
-
 viewBox:"0 0 24 24",
-
 fill:"none",
-
 stroke:"currentColor",
-
 strokeWidth:2,
-
 strokeLinecap:"round",
-
 strokeLinejoin:"round"
-
 };
 
-let content = null;
+let content=null;
 
+if(type==="settings"){
 
-if(type === "settings"){
-
-content = (
+content=(
 
 <>
 
-<circle
-cx="12"
-cy="12"
-r="3"
-/>
+<circle cx="12" cy="12" r="3"/>
 
 <path d="
 M19.4 15
@@ -1328,18 +1171,16 @@ a1.7 1.7 0 0 0-1.6 1z
 
 }
 
-
-if(
-type === "x" ||
-type === "close"
+else if(
+type==="x"||
+type==="close"
 ){
 
-content = (
+content=(
 
 <>
 
 <path d="M6 6l12 12"/>
-
 <path d="M18 6L6 18"/>
 
 </>
@@ -1348,15 +1189,13 @@ content = (
 
 }
 
+else if(type==="plus"){
 
-if(type === "plus"){
-
-content = (
+content=(
 
 <>
 
 <path d="M12 5v14"/>
-
 <path d="M5 12h14"/>
 
 </>
@@ -1365,21 +1204,16 @@ content = (
 
 }
 
+else if(type==="trash"){
 
-if(type === "trash"){
-
-content = (
+content=(
 
 <>
 
 <path d="M3 6h18"/>
-
 <path d="M8 6V4h8v2"/>
-
 <path d="M19 6l-1 14H6L5 6"/>
-
 <path d="M10 11v5"/>
-
 <path d="M14 11v5"/>
 
 </>
@@ -1388,17 +1222,14 @@ content = (
 
 }
 
+else if(type==="upload"){
 
-if(type === "upload"){
-
-content = (
+content=(
 
 <>
 
 <path d="M12 16V4"/>
-
 <path d="M7 9l5-5 5 5"/>
-
 <path d="M5 20h14"/>
 
 </>
@@ -1407,26 +1238,23 @@ content = (
 
 }
 
+else if(type==="up"){
 
-if(type === "up"){
-
-content =
+content=
 <path d="m18 15-6-6-6 6"/>;
 
 }
 
+else if(type==="down"){
 
-if(type === "down"){
-
-content =
+content=
 <path d="m6 9 6 6 6-6"/>;
 
 }
 
+else if(type==="save"){
 
-if(type === "save"){
-
-content = (
+content=(
 
 <>
 
@@ -1437,7 +1265,6 @@ a2 2 0 0 1-2 2Z
 "/>
 
 <path d="M17 21v-8H7v8"/>
-
 <path d="M7 3v5h8"/>
 
 </>
@@ -1446,10 +1273,9 @@ a2 2 0 0 1-2 2Z
 
 }
 
+else if(type==="image"){
 
-if(type === "image"){
-
-content = (
+content=(
 
 <>
 
@@ -1475,10 +1301,9 @@ r="1.5"
 
 }
 
+else if(type==="lock"){
 
-if(type === "lock"){
-
-content = (
+content=(
 
 <>
 
@@ -1500,18 +1325,16 @@ d="M8 10V7a4 4 0 0 1 8 0v3"
 
 }
 
+else if(type==="check"){
 
-if(type === "check"){
-
-content =
+content=
 <path d="m5 12 4 4L19 6"/>;
 
 }
 
+else if(type==="phone"){
 
-if(type === "phone"){
-
-content = (
+content=(
 
 <path d="
 M22 16.92v3
@@ -1532,19 +1355,13 @@ A2 2 0 0 1 22 16.92z
 
 }
 
+else if(type==="search"){
 
-if(type === "search"){
-
-content = (
+content=(
 
 <>
 
-<circle
-cx="11"
-cy="11"
-r="7"
-/>
-
+<circle cx="11" cy="11" r="7"/>
 <path d="m20 20-4-4"/>
 
 </>
@@ -1553,15 +1370,13 @@ r="7"
 
 }
 
+else if(type==="arrow"){
 
-if(type === "arrow"){
-
-content = (
+content=(
 
 <>
 
 <path d="M5 12h14"/>
-
 <path d="m13 6 6 6-6 6"/>
 
 </>
@@ -1570,13 +1385,10 @@ content = (
 
 }
 
-
 return(
-
 <svg {...props}>
 {content}
 </svg>
-
 );
 
 }
@@ -1588,77 +1400,30 @@ return(
 
 function App(){
 
-const [data,setData] =
-useState(null);
+const [data,setData]=useState(null);
+const [loading,setLoading]=useState(true);
+const [saving,setSaving]=useState(false);
+const [saved,setSaved]=useState(false);
+const [toast,setToast]=useState("");
+const [store,setStore]=useState("premium");
+const [activeCat,setActiveCat]=useState(null);
+const [openCategories,setOpenCategories]=useState({});
+const [currencyMenuOpen,setCurrencyMenuOpen]=useState(false);
+const [search,setSearch]=useState("");
+const [selectedProduct,setSelectedProduct]=useState(null);
+const [panelOpen,setPanelOpen]=useState(false);
+const [unlocked,setUnlocked]=useState(false);
+const [pinModal,setPinModal]=useState(false);
+const [pinInput,setPinInput]=useState("");
+const [pinError,setPinError]=useState(false);
+const [tab,setTab]=useState("genel");
+const [busy,setBusy]=useState(false);
 
-const [loading,setLoading] =
-useState(true);
-
-const [saving,setSaving] =
-useState(false);
-
-const [saved,setSaved] =
-useState(false);
-
-const [toast,setToast] =
-useState("");
-
-const [store,setStore] =
-useState("premium");
-
-const [activeCat,setActiveCat] =
-useState(null);
-
-const [
-openCategories,
-setOpenCategories
-] = useState({});
-
-const [
-currencyMenuOpen,
-setCurrencyMenuOpen
-] = useState(false);
-
-const [search,setSearch] =
-useState("");
-
-const [
-selectedProduct,
-setSelectedProduct
-] = useState(null);
-
-const [panelOpen,setPanelOpen] =
-useState(false);
-
-const [unlocked,setUnlocked] =
-useState(false);
-
-const [pinModal,setPinModal] =
-useState(false);
-
-const [pinInput,setPinInput] =
-useState("");
-
-const [pinError,setPinError] =
-useState(false);
-
-const [tab,setTab] =
-useState("genel");
-
-const [busy,setBusy] =
-useState(false);
-
-const logoRef =
-useRef(null);
-
-const bgRef =
-useRef(null);
-
-const itemRefs =
-useRef({});
-
-const realtimeChannelRef =
-useRef(null);
+const logoRef=useRef(null);
+const bgRef=useRef(null);
+const itemRefs=useRef({});
+const realtimeChannelRef=useRef(null);
+const toastTimerRef=useRef(null);
 
 
 /* =========================================================
@@ -1669,8 +1434,15 @@ function showToast(message){
 
 setToast(message);
 
+if(toastTimerRef.current){
+
+clearTimeout(toastTimerRef.current);
+
+}
+
+toastTimerRef.current=
 setTimeout(
-() => setToast(""),
+()=>setToast(""),
 3000
 );
 
@@ -1678,13 +1450,34 @@ setTimeout(
 
 
 /* =========================================================
-   KATEGORİ AÇ / KAPAT
+   CLEANUP TOAST
+========================================================= */
+
+useEffect(()=>{
+
+return()=>{
+
+if(toastTimerRef.current){
+
+clearTimeout(
+toastTimerRef.current
+);
+
+}
+
+};
+
+},[]);
+
+
+/* =========================================================
+   KATEGORİ
 ========================================================= */
 
 function toggleCategory(categoryId){
 
 setOpenCategories(
-previous => ({
+previous=>({
 
 ...previous,
 
@@ -1696,11 +1489,10 @@ previous => ({
 
 }
 
-
 function openCategory(categoryId){
 
 setOpenCategories(
-previous => ({
+previous=>({
 
 ...previous,
 
@@ -1711,11 +1503,10 @@ previous => ({
 
 }
 
-
 function closeCategory(categoryId){
 
 setOpenCategories(
-previous => ({
+previous=>({
 
 ...previous,
 
@@ -1731,15 +1522,15 @@ previous => ({
    DATA LOAD
 ========================================================= */
 
-useEffect(() => {
+useEffect(()=>{
 
-let cancelled = false;
+let cancelled=false;
 
 async function load(){
 
 try{
 
-const result =
+const result=
 await supabase
 .from("site_data")
 .select("data")
@@ -1755,11 +1546,11 @@ throw result.error;
 let loaded;
 
 if(
-result.data &&
+result.data&&
 result.data.data
 ){
 
-loaded =
+loaded=
 normalizeData(
 result.data.data
 );
@@ -1767,22 +1558,23 @@ result.data.data
 }
 else{
 
-loaded =
+loaded=
 defaultData();
 
-const insertResult =
+const insertResult=
 await supabase
 .from("site_data")
-.upsert({
-
+.upsert(
+{
 id:SITE_ID,
-
 data:loaded,
-
 updated_at:
 new Date().toISOString()
-
-});
+},
+{
+onConflict:"id"
+}
+);
 
 if(insertResult.error){
 
@@ -1800,13 +1592,17 @@ return;
 
 setData(loaded);
 
-setActiveCat(
-loaded.stores
+const firstCategory=
+loaded
+.stores
 ?.premium
 ?.categories
 ?.[0]
-?.id ||
-null
+?.id||
+null;
+
+setActiveCat(
+firstCategory
 );
 
 setOpenCategories({});
@@ -1818,11 +1614,10 @@ setOpenCategories({});
 
 if(!realtimeChannelRef.current){
 
-const channel =
+const channel=
 supabase
 .channel(
-"site-data-realtime-" +
-SITE_ID
+"site-data-realtime-"+SITE_ID
 )
 .on(
 "postgres_changes",
@@ -1830,13 +1625,13 @@ SITE_ID
 event:"*",
 schema:"public",
 table:"site_data",
-filter:"id=eq." + SITE_ID
+filter:"id=eq."+SITE_ID
 },
-payload => {
+payload=>{
 
 if(
-!payload ||
-!payload.new ||
+!payload||
+!payload.new||
 !payload.new.data
 ){
 
@@ -1844,7 +1639,7 @@ return;
 
 }
 
-const realtimeData =
+const realtimeData=
 normalizeData(
 payload.new.data
 );
@@ -1853,8 +1648,37 @@ setData(
 realtimeData
 );
 
+setActiveCat(
+currentActive=>{
+
+const currentCategories=
+realtimeData
+.stores
+?.[store]
+?.categories||
+[];
+
+if(
+currentCategories.some(
+category=>
+category.id===currentActive
+)
+){
+
+return currentActive;
+
+}
+
+return(
+currentCategories[0]?.id||
+null
+);
+
+}
+);
+
 setSelectedProduct(
-currentProduct => {
+currentProduct=>{
 
 if(!currentProduct){
 
@@ -1862,30 +1686,29 @@ return null;
 
 }
 
-let found = null;
+let found=null;
 
 Object.values(
-realtimeData.stores || {}
+realtimeData.stores||{}
 ).forEach(
-storeData => {
+storeData=>{
 
 (
-storeData.categories || []
+storeData.categories||[]
 ).forEach(
-category => {
+category=>{
 
-const item =
-(
-category.items || []
-).find(
-product =>
-product.id ===
+const item=
+(category.items||[])
+.find(
+product=>
+product.id===
 currentProduct.id
 );
 
 if(item){
 
-found = item;
+found=item;
 
 }
 
@@ -1895,7 +1718,7 @@ found = item;
 }
 );
 
-return found || null;
+return found||null;
 
 }
 );
@@ -1906,7 +1729,7 @@ setSaved(false);
 );
 
 channel.subscribe(
-status => {
+status=>{
 
 console.log(
 "Supabase Realtime:",
@@ -1916,7 +1739,7 @@ status
 }
 );
 
-realtimeChannelRef.current =
+realtimeChannelRef.current=
 channel;
 
 }
@@ -1929,7 +1752,7 @@ console.error(
 error
 );
 
-const fallback =
+const fallback=
 defaultData();
 
 setData(fallback);
@@ -1939,8 +1762,8 @@ fallback
 .stores
 .premium
 .categories
-[0]
-?.id ||
+?.[0]
+?.id||
 null
 );
 
@@ -1965,9 +1788,9 @@ setLoading(false);
 
 load();
 
-return () => {
+return()=>{
 
-cancelled = true;
+cancelled=true;
 
 if(
 realtimeChannelRef.current
@@ -1977,8 +1800,7 @@ supabase.removeChannel(
 realtimeChannelRef.current
 );
 
-realtimeChannelRef.current =
-null;
+realtimeChannelRef.current=null;
 
 }
 
@@ -1988,7 +1810,7 @@ null;
 
 
 /* =========================================================
-   STORE DEĞİŞTİR
+   STORE
 ========================================================= */
 
 function changeStore(nextStore){
@@ -1999,14 +1821,14 @@ setSearch("");
 
 setCurrencyMenuOpen(false);
 
-const categories =
+const categories=
 data?.stores
 ?.[nextStore]
-?.categories ||
+?.categories||
 [];
 
 setActiveCat(
-categories[0]?.id ||
+categories[0]?.id||
 null
 );
 
@@ -2022,7 +1844,7 @@ setOpenCategories({});
 function updateData(callback){
 
 setData(
-previous => {
+previous=>{
 
 if(!previous){
 
@@ -2030,11 +1852,13 @@ return previous;
 
 }
 
-const copy = {
+const copy={
 ...previous
 };
 
 callback(copy);
+
+setSaved(false);
 
 return copy;
 
@@ -2045,18 +1869,15 @@ return copy;
 
 
 /* =========================================================
-   PATH UPDATE
+   PATH
 ========================================================= */
 
-function setPath(
-path,
-value
-){
+function setPath(path,value){
 
 updateData(
-copy => {
+copy=>{
 
-let target = copy;
+let target=copy;
 
 for(
 let i=0;
@@ -2064,21 +1885,19 @@ i<path.length-1;
 i++
 ){
 
-const key =
-path[i];
+const key=path[i];
 
-target[key] = {
-...(target[key] || {})
+target[key]={
+...(target[key]||{})
 };
 
-target =
-target[key];
+target=target[key];
 
 }
 
 target[
 path[path.length-1]
-] = value;
+]=value;
 
 }
 );
@@ -2087,20 +1906,20 @@ path[path.length-1]
 
 
 /* =========================================================
-   PARA BİRİMİ
+   CURRENCY
 ========================================================= */
 
 function getCurrency(){
 
 return(
 CURRENCIES.find(
-item =>
-item.id ===
+item=>
+item.id===
 (
-data?.currency?.selected ||
+data?.currency?.selected||
 "TRY"
 )
-) ||
+)||
 CURRENCIES[0]
 );
 
@@ -2108,73 +1927,64 @@ CURRENCIES[0]
 
 
 /* =========================================================
-   FİYAT ÇEVİR
+   PRICE CONVERT
 ========================================================= */
 
 function convertPrice(amount){
 
 if(
-amount === null ||
-amount === undefined ||
-amount === ""
+amount===null||
+amount===undefined||
+amount===""
 ){
 
 return null;
 
 }
 
-const currency =
-data?.currency?.selected ||
+const currency=
+data?.currency?.selected||
 "TRY";
 
-const numeric =
-Number(amount);
+const numeric=Number(amount);
 
-if(
-!Number.isFinite(numeric)
-){
+if(!Number.isFinite(numeric)){
 
 return null;
 
 }
 
-if(currency === "USD"){
+if(currency==="USD"){
 
-const rate =
+const rate=
 Number(
 data?.currency?.usdRate
 );
 
-if(
-!rate ||
-rate <= 0
-){
+if(!rate||rate<=0){
 
 return null;
 
 }
 
-return numeric / rate;
+return numeric/rate;
 
 }
 
-if(currency === "EUR"){
+if(currency==="EUR"){
 
-const rate =
+const rate=
 Number(
 data?.currency?.eurRate
 );
 
-if(
-!rate ||
-rate <= 0
-){
+if(!rate||rate<=0){
 
 return null;
 
 }
 
-return numeric / rate;
+return numeric/rate;
 
 }
 
@@ -2184,53 +1994,50 @@ return numeric;
 
 
 /* =========================================================
-   FİYAT FORMAT
+   PRICE FORMAT
 ========================================================= */
 
 function formatAmount(amount){
 
-const converted =
+const converted=
 convertPrice(amount);
 
-if(converted === null){
+if(converted===null){
 
 return null;
 
 }
 
-const currency =
+const currency=
 getCurrency();
 
-const decimals =
-currency.id === "TRY"
+const decimals=
+currency.id==="TRY"
 ?0
 :2;
 
-const formatted =
+const formatted=
 converted.toLocaleString(
 "tr-TR",
 {
-minimumFractionDigits:
-decimals,
-
-maximumFractionDigits:
-decimals
+minimumFractionDigits:decimals,
+maximumFractionDigits:decimals
 }
 );
 
-if(currency.id === "USD"){
+if(currency.id==="USD"){
 
-return "$" + formatted;
-
-}
-
-if(currency.id === "EUR"){
-
-return "€" + formatted;
+return "$"+formatted;
 
 }
 
-return formatted + " ₺";
+if(currency.id==="EUR"){
+
+return "€"+formatted;
+
+}
+
+return formatted+" ₺";
 
 }
 
@@ -2242,7 +2049,7 @@ return formatted + " ₺";
 async function save(){
 
 if(
-!data ||
+!data||
 saving
 ){
 
@@ -2254,10 +2061,10 @@ setSaving(true);
 
 try{
 
-const clean =
+const clean=
 normalizeData(data);
 
-const result =
+const result=
 await supabase
 .from("site_data")
 .upsert(
@@ -2287,10 +2094,9 @@ showToast(
 );
 
 setTimeout(
-() => {
+()=>{
 
 setSaved(false);
-
 setPanelOpen(false);
 
 },
@@ -2306,9 +2112,9 @@ error
 );
 
 showToast(
-"Kaydetme hatası: " +
+"Kaydetme hatası: "+
 (
-error?.message ||
+error?.message||
 "Bilinmeyen hata"
 )
 );
@@ -2338,9 +2144,7 @@ return;
 }
 
 setPinInput("");
-
 setPinError(false);
-
 setPinModal(true);
 
 }
@@ -2352,21 +2156,20 @@ setPinModal(true);
 
 function tryUnlock(){
 
-const correct =
+const correct=
 String(
-data?.pin ||
-"1234"
+data?.pin||"1234"
 );
 
 if(
-pinInput === correct
+pinInput===
+correct
 ){
 
 setUnlocked(true);
-
 setPinModal(false);
-
 setPanelOpen(true);
+setPinInput("");
 
 }
 else{
@@ -2384,36 +2187,25 @@ setPinError(true);
 
 function addCategory(){
 
-const category =
+const category=
 createCategory(
 "Yeni Kategori"
 );
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories = [
-
-...copy.stores[
-store
-].categories,
-
+copy.stores[store].categories=[
+...copy.stores[store].categories,
 category
-
 ];
 
 }
 );
 
-setActiveCat(
-category.id
-);
+setActiveCat(category.id);
 
-openCategory(
-category.id
-);
+openCategory(category.id);
 
 }
 
@@ -2435,38 +2227,30 @@ return;
 }
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.filter(
-category =>
-category.id !== id
+copy.stores[store].categories=
+copy.stores[store].categories.filter(
+category=>category.id!==id
 );
 
 }
 );
 
-const remaining =
-data.stores[
-store
-].categories.filter(
-category =>
-category.id !== id
+const remaining=
+data.stores[store].categories.filter(
+category=>category.id!==id
 );
 
 setActiveCat(
-remaining[0]?.id ||
+remaining[0]?.id||
 null
 );
 
 setOpenCategories(
-previous => {
+previous=>{
 
-const copy = {
+const copy={
 ...previous
 };
 
@@ -2484,22 +2268,15 @@ return copy;
    KATEGORİ İSİM
 ========================================================= */
 
-function renameCategory(
-id,
-value
-){
+function renameCategory(id,value){
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category =>
-category.id === id
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>
+category.id===id
 ?{
 ...category,
 name:value
@@ -2517,32 +2294,27 @@ name:value
    KATEGORİ SIRALA
 ========================================================= */
 
-function moveCategory(
-id,
-direction
-){
+function moveCategory(id,direction){
 
 updateData(
-copy => {
+copy=>{
 
-const list = [
-...copy.stores[
-store
-].categories
+const list=[
+...copy.stores[store].categories
 ];
 
-const index =
+const index=
 list.findIndex(
-x => x.id === id
+x=>x.id===id
 );
 
-const target =
-index + direction;
+const target=
+index+direction;
 
 if(
-index < 0 ||
-target < 0 ||
-target >= list.length
+index<0||
+target<0||
+target>=list.length
 ){
 
 return;
@@ -2552,14 +2324,12 @@ return;
 [
 list[index],
 list[target]
-] = [
+]=[
 list[target],
 list[index]
 ];
 
-copy.stores[
-store
-].categories =
+copy.stores[store].categories=
 list;
 
 }
@@ -2574,7 +2344,7 @@ list;
 
 function addItem(categoryId){
 
-const item = {
+const item={
 
 id:uid(),
 
@@ -2595,16 +2365,12 @@ parts:[]
 };
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category =>
-category.id === categoryId
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>
+category.id===categoryId
 ?{
 ...category,
 items:[
@@ -2618,9 +2384,7 @@ item
 }
 );
 
-openCategory(
-categoryId
-);
+openCategory(categoryId);
 
 }
 
@@ -2637,18 +2401,14 @@ value
 ){
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category => {
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>{
 
 if(
-category.id !== categoryId
+category.id!==categoryId
 ){
 
 return category;
@@ -2661,8 +2421,8 @@ return{
 
 items:
 category.items.map(
-item =>
-item.id === itemId
+item=>
+item.id===itemId
 ?{
 ...item,
 [field]:value
@@ -2701,22 +2461,17 @@ return;
 }
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category =>
-category.id === categoryId
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>
+category.id===categoryId
 ?{
 ...category,
 items:
 category.items.filter(
-item =>
-item.id !== itemId
+item=>item.id!==itemId
 )
 }
 :category
@@ -2739,40 +2494,36 @@ direction
 ){
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category => {
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>{
 
 if(
-category.id !== categoryId
+category.id!==categoryId
 ){
 
 return category;
 
 }
 
-const list = [
+const list=[
 ...category.items
 ];
 
-const index =
+const index=
 list.findIndex(
-x => x.id === itemId
+x=>x.id===itemId
 );
 
-const target =
-index + direction;
+const target=
+index+direction;
 
 if(
-index < 0 ||
-target < 0 ||
-target >= list.length
+index<0||
+target<0||
+target>=list.length
 ){
 
 return category;
@@ -2782,7 +2533,7 @@ return category;
 [
 list[index],
 list[target]
-] = [
+]=[
 list[target],
 list[index]
 ];
@@ -2813,7 +2564,7 @@ categoryId,
 itemId
 ){
 
-const part = {
+const part={
 
 id:uid(),
 
@@ -2826,18 +2577,14 @@ contactOnly:false
 };
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category => {
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>{
 
 if(
-category.id !== categoryId
+category.id!==categoryId
 ){
 
 return category;
@@ -2850,20 +2597,18 @@ return{
 
 items:
 category.items.map(
-item => {
+item=>{
 
 if(
-item.id !== itemId
+item.id!==itemId
 ){
 
 return item;
 
 }
 
-const oldPrice =
-normalizePrice(
-item.price
-);
+const oldPrice=
+normalizePrice(item.price);
 
 return{
 
@@ -2911,18 +2656,14 @@ value
 ){
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category => {
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>{
 
 if(
-category.id !== categoryId
+category.id!==categoryId
 ){
 
 return category;
@@ -2935,20 +2676,18 @@ return{
 
 items:
 category.items.map(
-item => {
+item=>{
 
 if(
-item.id !== itemId
+item.id!==itemId
 ){
 
 return item;
 
 }
 
-const price =
-normalizePrice(
-item.price
-);
+const price=
+normalizePrice(item.price);
 
 return{
 
@@ -2960,8 +2699,8 @@ price:{
 
 parts:
 price.parts.map(
-part =>
-part.id === partId
+part=>
+part.id===partId
 ?{
 ...part,
 [field]:value
@@ -2998,18 +2737,14 @@ partId
 ){
 
 updateData(
-copy => {
+copy=>{
 
-copy.stores[
-store
-].categories =
-copy.stores[
-store
-].categories.map(
-category => {
+copy.stores[store].categories=
+copy.stores[store].categories.map(
+category=>{
 
 if(
-category.id !== categoryId
+category.id!==categoryId
 ){
 
 return category;
@@ -3022,20 +2757,18 @@ return{
 
 items:
 category.items.map(
-item => {
+item=>{
 
 if(
-item.id !== itemId
+item.id!==itemId
 ){
 
 return item;
 
 }
 
-const price =
-normalizePrice(
-item.price
-);
+const price=
+normalizePrice(item.price);
 
 return{
 
@@ -3047,8 +2780,7 @@ price:{
 
 parts:
 price.parts.filter(
-part =>
-part.id !== partId
+part=>part.id!==partId
 )
 
 }
@@ -3079,22 +2811,10 @@ itemId,
 event
 ){
 
-const file =
+const file=
 event.target.files?.[0];
 
 if(!file){
-
-return;
-
-}
-
-if(
-!file.type.startsWith("image/")
-){
-
-showToast(
-"Lütfen bir görsel seçin."
-);
 
 return;
 
@@ -3104,25 +2824,23 @@ setBusy(true);
 
 try{
 
-const compressed =
+const compressed=
 await resizeImg(
 file,
 1000,
 .76
 );
 
-const blob =
-dataUrlToBlob(
-compressed
-);
+const blob=
+dataUrlToBlob(compressed);
 
-const path =
+const path=
 storagePath(
 "products",
 itemId
 );
 
-const url =
+const url=
 await uploadBlobToStorage(
 blob,
 path
@@ -3143,7 +2861,7 @@ showToast(
 catch(error){
 
 console.error(
-"GÖRSEL YÜKLEME HATASI:",
+"GÖRSEL HATASI:",
 error
 );
 
@@ -3158,7 +2876,7 @@ setBusy(false);
 
 if(event.target){
 
-event.target.value = "";
+event.target.value="";
 
 }
 
@@ -3173,22 +2891,10 @@ event.target.value = "";
 
 async function uploadLogo(event){
 
-const file =
+const file=
 event.target.files?.[0];
 
 if(!file){
-
-return;
-
-}
-
-if(
-!file.type.startsWith("image/")
-){
-
-showToast(
-"Lütfen bir görsel seçin."
-);
 
 return;
 
@@ -3198,25 +2904,23 @@ setBusy(true);
 
 try{
 
-const compressed =
+const compressed=
 await resizeImg(
 file,
 700,
 .88
 );
 
-const blob =
-dataUrlToBlob(
-compressed
-);
+const blob=
+dataUrlToBlob(compressed);
 
-const path =
+const path=
 storagePath(
 "logo",
-store + "-logo"
+store+"-logo"
 );
 
-const url =
+const url=
 await uploadBlobToStorage(
 blob,
 path
@@ -3229,10 +2933,10 @@ url
 
 showToast(
 (
-store === "premium"
+store==="premium"
 ?"Premium"
 :"Outlet"
-) +
+)+
 " logosu yüklendi. Kaydet'e basın."
 );
 
@@ -3240,7 +2944,7 @@ store === "premium"
 catch(error){
 
 console.error(
-"LOGO YÜKLEME HATASI:",
+"LOGO HATASI:",
 error
 );
 
@@ -3255,7 +2959,7 @@ setBusy(false);
 
 if(event.target){
 
-event.target.value = "";
+event.target.value="";
 
 }
 
@@ -3270,22 +2974,10 @@ event.target.value = "";
 
 async function uploadBackground(event){
 
-const file =
+const file=
 event.target.files?.[0];
 
 if(!file){
-
-return;
-
-}
-
-if(
-!file.type.startsWith("image/")
-){
-
-showToast(
-"Lütfen bir görsel seçin."
-);
 
 return;
 
@@ -3295,19 +2987,17 @@ setBusy(true);
 
 try{
 
-const compressed =
+const compressed=
 await resizeImg(
 file,
 1600,
 .70
 );
 
-const blob =
-dataUrlToBlob(
-compressed
-);
+const blob=
+dataUrlToBlob(compressed);
 
-const url =
+const url=
 await uploadBlobToStorage(
 blob,
 storagePath(
@@ -3329,7 +3019,7 @@ showToast(
 catch(error){
 
 console.error(
-"ARKA PLAN YÜKLEME HATASI:",
+"ARKA PLAN HATASI:",
 error
 );
 
@@ -3344,7 +3034,7 @@ setBusy(false);
 
 if(event.target){
 
-event.target.value = "";
+event.target.value="";
 
 }
 
@@ -3360,18 +3050,15 @@ event.target.value = "";
 function applyTheme(theme){
 
 updateData(
-copy => {
+copy=>{
 
-copy.theme = {
+copy.theme={
 
 ...copy.theme,
 
 bg:theme.bg,
-
 card:theme.card,
-
 accent:theme.accent,
-
 text:theme.text
 
 };
@@ -3398,7 +3085,7 @@ return;
 
 }
 
-const fresh =
+const fresh=
 defaultData();
 
 setData(fresh);
@@ -3409,8 +3096,8 @@ setActiveCat(
 fresh.stores
 .premium
 .categories
-[0]
-?.id ||
+?.[0]
+?.id||
 null
 );
 
@@ -3435,19 +3122,12 @@ return(
 style={{
 
 minHeight:"100vh",
-
 background:"#141416",
-
 color:"#aaa",
-
 display:"flex",
-
 alignItems:"center",
-
 justifyContent:"center",
-
-fontFamily:
-"Inter,sans-serif"
+fontFamily:"Inter,sans-serif"
 
 }}
 >
@@ -3473,20 +3153,11 @@ return(
 style={{
 
 minHeight:"100vh",
-
 background:"#141416",
-
 color:"#f87171",
-
 display:"flex",
-
 alignItems:"center",
-
-justifyContent:"center",
-
-padding:"20px",
-
-textAlign:"center"
+justifyContent:"center"
 
 }}
 >
@@ -3504,38 +3175,18 @@ Site verileri yüklenemedi.
    CURRENT DATA
 ========================================================= */
 
-const currentStore =
-data.stores?.[store] ||
-{
-logo:normalizeLogo(data.logo),
-categories:[]
-};
+const currentStore=
+data.stores?.[store];
 
-const categories =
-currentStore.categories ||
-[];
+const categories=
+currentStore?.categories||[];
 
-if(
-!activeCat &&
-categories.length
-){
-
-setTimeout(
-() =>
-setActiveCat(
-categories[0].id
-),
-0
-);
-
-}
-
-const activeCategory =
+const activeCategory=
 categories.find(
-category =>
-category.id === activeCat
-) ||
-categories[0] ||
+category=>
+category.id===activeCat
+)||
+categories[0]||
 null;
 
 
@@ -3543,11 +3194,11 @@ null;
    TÜM ÜRÜNLER
 ========================================================= */
 
-const allProducts =
+const allProducts=
 categories.flatMap(
-category =>
-(category.items || []).map(
-item => ({
+category=>
+(category.items||[]).map(
+item=>({
 
 ...item,
 
@@ -3563,35 +3214,31 @@ category.name
    SEARCH
 ========================================================= */
 
-const normalizedSearch =
+const normalizedSearch=
 search
 .trim()
-.toLocaleLowerCase(
-"tr-TR"
-);
+.toLocaleLowerCase("tr-TR");
 
 let visibleProducts;
 
 if(normalizedSearch){
 
-visibleProducts =
+visibleProducts=
 allProducts.filter(
-item => {
+item=>{
 
-const text = (
+const text=(
 
-item.name +
-" " +
-item.desc +
-" " +
-item.dims +
-" " +
-item.categoryName
+(item.name||"")+
+" "+
+(item.desc||"")+
+" "+
+(item.dims||"")+
+" "+
+(item.categoryName||"")
 
 )
-.toLocaleLowerCase(
-"tr-TR"
-);
+.toLocaleLowerCase("tr-TR");
 
 return text.includes(
 normalizedSearch
@@ -3603,15 +3250,13 @@ normalizedSearch
 }
 else{
 
-visibleProducts =
-activeCategory?.items ||
-[];
+visibleProducts=
+activeCategory?.items||[];
 
 }
 
 
-const theme =
-data.theme;
+const theme=data.theme;
 
 
 /* =========================================================
@@ -3621,23 +3266,19 @@ data.theme;
 function priceText(part){
 
 if(
-!part ||
-part.contactOnly ||
-part.amount === null ||
-part.amount === undefined ||
-part.amount === ""
+!part||
+part.contactOnly||
+part.amount===null||
+part.amount===undefined||
+part.amount===""
 ){
 
-return(
-"Fiyat için iletişime geçin"
-);
+return"Fiyat için iletişime geçin";
 
 }
 
 return(
-formatAmount(
-part.amount
-) ||
+formatAmount(part.amount)||
 "Fiyat için iletişime geçin"
 );
 
@@ -3650,78 +3291,67 @@ part.amount
 
 function productMainPrice(item){
 
-const price =
-normalizePrice(
-item.price
-);
+const price=
+normalizePrice(item.price);
 
 if(price.parts.length){
 
-const total =
+const total=
 price.parts
 .filter(
-part =>
-!part.contactOnly &&
-part.amount !== null &&
-part.amount !== undefined &&
-part.amount !== ""
+part=>
+!part.contactOnly&&
+part.amount!==null&&
+part.amount!==undefined&&
+part.amount!==""
 )
 .reduce(
-(sum,part) =>
-sum + Number(part.amount),
+(sum,part)=>
+sum+Number(part.amount),
 0
 );
 
-if(total > 0){
+if(total>0){
 
 return(
-formatAmount(total) ||
+formatAmount(total)||
 "Fiyat için iletişime geçin"
 );
 
 }
 
-return(
-"Fiyat için iletişime geçin"
-);
+return"Fiyat için iletişime geçin";
 
 }
 
 if(
-price.amount !== null &&
-price.amount !== undefined &&
-price.amount !== ""
+price.amount!==null&&
+price.amount!==undefined&&
+price.amount!==""
 ){
 
 return(
-formatAmount(
-price.amount
-) ||
+formatAmount(price.amount)||
 "Fiyat için iletişime geçin"
 );
 
 }
 
-return(
-"Fiyat için iletişime geçin"
-);
+return"Fiyat için iletişime geçin";
 
 }
 
 
-const currency =
-getCurrency();
+const currency=getCurrency();
 
 
 /* =========================================================
-   SEÇİLİ MAĞAZA LOGOSU
+   LOGO
 ========================================================= */
 
-const currentLogo =
-data.stores?.[store]?.logo ||
-normalizeLogo(
-data.logo
-);
+const currentLogo=
+data.stores?.[store]?.logo||
+normalizeLogo(data.logo);
 
 
 /* =========================================================
@@ -3747,8 +3377,7 @@ backgroundSize:"cover",
 
 backgroundPosition:"center",
 
-color:
-theme.text,
+color:theme.text,
 
 fontFamily:
 "Inter,system-ui,sans-serif"
@@ -3776,40 +3405,37 @@ className="max-w-5xl mx-auto flex justify-between items-center gap-3"
 className="flex gap-1 p-1 rounded-full"
 style={{
 
-background:
-"rgba(0,0,0,.25)",
+background:"rgba(0,0,0,.25)",
 
-backdropFilter:
-"blur(15px)",
+backdropFilter:"blur(15px)",
 
-WebkitBackdropFilter:
-"blur(15px)"
+WebkitBackdropFilter:"blur(15px)"
 
 }}
 >
 
-{STORES.map(item => (
+{STORES.map(item=>(
 
 <button
 key={item.id}
-onClick={() =>
+onClick={()=>
 changeStore(item.id)
 }
 className="px-4 py-2 rounded-full text-xs font-bold transition"
 style={{
 
 background:
-store === item.id
+store===item.id
 ?theme.accent
 :"transparent",
 
 color:
-store === item.id
+store===item.id
 ?"#fff"
 :theme.text,
 
 opacity:
-store === item.id
+store===item.id
 ?1
 :.55
 
@@ -3837,25 +3463,21 @@ className="flex items-center gap-2"
 <div className="relative">
 
 <button
-onClick={() =>
+onClick={()=>
 setCurrencyMenuOpen(
-previous =>
-!previous
+previous=>!previous
 )
 }
 className="h-10 min-w-[58px] px-3 rounded-full flex items-center justify-center gap-1.5 font-bold text-sm"
 style={{
 
-background:
-theme.accent,
+background:theme.accent,
 
 color:"#fff",
 
-backdropFilter:
-"blur(15px)",
+backdropFilter:"blur(15px)",
 
-WebkitBackdropFilter:
-"blur(15px)"
+WebkitBackdropFilter:"blur(15px)"
 
 }}
 >
@@ -3874,17 +3496,15 @@ size={13}
 </button>
 
 
-{currencyMenuOpen && (
+{currencyMenuOpen&&(
 
 <div
 className="currency-menu absolute right-0 mt-2 w-36 rounded-2xl overflow-hidden shadow-2xl border"
 style={{
 
-background:
-theme.card,
+background:theme.card,
 
-borderColor:
-theme.text + "18",
+borderColor:theme.text+"18",
 
 zIndex:1000
 
@@ -3894,8 +3514,7 @@ zIndex:1000
 <div
 className="px-3 py-2 text-[9px] uppercase tracking-widest font-bold opacity-40 border-b"
 style={{
-borderColor:
-theme.text + "12"
+borderColor:theme.text+"12"
 }}
 >
 
@@ -3903,32 +3522,30 @@ Para Birimi
 
 </div>
 
-{CURRENCIES.map(c => (
+
+{CURRENCIES.map(c=>(
 
 <button
 key={c.id}
-onClick={() => {
+onClick={()=>{
 
 setPath(
 ["currency","selected"],
 c.id
 );
 
-setCurrencyMenuOpen(
-false
-);
+setCurrencyMenuOpen(false);
 
 }}
 className="w-full px-3 py-3 flex items-center justify-between text-sm font-semibold transition"
 style={{
 
 background:
-currency.id === c.id
-?theme.accent + "18"
+currency.id===c.id
+?theme.accent+"18"
 :"transparent",
 
-color:
-theme.text
+color:theme.text
 
 }}
 >
@@ -3942,12 +3559,12 @@ className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
 style={{
 
 background:
-currency.id === c.id
+currency.id===c.id
 ?theme.accent
-:theme.accent + "18",
+:theme.accent+"18",
 
 color:
-currency.id === c.id
+currency.id===c.id
 ?"#fff"
 :theme.accent
 
@@ -3958,14 +3575,12 @@ currency.id === c.id
 
 </span>
 
-<span>
-{c.name}
-</span>
+<span>{c.name}</span>
 
 </span>
 
 
-{currency.id === c.id && (
+{currency.id===c.id&&(
 
 <Icon
 type="check"
@@ -3988,7 +3603,7 @@ size={15}
 {/* ARAMA */}
 
 <button
-onClick={() =>
+onClick={()=>
 setSearch(
 search
 ?""
@@ -3998,17 +3613,13 @@ search
 className="w-10 h-10 rounded-full flex items-center justify-center"
 style={{
 
-background:
-"rgba(0,0,0,.25)",
+background:"rgba(0,0,0,.25)",
 
-backdropFilter:
-"blur(15px)",
+backdropFilter:"blur(15px)",
 
-WebkitBackdropFilter:
-"blur(15px)",
+WebkitBackdropFilter:"blur(15px)",
 
-color:
-theme.text
+color:theme.text
 
 }}
 >
@@ -4031,7 +3642,7 @@ size={18}
     SEARCH
 ===================================================== */}
 
-{search !== "" && (
+{search!==""&&(
 
 <div
 className="fixed top-[68px] left-4 right-4 z-40"
@@ -4044,10 +3655,8 @@ className="max-w-5xl mx-auto relative"
 <input
 autoFocus
 value={search.trim()}
-onChange={e =>
-setSearch(
-e.target.value
-)
+onChange={e=>
+setSearch(e.target.value)
 }
 placeholder="Ürün ara..."
 className="search-input"
@@ -4079,9 +3688,9 @@ width:"100%",
 display:"flex",
 
 justifyContent:
-currentLogo.position === "left"
+currentLogo.position==="left"
 ?"flex-start"
-:currentLogo.position === "right"
+:currentLogo.position==="right"
 ?"flex-end"
 :"center",
 
@@ -4090,33 +3699,32 @@ marginBottom:18
 }}
 >
 
-{currentLogo.src ? (
+{currentLogo.src?(
 
 <img
 src={currentLogo.src}
 alt={
-store === "premium"
+store==="premium"
 ?"Premium"
 :"Outlet"
 }
 style={{
 
-width:
-currentLogo.size,
+width:currentLogo.size,
 
 maxWidth:"70vw",
 
-maxHeight:
-currentLogo.size,
+maxHeight:currentLogo.size,
 
 objectFit:"contain",
 
 display:"block"
 
 }}
+
 />
 
-) : (
+):( 
 
 <div
 style={{
@@ -4125,8 +3733,7 @@ fontSize:50,
 
 fontWeight:800,
 
-color:
-theme.accent
+color:theme.accent
 
 }}
 >
@@ -4167,18 +3774,18 @@ className="text-3xl font-bold leading-tight"
 className="text-sm opacity-60 mt-2"
 >
 
-{store === "premium"
+{store==="premium"
 ?"Premium Ofis Mobilyaları"
 :"Outlet Ofis Mobilyaları"}
 
 </p>
 
 
-{data.phone && (
+{data.phone&&(
 
 <a
 href={
-"tel:" +
+"tel:"+
 data.phone.replace(
 /\s/g,
 ""
@@ -4187,8 +3794,7 @@ data.phone.replace(
 className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
 style={{
 
-background:
-theme.accent,
+background:theme.accent,
 
 color:"#fff"
 
@@ -4225,11 +3831,9 @@ className="flex items-center justify-between"
 
 <div>
 
-<div
-className="text-xl font-bold"
->
+<div className="text-xl font-bold">
 
-{store === "premium"
+{store==="premium"
 ?"Premium"
 :"Outlet"}
 
@@ -4240,9 +3844,9 @@ className="text-xl font-bold"
 className="text-[11px] opacity-45 mt-1"
 >
 
-{currentStore.categories.reduce(
-(total,c) =>
-total + (c.items?.length || 0),
+{currentStore?.categories?.reduce(
+(total,c)=>
+total+(c.items?.length||0),
 0
 )}
 
@@ -4254,10 +3858,10 @@ total + (c.items?.length || 0),
 </div>
 
 
-{search.trim() && (
+{search.trim()&&(
 
 <button
-onClick={() =>
+onClick={()=>
 setSearch("")
 }
 className="text-xs opacity-60"
@@ -4278,7 +3882,7 @@ Aramayı temizle
     KATEGORİLER
 ===================================================== */}
 
-{!search.trim() && (
+{!search.trim()&&(
 
 <div
 className="sticky top-[64px] z-20 px-4 pt-3 pb-2 category-bar"
@@ -4289,19 +3893,16 @@ className="max-w-5xl mx-auto category-scroll"
 >
 
 {categories.map(
-(
-category,
-categoryIndex
-) => {
+(category,categoryIndex)=>{
 
-const active =
-category.id === activeCat;
+const active=
+category.id===activeCat;
 
 return(
 
 <button
 key={category.id}
-onClick={() => {
+onClick={()=>{
 
 setActiveCat(
 category.id
@@ -4311,20 +3912,14 @@ setOpenCategories({});
 
 }}
 className={
-"category-chip " +
-(active
-?"active"
-:"")
+"category-chip "+
+(active?"active":"")
 }
 style={{
 
 background:
 active
-?`linear-gradient(
-135deg,
-${theme.accent},
-${theme.accent}dd
-)`
+?`linear-gradient(135deg,${theme.accent},${theme.accent}dd)`
 :`${theme.accent}14`,
 
 color:
@@ -4334,8 +3929,8 @@ active
 
 borderColor:
 active
-?theme.accent + "70"
-:theme.text + "12",
+?theme.accent+"70"
+:theme.text+"12",
 
 opacity:
 active
@@ -4348,7 +3943,7 @@ active
 :"none",
 
 animation:
-`categoryEnter .4s cubic-bezier(.22,1,.36,1) ${categoryIndex * 45}ms both`
+`categoryEnter .4s cubic-bezier(.22,1,.36,1) ${categoryIndex*45}ms both`
 
 }}
 >
@@ -4383,7 +3978,7 @@ className="product-grid category-products-view px-4 pt-4 pb-28 max-w-5xl mx-auto
 >
 
 
-{search.trim() && (
+{search.trim()&&(
 
 <div
 className="col-span-full mb-1"
@@ -4403,7 +3998,7 @@ className="text-xs opacity-50"
 )}
 
 
-{visibleProducts.length === 0 && (
+{visibleProducts.length===0&&(
 
 <div
 className="col-span-full text-center py-16 opacity-50"
@@ -4419,27 +4014,22 @@ className="col-span-full text-center py-16 opacity-50"
 
 
 {visibleProducts.map(
-(
-item,
-productIndex
-) => (
+(item,productIndex)=>(
 
 <article
 key={item.id}
-onClick={() =>
+onClick={()=>
 setSelectedProduct(item)
 }
 className="product-card rounded-2xl overflow-hidden cursor-pointer"
 style={{
 
-background:
-theme.card,
+background:theme.card,
 
-boxShadow:
-"0 5px 18px rgba(0,0,0,.14)",
+boxShadow:"0 5px 18px rgba(0,0,0,.14)",
 
 animationDelay:
-`${Math.min(productIndex,8) * 45}ms`
+`${Math.min(productIndex,8)*45}ms`
 
 }}
 >
@@ -4449,11 +4039,10 @@ animationDelay:
 className="product-image"
 style={{
 
-height:
-data.cardImgSize,
+height:data.cardImgSize,
 
 backgroundColor:
-theme.accent + "12",
+theme.accent+"12",
 
 backgroundImage:
 item.image
@@ -4476,7 +4065,7 @@ justifyContent:"center"
 }}
 >
 
-{!item.image && (
+{!item.image&&(
 
 <Icon
 type="image"
@@ -4499,7 +4088,7 @@ className="font-semibold text-sm leading-tight"
 </div>
 
 
-{item.desc && (
+{item.desc&&(
 
 <div
 className="text-[11px] opacity-55 mt-1 leading-snug line-clamp-2"
@@ -4512,7 +4101,7 @@ className="text-[11px] opacity-55 mt-1 leading-snug line-clamp-2"
 )}
 
 
-{item.dims && (
+{item.dims&&(
 
 <div
 className="text-[10px] opacity-45 mt-1"
@@ -4563,11 +4152,11 @@ size={11}
     ÜRÜN DETAY
 ===================================================== */}
 
-{selectedProduct && (
+{selectedProduct&&(
 
 <div
 className="fixed inset-0 z-[100] modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-5"
-onClick={() =>
+onClick={()=>
 setSelectedProduct(null)
 }
 >
@@ -4576,17 +4165,14 @@ setSelectedProduct(null)
 className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
 style={{
 
-background:
-theme.card,
+background:theme.card,
 
-color:
-theme.text,
+color:theme.text,
 
-animation:
-"pop .22s ease"
+animation:"pop .22s ease"
 
 }}
-onClick={e =>
+onClick={e=>
 e.stopPropagation()
 }
 >
@@ -4599,7 +4185,7 @@ style={{
 height:270,
 
 backgroundColor:
-theme.accent + "12",
+theme.accent+"12",
 
 backgroundImage:
 selectedProduct.image
@@ -4622,7 +4208,7 @@ justifyContent:"center"
 }}
 >
 
-{!selectedProduct.image && (
+{!selectedProduct.image&&(
 
 <Icon
 type="image"
@@ -4635,14 +4221,13 @@ size={40}
 
 
 <button
-onClick={() =>
+onClick={()=>
 setSelectedProduct(null)
 }
 className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
 style={{
 
-background:
-"rgba(0,0,0,.55)",
+background:"rgba(0,0,0,.55)",
 
 color:"#fff"
 
@@ -4668,7 +4253,7 @@ color:theme.accent
 }}
 >
 
-{store === "premium"
+{store==="premium"
 ?"PREMIUM"
 :"OUTLET"}
 
@@ -4684,7 +4269,7 @@ className="text-2xl font-bold"
 </h2>
 
 
-{selectedProduct.desc && (
+{selectedProduct.desc&&(
 
 <p
 className="text-sm opacity-65 mt-2 leading-relaxed"
@@ -4697,14 +4282,14 @@ className="text-sm opacity-65 mt-2 leading-relaxed"
 )}
 
 
-{selectedProduct.dims && (
+{selectedProduct.dims&&(
 
 <div
 className="mt-3 px-3 py-2 rounded-xl text-xs"
 style={{
 
 background:
-theme.accent + "12"
+theme.accent+"12"
 
 }}
 >
@@ -4733,14 +4318,14 @@ Fiyatlar
 
 {normalizePrice(
 selectedProduct.price
-).parts.length > 0 ? (
+).parts.length>0?(
 
 <div className="space-y-2">
 
 {normalizePrice(
 selectedProduct.price
 ).parts.map(
-part => (
+part=>(
 
 <div
 key={part.id}
@@ -4774,17 +4359,16 @@ color:theme.accent
 
 </div>
 
-) : (
+):( 
 
 <div
 className="rounded-xl p-4 text-center"
 style={{
 
 background:
-theme.accent + "12",
+theme.accent+"12",
 
-color:
-theme.accent
+color:theme.accent
 
 }}
 >
@@ -4798,11 +4382,11 @@ Fiyat için iletişime geçin
 </div>
 
 
-{data.phone && (
+{data.phone&&(
 
 <a
 href={
-"tel:" +
+"tel:"+
 data.phone.replace(
 /\s/g,
 ""
@@ -4811,8 +4395,7 @@ data.phone.replace(
 className="mt-5 w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm"
 style={{
 
-background:
-theme.accent,
+background:theme.accent,
 
 color:"#fff"
 
@@ -4849,14 +4432,11 @@ className="fixed bottom-5 right-[18px] z-30 rounded-full shadow-xl flex items-ce
 style={{
 
 width:52,
-
 height:52,
 
-background:
-theme.text,
+background:theme.text,
 
-color:
-theme.bg
+color:theme.bg
 
 }}
 >
@@ -4873,7 +4453,7 @@ size={20}
     TOAST
 ===================================================== */}
 
-{toast && (
+{toast&&(
 
 <div
 className="fixed bottom-24 right-[18px] z-[150] bg-neutral-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-sm flex items-center gap-2"
@@ -4895,7 +4475,7 @@ size={15}
     PIN MODAL
 ===================================================== */}
 
-{pinModal && (
+{pinModal&&(
 
 <div
 className="fixed inset-0 z-[200] bg-black/75 flex items-center justify-center p-4"
@@ -4914,12 +4494,8 @@ type="lock"
 size={18}
 />
 
-<h2
-className="font-bold"
->
-
+<h2 className="font-bold">
 Yönetim Girişi
-
 </h2>
 
 </div>
@@ -4931,7 +4507,7 @@ type="password"
 inputMode="numeric"
 maxLength={8}
 value={pinInput}
-onChange={e => {
+onChange={e=>{
 
 setPinInput(
 e.target.value.replace(
@@ -4943,9 +4519,9 @@ e.target.value.replace(
 setPinError(false);
 
 }}
-onKeyDown={e => {
+onKeyDown={e=>{
 
-if(e.key === "Enter"){
+if(e.key==="Enter"){
 
 tryUnlock();
 
@@ -4957,7 +4533,7 @@ className="admin-input tracking-[.3em]"
 />
 
 
-{pinError && (
+{pinError&&(
 
 <div
 className="text-xs text-red-400 mt-2"
@@ -4979,12 +4555,10 @@ Varsayılan PIN: 1234
 </div>
 
 
-<div
-className="flex gap-2"
->
+<div className="flex gap-2">
 
 <button
-onClick={() =>
+onClick={()=>
 setPinModal(false)
 }
 className="flex-1 py-2.5 bg-neutral-800 rounded-lg text-sm text-neutral-300"
@@ -4999,8 +4573,7 @@ Vazgeç
 onClick={tryUnlock}
 className="flex-1 py-2.5 rounded-lg text-sm font-bold text-white"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -5021,16 +4594,15 @@ Giriş Yap
     ADMIN PANEL
 ===================================================== */}
 
-{panelOpen && unlocked && (
+{panelOpen&&unlocked&&(
 
 <div
 className="fixed inset-0 z-[180] flex justify-end"
 >
 
-
 <div
 className="flex-1 bg-black/40"
-onClick={() =>
+onClick={()=>
 setPanelOpen(false)
 }
 />
@@ -5047,22 +4619,17 @@ className="w-full sm:w-[460px] h-full bg-neutral-950 text-white overflow-y-auto 
 className="sticky top-0 z-20 bg-neutral-950 border-b border-neutral-800 px-5 pt-5 pb-3"
 >
 
-
 <div
 className="flex items-center justify-between mb-4"
 >
 
-<h2
-className="font-bold text-[17px]"
->
-
+<h2 className="font-bold text-[17px]">
 Yönetim Paneli
-
 </h2>
 
 
 <button
-onClick={() =>
+onClick={()=>
 setPanelOpen(false)
 }
 className="text-neutral-500"
@@ -5091,23 +4658,23 @@ Düzenlenen Mağaza
 className="flex gap-1 bg-neutral-900 rounded-xl p-1 mb-3"
 >
 
-{STORES.map(s => (
+{STORES.map(s=>(
 
 <button
 key={s.id}
-onClick={() =>
+onClick={()=>
 changeStore(s.id)
 }
 className="flex-1 py-2.5 rounded-lg text-xs font-bold"
 style={{
 
 background:
-store === s.id
+store===s.id
 ?theme.accent
 :"transparent",
 
 color:
-store === s.id
+store===s.id
 ?"#fff"
 :"#999"
 
@@ -5128,16 +4695,21 @@ className="flex gap-1 bg-neutral-900 rounded-xl p-1"
 >
 
 <button
-onClick={() =>
+onClick={()=>
 setTab("genel")
 }
 className="flex-1 py-2 rounded-lg text-sm font-semibold"
 style={{
 
 background:
-tab === "genel"
+tab==="genel"
 ?theme.accent
-:"transparent"
+:"transparent",
+
+color:
+tab==="genel"
+?"#fff"
+:"#999"
 
 }}
 >
@@ -5148,16 +4720,21 @@ Genel
 
 
 <button
-onClick={() =>
+onClick={()=>
 setTab("icerik")
 }
 className="flex-1 py-2 rounded-lg text-sm font-semibold"
 style={{
 
 background:
-tab === "icerik"
+tab==="icerik"
 ?theme.accent
-:"transparent"
+:"transparent",
+
+color:
+tab==="icerik"
+?"#fff"
+:"#999"
 
 }}
 >
@@ -5174,18 +4751,16 @@ tab === "icerik"
 <div className="p-5">
 
 
-{/* =====================================================
+{/* =================================================
     GENEL
-===================================================== */}
+================================================= */}
 
-{tab === "genel" && (
+{tab==="genel"&&(
 
 <div>
 
 
-<label
-className="block mb-4"
->
+<label className="block mb-4">
 
 <AdminLabel>
 Site Adı
@@ -5194,7 +4769,7 @@ Site Adı
 <input
 className="admin-input"
 value={data.siteName}
-onChange={e =>
+onChange={e=>
 setPath(
 ["siteName"],
 e.target.value
@@ -5205,9 +4780,7 @@ e.target.value
 </label>
 
 
-<label
-className="block mb-4"
->
+<label className="block mb-4">
 
 <AdminLabel>
 Üst Etiket
@@ -5216,7 +4789,7 @@ className="block mb-4"
 <input
 className="admin-input"
 value={data.eyebrow}
-onChange={e =>
+onChange={e=>
 setPath(
 ["eyebrow"],
 e.target.value
@@ -5227,9 +4800,7 @@ e.target.value
 </label>
 
 
-<label
-className="block mb-5"
->
+<label className="block mb-5">
 
 <AdminLabel>
 Telefon
@@ -5237,8 +4808,8 @@ Telefon
 
 <input
 className="admin-input"
-value={data.phone || ""}
-onChange={e =>
+value={data.phone||""}
+onChange={e=>
 setPath(
 ["phone"],
 e.target.value
@@ -5250,9 +4821,7 @@ placeholder="+90 5xx xxx xx xx"
 </label>
 
 
-<div
-className="h-px bg-neutral-800 my-5"
-/>
+<div className="h-px bg-neutral-800 my-5"/>
 
 
 <div
@@ -5281,11 +4850,11 @@ Sitedeki fiyatlar TL olarak girilir. Aşağıdaki kurları sen manuel belirlersi
 className="grid grid-cols-3 gap-2 mb-4"
 >
 
-{CURRENCIES.map(c => (
+{CURRENCIES.map(c=>(
 
 <button
 key={c.id}
-onClick={() =>
+onClick={()=>
 setPath(
 ["currency","selected"],
 c.id
@@ -5295,19 +4864,19 @@ className="py-2.5 rounded-lg text-xs font-bold"
 style={{
 
 background:
-currency.id === c.id
+currency.id===c.id
 ?theme.accent
 :"#171717",
 
 color:
-currency.id === c.id
+currency.id===c.id
 ?"#fff"
 :"#999",
 
 border:
-"1px solid " +
+"1px solid "+
 (
-currency.id === c.id
+currency.id===c.id
 ?theme.accent
 :"#333"
 )
@@ -5324,9 +4893,7 @@ currency.id === c.id
 </div>
 
 
-<label
-className="block mb-3"
->
+<label className="block mb-3">
 
 <AdminLabel>
 1 USD = Kaç TL?
@@ -5339,7 +4906,7 @@ className="admin-input"
 value={
 data.currency.usdRate
 }
-onChange={e =>
+onChange={e=>
 setPath(
 ["currency","usdRate"],
 e.target.value
@@ -5351,9 +4918,7 @@ placeholder="Örn: 40"
 </label>
 
 
-<label
-className="block"
->
+<label className="block">
 
 <AdminLabel>
 1 EUR = Kaç TL?
@@ -5366,7 +4931,7 @@ className="admin-input"
 value={
 data.currency.eurRate
 }
-onChange={e =>
+onChange={e=>
 setPath(
 ["currency","eurRate"],
 e.target.value
@@ -5380,18 +4945,18 @@ placeholder="Örn: 47"
 </div>
 
 
-<div
-className="h-px bg-neutral-800 my-5"
-/>
+<div className="h-px bg-neutral-800 my-5"/>
 
 
-{/* LOGO */}
+{/* =================================================
+    LOGO
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
 >
 
-{store === "premium"
+{store==="premium"
 ?"Premium Logo"
 :"Outlet Logo"}
 
@@ -5403,16 +4968,16 @@ className="text-[10px] text-neutral-500 mb-3"
 >
 
 Şu anda{" "}
+
 <strong className="text-neutral-300">
 
-{store === "premium"
+{store==="premium"
 ?"Premium"
 :"Outlet"}
 
 </strong>
 
-{" "}
-logosunu düzenliyorsun.
+{" "}logosunu düzenliyorsun.
 
 </div>
 
@@ -5421,35 +4986,33 @@ logosunu düzenliyorsun.
 className="bg-neutral-900 rounded-xl p-4 mb-3 flex items-center justify-center min-h-[120px]"
 >
 
-{data.stores[store]?.logo?.src ? (
+{data.stores[store]?.logo?.src?(
 
 <img
 src={
 data.stores[store].logo.src
 }
 alt={
-store === "premium"
+store==="premium"
 ?"Premium Logo"
 :"Outlet Logo"
 }
 style={{
 
 maxWidth:"100%",
-
 maxHeight:100,
-
 objectFit:"contain"
 
 }}
 />
 
-) : (
+):( 
 
 <div
 className="text-xs text-neutral-500"
 >
 
-{store === "premium"
+{store==="premium"
 ?"Premium logosu eklenmedi"
 :"Outlet logosu eklenmedi"}
 
@@ -5460,13 +5023,11 @@ className="text-xs text-neutral-500"
 </div>
 
 
-<div
-className="flex gap-2 mb-4"
->
+<div className="flex gap-2 mb-4">
 
 <button
 disabled={busy}
-onClick={() =>
+onClick={()=>
 logoRef.current?.click()
 }
 className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
@@ -5477,17 +5038,17 @@ type="upload"
 size={14}
 />
 
-{store === "premium"
+{store==="premium"
 ?"Premium Logo Yükle"
 :"Outlet Logo Yükle"}
 
 </button>
 
 
-{data.stores[store]?.logo?.src && (
+{data.stores[store]?.logo?.src&&(
 
 <button
-onClick={() =>
+onClick={()=>
 setPath(
 ["stores",store,"logo","src"],
 null
@@ -5519,7 +5080,7 @@ onChange={uploadLogo}
 
 <AdminLabel>
 Logo Boyutu —{" "}
-{data.stores[store]?.logo?.size || 110}px
+{data.stores[store]?.logo?.size||110}px
 </AdminLabel>
 
 
@@ -5528,15 +5089,12 @@ type="range"
 min="40"
 max="260"
 value={
-data.stores[store]?.logo?.size ||
-110
+data.stores[store]?.logo?.size||110
 }
-onChange={e =>
+onChange={e=>
 setPath(
 ["stores",store,"logo","size"],
-Number(
-e.target.value
-)
+Number(e.target.value)
 )
 }
 className="w-full mb-4"
@@ -5548,20 +5106,18 @@ Logo Konumu
 </AdminLabel>
 
 
-<div
-className="flex gap-2 mb-5"
->
+<div className="flex gap-2 mb-5">
 
 {[
 ["left","Sol"],
 ["center","Orta"],
 ["right","Sağ"]
 ].map(
-([value,label]) => (
+([value,label])=>(
 
 <button
 key={value}
-onClick={() =>
+onClick={()=>
 setPath(
 ["stores",store,"logo","position"],
 value
@@ -5571,9 +5127,11 @@ className="flex-1 py-2 rounded-lg text-xs"
 style={{
 
 background:
-data.stores[store]?.logo?.position === value
+data.stores[store]?.logo?.position===value
 ?theme.accent
-:"#1c1917"
+:"#1c1917",
+
+color:"#fff"
 
 }}
 >
@@ -5588,12 +5146,12 @@ data.stores[store]?.logo?.position === value
 </div>
 
 
-<div
-className="h-px bg-neutral-800 my-5"
-/>
+<div className="h-px bg-neutral-800 my-5"/>
 
 
-{/* THEMES */}
+{/* =================================================
+    THEMES
+================================================= */}
 
 <div
 className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-3"
@@ -5608,19 +5166,19 @@ Hazır Temalar
 className="grid grid-cols-3 gap-2 mb-5"
 >
 
-{THEMES.map(item => (
+{THEMES.map(item=>(
 
 <button
 key={item.id}
-onClick={() =>
+onClick={()=>
 applyTheme(item)
 }
 className="rounded-xl overflow-hidden border-2"
 style={{
 
 borderColor:
-theme.bg === item.bg &&
-theme.accent === item.accent
+theme.bg===item.bg&&
+theme.accent===item.accent
 ?item.accent
 :"#292524"
 
@@ -5632,8 +5190,7 @@ style={{
 
 height:35,
 
-background:
-item.bg,
+background:item.bg,
 
 display:"flex",
 
@@ -5648,13 +5205,9 @@ justifyContent:"center"
 style={{
 
 width:15,
-
 height:15,
-
 borderRadius:"50%",
-
-background:
-item.accent
+background:item.accent
 
 }}
 />
@@ -5680,7 +5233,7 @@ className="bg-neutral-900 py-1 text-[9px]"
 <ColorInput
 label="Arka Plan Rengi"
 value={theme.bg}
-onChange={value =>
+onChange={value=>
 setPath(
 ["theme","bg"],
 value
@@ -5692,7 +5245,7 @@ value
 <ColorInput
 label="Kart Rengi"
 value={theme.card}
-onChange={value =>
+onChange={value=>
 setPath(
 ["theme","card"],
 value
@@ -5704,7 +5257,7 @@ value
 <ColorInput
 label="Vurgu Rengi"
 value={theme.accent}
-onChange={value =>
+onChange={value=>
 setPath(
 ["theme","accent"],
 value
@@ -5716,21 +5269,20 @@ value
 <ColorInput
 label="Yazı Rengi"
 value={theme.text}
-onChange={value =>
+onChange={value=>
 setPath(
 ["theme","text"],
 value
 )
+}
 />
 
 
-<div
-className="flex gap-2 mb-5"
->
+<div className="flex gap-2 mb-5">
 
 <button
 disabled={busy}
-onClick={() =>
+onClick={()=>
 bgRef.current?.click()
 }
 className="flex-1 py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-xs"
@@ -5741,10 +5293,10 @@ Arka Plan Görseli
 </button>
 
 
-{theme.bgImage && (
+{theme.bgImage&&(
 
 <button
-onClick={() =>
+onClick={()=>
 setPath(
 ["theme","bgImage"],
 null
@@ -5784,12 +5336,10 @@ type="range"
 min="100"
 max="320"
 value={data.cardImgSize}
-onChange={e =>
+onChange={e=>
 setPath(
 ["cardImgSize"],
-Number(
-e.target.value
-)
+Number(e.target.value)
 )
 }
 className="w-full mb-5"
@@ -5803,10 +5353,10 @@ Yönetim PIN
 
 <input
 className="admin-input mb-5"
-value={data.pin || ""}
+value={data.pin||""}
 inputMode="numeric"
 maxLength={8}
-onChange={e =>
+onChange={e=>
 setPath(
 ["pin"],
 e.target.value.replace(
@@ -5836,11 +5386,11 @@ Varsayılan Ayarlara Dön
 )}
 
 
-{/* =====================================================
+{/* =================================================
     ÜRÜN KATALOĞU
-===================================================== */}
+================================================= */}
 
-{tab === "icerik" && (
+{tab==="icerik"&&(
 
 <div>
 
@@ -5850,11 +5400,11 @@ className="mb-4 rounded-xl p-3"
 style={{
 
 background:
-theme.accent + "12",
+theme.accent+"12",
 
 border:
-"1px solid " +
-theme.accent + "25"
+"1px solid "+
+theme.accent+"25"
 
 }}
 >
@@ -5875,7 +5425,7 @@ color:theme.accent
 }}
 >
 
-{store === "premium"
+{store==="premium"
 ?"Premium Mağaza"
 :"Outlet Mağaza"}
 
@@ -5897,8 +5447,7 @@ Premium ve Outlet ürünleri birbirinden bağımsızdır.
 onClick={addCategory}
 className="w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -5915,10 +5464,7 @@ Yeni Kategori
 {/* KATEGORİ LİSTESİ */}
 
 {categories.map(
-(
-category,
-categoryIndex
-) => (
+(category,categoryIndex)=>(
 
 <div
 key={category.id}
@@ -5935,7 +5481,7 @@ className="p-2 flex items-center gap-1.5"
 
 <input
 value={category.name}
-onChange={e =>
+onChange={e=>
 renameCategory(
 category.id,
 e.target.value
@@ -5945,7 +5491,6 @@ className="admin-input"
 style={{
 
 padding:"9px 10px",
-
 fontSize:"13px"
 
 }}
@@ -5953,14 +5498,14 @@ fontSize:"13px"
 
 
 <button
-onClick={() =>
+onClick={()=>
 moveCategory(
 category.id,
 -1
 )
 }
 disabled={
-categoryIndex === 0
+categoryIndex===0
 }
 className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
 >
@@ -5974,15 +5519,15 @@ size={14}
 
 
 <button
-onClick={() =>
+onClick={()=>
 moveCategory(
 category.id,
 1
 )
 }
 disabled={
-categoryIndex ===
-categories.length - 1
+categoryIndex===
+categories.length-1
 }
 className="p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
 >
@@ -5996,10 +5541,8 @@ size={14}
 
 
 <button
-onClick={() =>
-deleteCategory(
-category.id
-)
+onClick={()=>
+deleteCategory(category.id)
 }
 className="p-2 bg-red-950 text-red-400 rounded-lg"
 >
@@ -6013,10 +5556,8 @@ size={14}
 
 
 <button
-onClick={() =>
-toggleCategory(
-category.id
-)
+onClick={()=>
+toggleCategory(category.id)
 }
 className="px-3 py-2 rounded-lg text-[11px] whitespace-nowrap flex items-center gap-1.5 font-semibold transition"
 style={{
@@ -6052,14 +5593,14 @@ size={13}
 
 {/* ÜRÜNLER */}
 
-{openCategories[category.id] && (
+{openCategories[category.id]&&(
 
 <div
 className="category-products p-2 pt-0"
 >
 
 
-{category.items.length === 0 && (
+{category.items.length===0&&(
 
 <div
 className="bg-neutral-800 rounded-xl p-4 mb-2 text-center text-xs text-neutral-500"
@@ -6073,10 +5614,7 @@ Bu kategoride henüz ürün yok.
 
 
 {category.items.map(
-(
-item,
-itemIndex
-) => (
+(item,itemIndex)=>(
 
 <div
 key={item.id}
@@ -6084,19 +5622,15 @@ className="bg-neutral-800 rounded-xl p-3 mb-2"
 >
 
 
-<div
-className="flex gap-2 mb-2"
->
+<div className="flex gap-2 mb-2">
 
 
 {/* GÖRSEL */}
 
 <div
-onClick={() =>
+onClick={()=>
 itemRefs
-.current[
-item.id
-]
+.current[item.id]
 ?.click()
 }
 className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
@@ -6114,7 +5648,7 @@ backgroundPosition:"center"
 }}
 >
 
-{!item.image && (
+{!item.image&&(
 
 <Icon
 type="image"
@@ -6126,36 +5660,30 @@ size={18}
 </div>
 
 
-{/* ÖNEMLİ: BURADAKİ onChange KAPATILDI */}
-
 <input
 type="file"
 accept="image/*"
 className="hidden"
-ref={element => {
+ref={element=>{
 
-itemRefs.current[
-item.id
-] = element;
+itemRefs.current[item.id]=element;
 
 }}
-onChange={e =>
+onChange={e=>
 uploadItemImage(
 category.id,
 item.id,
 e
-)}
+)
+}
 />
 
 
-<div
-className="flex-1"
->
-
+<div className="flex-1">
 
 <input
 value={item.name}
-onChange={e =>
+onChange={e=>
 updateItem(
 category.id,
 item.id,
@@ -6168,9 +5696,7 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px",
-
 marginBottom:"6px"
 
 }}
@@ -6179,7 +5705,7 @@ marginBottom:"6px"
 
 <input
 value={item.dims}
-onChange={e =>
+onChange={e=>
 updateItem(
 category.id,
 item.id,
@@ -6192,7 +5718,6 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px"
 
 }}
@@ -6207,7 +5732,7 @@ fontSize:"12px"
 
 <input
 value={item.desc}
-onChange={e =>
+onChange={e=>
 updateItem(
 category.id,
 item.id,
@@ -6220,9 +5745,7 @@ className="admin-input"
 style={{
 
 padding:"8px 9px",
-
 fontSize:"12px",
-
 marginBottom:"10px"
 
 }}
@@ -6267,7 +5790,7 @@ className="text-[9px] text-neutral-500 mt-1"
 
 
 <button
-onClick={() =>
+onClick={()=>
 addPricePart(
 category.id,
 item.id
@@ -6275,8 +5798,7 @@ item.id
 }
 className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
 style={{
-background:
-theme.accent
+background:theme.accent
 }}
 >
 
@@ -6294,7 +5816,7 @@ Fiyat Ekle
 
 {normalizePrice(
 item.price
-).parts.length === 0 && (
+).parts.length===0&&(
 
 <div
 className="text-[10px] text-neutral-500 py-2 text-center"
@@ -6310,7 +5832,7 @@ Henüz fiyat kalemi eklenmedi.
 {normalizePrice(
 item.price
 ).parts.map(
-part => (
+part=>(
 
 <div
 key={part.id}
@@ -6318,14 +5840,12 @@ className="bg-neutral-800 rounded-lg p-2 mb-2"
 >
 
 
-<div
-className="flex gap-2"
->
+<div className="flex gap-2">
 
 
 <input
 value={part.name}
-onChange={e =>
+onChange={e=>
 updatePricePart(
 category.id,
 item.id,
@@ -6339,7 +5859,6 @@ className="admin-input"
 style={{
 
 padding:"8px",
-
 fontSize:"11px"
 
 }}
@@ -6349,22 +5868,20 @@ fontSize:"11px"
 <input
 type="number"
 value={
-part.amount ?? ""
+part.amount??""
 }
 disabled={
 part.contactOnly
 }
-onChange={e =>
+onChange={e=>
 updatePricePart(
 category.id,
 item.id,
 part.id,
 "amount",
-e.target.value === ""
+e.target.value===""
 ?null
-:Number(
-e.target.value
-)
+:Number(e.target.value)
 )
 }
 placeholder="₺"
@@ -6372,11 +5889,8 @@ className="admin-input"
 style={{
 
 width:"105px",
-
 padding:"8px",
-
 fontSize:"11px",
-
 opacity:
 part.contactOnly
 ?.4
@@ -6387,7 +5901,7 @@ part.contactOnly
 
 
 <button
-onClick={() =>
+onClick={()=>
 deletePricePart(
 category.id,
 item.id,
@@ -6416,7 +5930,7 @@ type="checkbox"
 checked={
 !!part.contactOnly
 }
-onChange={e =>
+onChange={e=>
 updatePricePart(
 category.id,
 item.id,
@@ -6439,17 +5953,17 @@ Fiyat için iletişime geçin
 </div>
 
 
-{/* ÜRÜN ALT BUTONLARI */}
+{/* ÜRÜN BUTONLARI */}
 
 <div
 className="flex justify-end gap-1"
 >
 
 
-{item.image && (
+{item.image&&(
 
 <button
-onClick={() =>
+onClick={()=>
 updateItem(
 category.id,
 item.id,
@@ -6468,7 +5982,7 @@ Görseli Sil
 
 
 <button
-onClick={() =>
+onClick={()=>
 moveItem(
 category.id,
 item.id,
@@ -6476,7 +5990,7 @@ item.id,
 )
 }
 disabled={
-itemIndex === 0
+itemIndex===0
 }
 className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
 >
@@ -6490,7 +6004,7 @@ size={12}
 
 
 <button
-onClick={() =>
+onClick={()=>
 moveItem(
 category.id,
 item.id,
@@ -6498,8 +6012,8 @@ item.id,
 )
 }
 disabled={
-itemIndex ===
-category.items.length - 1
+itemIndex===
+category.items.length-1
 }
 className="p-1.5 bg-neutral-700 rounded disabled:opacity-20"
 >
@@ -6513,7 +6027,7 @@ size={12}
 
 
 <button
-onClick={() =>
+onClick={()=>
 deleteItem(
 category.id,
 item.id
@@ -6540,10 +6054,8 @@ size={12}
 {/* ÜRÜN EKLE */}
 
 <button
-onClick={() =>
-addItem(
-category.id
-)
+onClick={()=>
+addItem(category.id)
 }
 className="w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
 >
@@ -6586,7 +6098,7 @@ className="sticky bottom-0 bg-neutral-950 border-t border-neutral-800 p-4"
 <button
 onClick={save}
 disabled={
-saving ||
+saving||
 busy
 }
 className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
@@ -6607,14 +6119,14 @@ saved
 }}
 >
 
-{saved ? (
+{saved?(
 
 <Icon
 type="check"
 size={17}
 />
 
-) : (
+):( 
 
 <Icon
 type="save"
@@ -6713,10 +6225,10 @@ className="text-xs text-neutral-400"
 <input
 type="color"
 value={
-value ||
+value||
 "#000000"
 }
-onChange={e =>
+onChange={e=>
 onChange(
 e.target.value
 )
@@ -6735,17 +6247,15 @@ className="w-9 h-9 rounded-lg border border-neutral-700 bg-transparent cursor-po
    REACT START
 ========================================================= */
 
-const rootElement =
+const root=
 document.getElementById("root");
 
-if(rootElement){
+if(root){
 
 ReactDOM
-.createRoot(
-rootElement
-)
+.createRoot(root)
 .render(
-<App />
+<App/>
 );
 
 }
