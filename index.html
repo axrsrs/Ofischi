@@ -178,6 +178,7 @@ border-radius:14px;
 padding:12px 42px 12px 42px;
 outline:none;
 backdrop-filter:blur(14px);
+-webkit-backdrop-filter:blur(14px);
 }
 
 .search-input::placeholder{
@@ -188,6 +189,7 @@ opacity:.45;
 .modal-backdrop{
 background:rgba(0,0,0,.78);
 backdrop-filter:blur(7px);
+-webkit-backdrop-filter:blur(7px);
 }
 
 .price-row{
@@ -206,7 +208,7 @@ animation:fadeIn .18s ease;
 
 /* =========================================================
    KATEGORİ BAR
-   ARTIK SİYAH ŞERİT YOK
+   ARKA PLAN TAMAMEN ŞEFFAF
 ========================================================= */
 
 .category-bar{
@@ -237,7 +239,7 @@ display:none;
 
 
 /* =========================================================
-   PREMIUM KATEGORİ BUTONU
+   PREMIUM KATEGORİ BUTONLARI
 ========================================================= */
 
 .category-chip{
@@ -334,7 +336,7 @@ categoryGlow 2s ease-in-out infinite;
 
 
 /* =========================================================
-   ÜRÜN KARTI
+   ÜRÜN KARTLARI
 ========================================================= */
 
 .product-card{
@@ -1248,8 +1250,9 @@ reject;
 
 reader.readAsDataURL(file);
 
+});
+
 }
-);
 
 
 /* =========================================================
@@ -3818,6 +3821,9 @@ background:
 "rgba(0,0,0,.25)",
 
 backdropFilter:
+"blur(15px)",
+
+WebkitBackdropFilter:
 "blur(15px)"
 
 }}
@@ -3887,6 +3893,9 @@ theme.accent,
 color:"#fff",
 
 backdropFilter:
+"blur(15px)",
+
+WebkitBackdropFilter:
 "blur(15px)"
 
 }}
@@ -4032,6 +4041,9 @@ background:
 "rgba(0,0,0,.25)",
 
 backdropFilter:
+"blur(15px)",
+
+WebkitBackdropFilter:
 "blur(15px)",
 
 color:
