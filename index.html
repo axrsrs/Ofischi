@@ -14,11 +14,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 *{
   box-sizing:border-box;
 }
 
-html,body,#root{
+html,
+body,
+#root{
   margin:0;
   padding:0;
   width:100%;
@@ -36,7 +39,8 @@ body{
   text-rendering:optimizeSpeed;
 }
 
-button,input{
+button,
+input{
   font-family:inherit;
 }
 
@@ -56,6 +60,7 @@ button:disabled{
 *{
   scrollbar-width:none;
 }
+
 
 /* =========================================================
    LIQUID GLASS
@@ -91,201 +96,503 @@ button:disabled{
   -webkit-backdrop-filter:blur(24px) saturate(130%);
 }
 
+
 /* =========================================================
-   AMBIENT BACKGROUND
+   LIQUID BACKGROUND
 ========================================================= */
 
 .liquid-bg{
   position:relative;
   isolation:isolate;
+  overflow:hidden;
 }
 
 .liquid-bg::before,
 .liquid-bg::after{
   content:"";
   position:fixed;
-  z-index:-1;
   pointer-events:none;
+  z-index:-3;
   border-radius:999px;
   filter:blur(70px);
-  opacity:.18;
-  animation:ambientFloat 10s ease-in-out infinite alternate;
+  will-change:transform;
 }
 
 .liquid-bg::before{
-  width:280px;
-  height:280px;
-  top:8%;
-  left:-120px;
-  background:var(--accent);
+  width:520px;
+  height:520px;
+  top:-170px;
+  left:-180px;
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb,var(--accent) 42%,transparent),
+      transparent 68%
+    );
+  opacity:.22;
+  animation:
+    luxuryDrift
+    18s
+    ease-in-out
+    infinite
+    alternate;
 }
 
 .liquid-bg::after{
-  width:240px;
-  height:240px;
-  right:-100px;
-  bottom:8%;
-  background:var(--accent);
-  animation-delay:-4s;
+  width:480px;
+  height:480px;
+  right:-170px;
+  bottom:-160px;
+  background:
+    radial-gradient(
+      circle,
+      color-mix(in srgb,var(--accent) 34%,transparent),
+      transparent 68%
+    );
+  opacity:.18;
+  animation:
+    luxuryDriftReverse
+    22s
+    ease-in-out
+    infinite
+    alternate;
 }
+
+
+/* =========================================================
+   EXTRA LIQUID LIGHT LAYERS
+========================================================= */
+
+.liquid-bg .liquid-light-one,
+.liquid-bg .liquid-light-two{
+  position:fixed;
+  pointer-events:none;
+  z-index:-2;
+  border-radius:999px;
+  filter:blur(75px);
+  will-change:transform;
+}
+
+.liquid-bg .liquid-light-one{
+  width:300px;
+  height:300px;
+  top:22%;
+  left:-120px;
+  background:var(--accent);
+  opacity:.08;
+  animation:
+    orbFloat1
+    12s
+    ease-in-out
+    infinite;
+}
+
+.liquid-bg .liquid-light-two{
+  width:280px;
+  height:280px;
+  right:-100px;
+  top:42%;
+  background:var(--accent);
+  opacity:.065;
+  animation:
+    orbFloat2
+    16s
+    ease-in-out
+    infinite;
+}
+
+
+/* =========================================================
+   LUXURY SHIMMER
+========================================================= */
+
+.liquid-bg .luxury-surface{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.12;
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(255,255,255,.07),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(255,255,255,.045),
+      transparent 28%
+    ),
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255,255,255,.025) 48%,
+      transparent 52%
+    );
+  background-size:
+    100% 100%,
+    100% 100%,
+    220% 100%;
+  animation:
+    luxuryShimmer
+    14s
+    linear
+    infinite;
+}
+
 
 /* =========================================================
    ANIMATIONS
 ========================================================= */
 
 @keyframes pageEnter{
+
   from{
     opacity:0;
     transform:translateY(8px);
   }
+
   to{
     opacity:1;
     transform:translateY(0);
   }
+
 }
 
+
 @keyframes fadeIn{
+
   from{
     opacity:0;
     transform:translateY(6px);
   }
+
   to{
     opacity:1;
     transform:translateY(0);
   }
+
 }
 
+
 @keyframes pop{
+
   0%{
     opacity:0;
     transform:scale(.94);
   }
+
   70%{
     opacity:1;
     transform:scale(1.015);
   }
+
   100%{
     opacity:1;
     transform:scale(1);
   }
+
 }
 
+
 @keyframes modalIn{
+
   from{
     opacity:0;
     transform:translateY(25px) scale(.97);
   }
+
   to{
     opacity:1;
     transform:translateY(0) scale(1);
   }
+
 }
 
+
 @keyframes modalInDesktop{
+
   from{
     opacity:0;
     transform:translateY(14px) scale(.96);
   }
+
   to{
     opacity:1;
     transform:translateY(0) scale(1);
   }
+
 }
 
+
 @keyframes panelIn{
+
   from{
     opacity:0;
     transform:translateX(100%);
   }
+
   to{
     opacity:1;
     transform:translateX(0);
   }
+
 }
+
 
 @keyframes backdropIn{
+
   from{
     opacity:0;
   }
+
   to{
     opacity:1;
   }
+
 }
+
 
 @keyframes productEnter{
-  from{
+
+  0%{
     opacity:0;
-    transform:translateY(12px) scale(.985);
+    transform:translateY(15px) scale(.975);
   }
-  to{
+
+  100%{
     opacity:1;
     transform:translateY(0) scale(1);
   }
+
 }
+
 
 @keyframes categoryEnter{
-  from{
+
+  0%{
     opacity:0;
-    transform:translateY(6px) scale(.97);
+    transform:translateY(10px) scale(.95);
   }
-  to{
+
+  100%{
     opacity:1;
     transform:translateY(0) scale(1);
   }
+
 }
 
+
+@keyframes categoryGlow{
+
+  0%,
+  100%{
+    opacity:.35;
+    transform:scaleX(.65);
+  }
+
+  50%{
+    opacity:1;
+    transform:scaleX(1);
+  }
+
+}
+
+
+@keyframes categoryLight{
+
+  0%{
+    left:-120%;
+  }
+
+  100%{
+    left:140%;
+  }
+
+}
+
+
 @keyframes imageViewerIn{
+
   from{
     opacity:0;
   }
+
   to{
     opacity:1;
   }
+
 }
 
+
 @keyframes imageZoomIn{
+
   from{
     opacity:0;
     transform:scale(.82);
   }
+
   to{
     opacity:1;
     transform:scale(1);
   }
+
 }
 
+
 @keyframes toastIn{
+
   from{
     opacity:0;
     transform:translateY(12px) scale(.94);
   }
+
   to{
     opacity:1;
     transform:translateY(0) scale(1);
   }
+
 }
 
+
 @keyframes pulseGlass{
-  0%,100%{
+
+  0%,
+  100%{
     box-shadow:
       0 0 0 0 rgba(255,255,255,0),
       0 8px 28px rgba(0,0,0,.16);
   }
+
   50%{
     box-shadow:
       0 0 0 5px rgba(255,255,255,.035),
       0 10px 32px rgba(0,0,0,.20);
   }
+
 }
 
+
 @keyframes ambientFloat{
+
   from{
     transform:translate3d(0,0,0) scale(1);
   }
+
   to{
     transform:translate3d(25px,-18px,0) scale(1.08);
   }
+
 }
+
+
+@keyframes luxuryDrift{
+
+  0%{
+    transform:
+      translate3d(-1.5%,-1%,0)
+      scale(1);
+  }
+
+  50%{
+    transform:
+      translate3d(1%,1.5%,0)
+      scale(1.035);
+  }
+
+  100%{
+    transform:
+      translate3d(-.5%,2%,0)
+      scale(1.02);
+  }
+
+}
+
+
+@keyframes luxuryDriftReverse{
+
+  0%{
+    transform:
+      translate3d(1%,0,0)
+      scale(1);
+  }
+
+  50%{
+    transform:
+      translate3d(-1.5%,-1.5%,0)
+      scale(1.04);
+  }
+
+  100%{
+    transform:
+      translate3d(.5%,1%,0)
+      scale(1.02);
+  }
+
+}
+
+
+@keyframes luxuryShimmer{
+
+  0%{
+    background-position:
+      0 0,
+      0 0,
+      0 0;
+  }
+
+  100%{
+    background-position:
+      0 0,
+      70px 70px,
+      100% 0;
+  }
+
+}
+
+
+@keyframes orbFloat1{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(70px,-45px);
+  }
+
+}
+
+
+@keyframes orbFloat2{
+
+  0%,
+  100%{
+    transform:translate(0,0);
+  }
+
+  50%{
+    transform:translate(-60px,50px);
+  }
+
+}
+
+
+@keyframes luxuryEnter{
+
+  from{
+    opacity:0;
+    transform:translateY(14px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+
 
 /* =========================================================
    SEARCH
@@ -299,11 +606,19 @@ button:disabled{
   border-radius:18px;
   padding:13px 44px;
   outline:none;
+
   box-shadow:
     0 12px 35px rgba(0,0,0,.18),
     inset 0 1px 0 rgba(255,255,255,.05);
-  backdrop-filter:blur(18px) saturate(130%);
-  -webkit-backdrop-filter:blur(18px) saturate(130%);
+
+  backdrop-filter:
+    blur(18px)
+    saturate(130%);
+
+  -webkit-backdrop-filter:
+    blur(18px)
+    saturate(130%);
+
   transition:
     border-color .2s ease,
     box-shadow .2s ease,
@@ -312,10 +627,14 @@ button:disabled{
 
 .search-input:focus{
   border-color:rgba(255,255,255,.24);
+
   box-shadow:
     0 14px 38px rgba(0,0,0,.22),
     0 0 0 3px rgba(255,255,255,.035);
+
+  transform:translateY(-1px);
 }
+
 
 /* =========================================================
    CATEGORY
@@ -341,38 +660,70 @@ button:disabled{
   position:relative;
   flex-shrink:0;
   overflow:hidden;
+
   border:1px solid rgba(255,255,255,.10);
   border-radius:15px;
+
   padding:9px 14px;
+
   font-size:12px;
   font-weight:700;
   white-space:nowrap;
+
   transition:
-    transform .2s cubic-bezier(.22,1,.36,1),
-    background .2s ease,
-    border-color .2s ease,
-    box-shadow .2s ease,
-    opacity .2s ease;
+    transform .28s cubic-bezier(.22,1,.36,1),
+    background .28s ease,
+    border-color .28s ease,
+    box-shadow .28s ease,
+    opacity .28s ease;
+
   scroll-snap-align:start;
+}
+
+.category-chip::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.10),
+      transparent 38%
+    );
+  opacity:.35;
 }
 
 .category-chip::after{
   content:"";
   position:absolute;
-  inset:-60% -100%;
-  background:linear-gradient(
-    110deg,
-    transparent 40%,
-    rgba(255,255,255,.14) 50%,
-    transparent 60%
-  );
-  transform:translateX(-100%);
-  transition:transform .5s ease;
+  top:-80%;
+  left:-120%;
+  width:70%;
+  height:260%;
+
+  background:
+    linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255,255,255,.16) 50%,
+      transparent 65%
+    );
+
+  transform:rotate(8deg);
   pointer-events:none;
 }
 
+.category-chip:hover{
+  transform:translateY(-2px);
+}
+
 .category-chip:hover::after{
-  transform:translateX(100%);
+  animation:
+    categoryLight
+    .65s
+    ease
+    forwards;
 }
 
 .category-chip:active{
@@ -380,8 +731,46 @@ button:disabled{
 }
 
 .category-chip.active{
-  transform:translateY(-1px);
+  transform:translateY(-2px);
 }
+
+.category-chip.active::after{
+  animation:
+    categoryLight
+    .8s
+    ease
+    forwards;
+}
+
+.category-chip.active::before{
+  opacity:.5;
+}
+
+.category-chip.active{
+  box-shadow:
+    0 7px 20px
+      color-mix(
+        in srgb,
+        var(--accent) 22%,
+        transparent
+      ),
+    inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+
+/* =========================================================
+   CATEGORY ACTIVE UNDERLINE
+========================================================= */
+
+.category-chip.active{
+  isolation:isolate;
+}
+
+.category-chip.active span{
+  position:relative;
+  z-index:2;
+}
+
 
 /* =========================================================
    PRODUCT
@@ -390,39 +779,77 @@ button:disabled{
 .product-card{
   position:relative;
   overflow:hidden;
+
   transform:translateZ(0);
+
   contain:layout paint;
   content-visibility:auto;
   contain-intrinsic-size:320px;
+
   -webkit-tap-highlight-color:transparent;
-  animation:productEnter .38s cubic-bezier(.22,1,.36,1) both;
+
+  animation:
+    productEnter
+    .45s
+    cubic-bezier(.2,.8,.2,1)
+    both;
+
   transition:
-    transform .25s cubic-bezier(.22,1,.36,1),
-    box-shadow .25s ease;
+    transform .28s cubic-bezier(.2,.8,.2,1),
+    box-shadow .28s ease,
+    border-color .28s ease;
 }
 
 .product-card::before{
   content:"";
   position:absolute;
-  inset:0;
+  top:0;
+  left:-120%;
+  width:65%;
+  height:100%;
+
   pointer-events:none;
+
   border-radius:inherit;
+
   background:
     linear-gradient(
-      135deg,
-      rgba(255,255,255,.10),
-      transparent 35%
+      110deg,
+      transparent 25%,
+      rgba(255,255,255,.12) 50%,
+      transparent 75%
     );
-  opacity:.45;
-  z-index:1;
+
+  transform:rotate(8deg);
+
+  opacity:.5;
+
+  z-index:5;
+
+  transition:
+    transform 1.2s ease;
 }
 
 .product-card:hover{
-  transform:translateY(-4px);
+  transform:
+    translateY(-6px)
+    scale(1.008);
+
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.25),
+    0 0 0 1px rgba(255,255,255,.04);
+}
+
+.product-card:hover::before{
+  transform:
+    translateX(260%)
+    rotate(8deg);
 }
 
 .product-card:active{
-  transform:scale(.975);
+  transform:
+    scale(.965)
+    translateY(1px);
 }
 
 .product-image{
@@ -435,12 +862,14 @@ button:disabled{
   position:absolute;
   inset:0;
   pointer-events:none;
+
   background:
     linear-gradient(
       135deg,
       rgba(255,255,255,.08),
       transparent 45%
     );
+
   opacity:.6;
 }
 
@@ -449,7 +878,9 @@ button:disabled{
   height:100%;
   object-fit:cover;
   display:block;
+
   transform:scale(1.001);
+
   transition:
     transform .55s cubic-bezier(.22,1,.36,1),
     filter .35s ease;
@@ -463,6 +894,7 @@ button:disabled{
   cursor:zoom-in;
 }
 
+
 /* =========================================================
    BUTTONS
 ========================================================= */
@@ -470,6 +902,7 @@ button:disabled{
 .liquid-button{
   position:relative;
   overflow:hidden;
+
   transition:
     transform .18s ease,
     box-shadow .2s ease,
@@ -478,14 +911,22 @@ button:disabled{
 
 .liquid-button::after{
   content:"";
+
   position:absolute;
+
   top:-80%;
   left:-80%;
+
   width:50%;
   height:260%;
+
   transform:rotate(25deg);
+
   background:rgba(255,255,255,.14);
-  transition:left .55s ease;
+
+  transition:
+    left .55s ease;
+
   pointer-events:none;
 }
 
@@ -501,102 +942,193 @@ button:disabled{
   transform:scale(.96);
 }
 
+
 /* =========================================================
    MODALS
 ========================================================= */
 
 .modal-backdrop{
   background:rgba(0,0,0,.68);
-  backdrop-filter:blur(9px) saturate(115%);
-  -webkit-backdrop-filter:blur(9px) saturate(115%);
-  animation:backdropIn .2s ease both;
+
+  backdrop-filter:
+    blur(9px)
+    saturate(115%);
+
+  -webkit-backdrop-filter:
+    blur(9px)
+    saturate(115%);
+
+  animation:
+    backdropIn
+    .2s
+    ease
+    both;
 }
 
 .product-modal{
-  animation:modalIn .34s cubic-bezier(.22,1,.36,1) both;
+  animation:
+    modalIn
+    .34s
+    cubic-bezier(.22,1,.36,1)
+    both;
 }
 
 @media(min-width:640px){
+
   .product-modal{
-    animation:modalInDesktop .3s cubic-bezier(.22,1,.36,1) both;
+    animation:
+      modalInDesktop
+      .3s
+      cubic-bezier(.22,1,.36,1)
+      both;
   }
+
 }
 
 .full-image-viewer{
   background:rgba(0,0,0,.94);
+
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
-  animation:imageViewerIn .22s ease both;
+
+  animation:
+    imageViewerIn
+    .22s
+    ease
+    both;
 }
 
 .full-image-viewer img{
   max-width:96vw;
   max-height:92vh;
+
   width:auto;
   height:auto;
+
   object-fit:contain;
   display:block;
-  animation:imageZoomIn .35s cubic-bezier(.22,1,.36,1) both;
-  filter:drop-shadow(0 20px 50px rgba(0,0,0,.45));
+
+  animation:
+    imageZoomIn
+    .35s
+    cubic-bezier(.22,1,.36,1)
+    both;
+
+  filter:
+    drop-shadow(
+      0 20px 50px rgba(0,0,0,.45)
+    );
 }
+
 
 /* =========================================================
    ADMIN
 ========================================================= */
 
 .admin-panel{
-  animation:backdropIn .2s ease both;
+  animation:
+    backdropIn
+    .2s
+    ease
+    both;
 }
 
 .admin-aside{
-  animation:panelIn .34s cubic-bezier(.22,1,.36,1) both;
+  animation:
+    panelIn
+    .34s
+    cubic-bezier(.22,1,.36,1)
+    both;
 }
 
 .admin-input{
   width:100%;
+
   background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.11);
+
+  border:
+    1px solid rgba(255,255,255,.11);
+
   color:#f5f5f5;
+
   border-radius:12px;
+
   padding:10px 12px;
+
   outline:none;
+
   font-size:13px;
+
   transition:
     border-color .2s ease,
     background .2s ease,
-    box-shadow .2s ease;
+    box-shadow .2s ease,
+    transform .2s ease;
 }
 
 .admin-input:focus{
   border-color:rgba(255,255,255,.28);
+
   background:rgba(255,255,255,.065);
-  box-shadow:0 0 0 3px rgba(255,255,255,.035);
+
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.035);
+
+  transform:translateY(-1px);
 }
 
 .admin-section{
   background:rgba(255,255,255,.035);
-  border:1px solid rgba(255,255,255,.08);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.035);
 }
+
 
 /* =========================================================
    TOAST
 ========================================================= */
 
 .toast{
-  animation:toastIn .3s cubic-bezier(.22,1,.36,1) both;
+  animation:
+    toastIn
+    .3s
+    cubic-bezier(.22,1,.36,1)
+    both;
 }
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+header{
+  animation:
+    luxuryEnter
+    .7s
+    cubic-bezier(.2,.75,.2,1)
+    both;
+}
+
 
 /* =========================================================
    PERFORMANCE
 ========================================================= */
 
 @media(max-width:640px){
+
   .glass,
   .glass-strong{
-    backdrop-filter:blur(12px) saturate(125%);
-    -webkit-backdrop-filter:blur(12px) saturate(125%);
+    backdrop-filter:
+      blur(12px)
+      saturate(125%);
+
+    -webkit-backdrop-filter:
+      blur(12px)
+      saturate(125%);
   }
 
   .modal-backdrop{
@@ -610,6 +1142,12 @@ button:disabled{
     opacity:.11;
   }
 
+  .liquid-bg .liquid-light-one,
+  .liquid-bg .liquid-light-two{
+    filter:blur(55px);
+    opacity:.045;
+  }
+
   .product-card:hover{
     transform:none;
   }
@@ -617,13 +1155,24 @@ button:disabled{
   .product-card:hover .product-image img{
     transform:none;
   }
+
+  .product-card::before{
+    display:none;
+  }
+
+  .category-chip:hover{
+    transform:none;
+  }
+
 }
+
 
 /* =========================================================
    REDUCED MOTION
 ========================================================= */
 
 @media(prefers-reduced-motion:reduce){
+
   *,
   *::before,
   *::after{
@@ -634,21 +1183,34 @@ button:disabled{
   }
 
   .liquid-bg::before,
-  .liquid-bg::after{
+  .liquid-bg::after,
+  .liquid-bg .liquid-light-one,
+  .liquid-bg .liquid-light-two,
+  .liquid-bg .luxury-surface{
     animation:none!important;
   }
+
 }
 
+
+/* =========================================================
+   SMALL DEVICES
+========================================================= */
+
 @media(max-width:420px){
+
   .product-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:
+      repeat(2,minmax(0,1fr));
   }
 
   .category-chip{
     padding:9px 12px;
     font-size:11.5px;
   }
+
 }
+
 </style>
 </head>
 
@@ -810,10 +1372,12 @@ const CURRENCIES=[
 ========================================================= */
 
 function uid(){
+
   return(
     Math.random().toString(36).slice(2,10)+
     Date.now().toString(36)
   );
+
 }
 
 
@@ -822,15 +1386,20 @@ function uid(){
 ========================================================= */
 
 function createCategory(name){
+
   return{
     id:uid(),
     name:name,
     items:[]
   };
+
 }
 
+
 function createDefaultCategories(){
+
   return CATS.map(createCategory);
+
 }
 
 
@@ -841,9 +1410,11 @@ function createDefaultCategories(){
 function createEmptyStore(logo=null){
 
   return{
+
     logo:{
       src:logo?.src||null,
       size:Number(logo?.size)||110,
+
       position:
         logo?.position==="right"
         ?"right"
@@ -851,7 +1422,10 @@ function createEmptyStore(logo=null){
         ?"center"
         :"left"
     },
-    categories:createDefaultCategories()
+
+    categories:
+      createDefaultCategories()
+
   };
 
 }
@@ -864,6 +1438,7 @@ function createEmptyStore(logo=null){
 function defaultData(){
 
   return{
+
     siteName:"Ofischi",
     subtitle:"Ofis Mobilyaları",
     eyebrow:"İNEGÖL ÜRETİM",
@@ -890,14 +1465,19 @@ function defaultData(){
     },
 
     stores:{
-      premium:createEmptyStore({
-        src:"./ofischi_logo_transparent.png",
-        size:110,
-        position:"left"
-      }),
 
-      outlet:createEmptyStore()
+      premium:
+        createEmptyStore({
+          src:"./ofischi_logo_transparent.png",
+          size:110,
+          position:"left"
+        }),
+
+      outlet:
+        createEmptyStore()
+
     }
+
   };
 
 }
@@ -923,25 +1503,27 @@ function normalizePrice(price){
 
   if(Array.isArray(price.parts)){
 
-    parts=price.parts.map(p=>({
+    parts=
+      price.parts.map(p=>({
 
-      id:p.id||uid(),
+        id:p.id||uid(),
 
-      name:
-        typeof p.name==="string"
-        ?p.name
-        :"Ürün",
+        name:
+          typeof p.name==="string"
+          ?p.name
+          :"Ürün",
 
-      amount:
-        p.amount===null||
-        p.amount===undefined||
-        p.amount===""
-        ?null
-        :Number(p.amount),
+        amount:
+          p.amount===null||
+          p.amount===undefined||
+          p.amount===""
+          ?null
+          :Number(p.amount),
 
-      contactOnly:!!p.contactOnly
+        contactOnly:
+          !!p.contactOnly
 
-    }));
+      }));
 
   }
 
@@ -955,9 +1537,13 @@ function normalizePrice(price){
     parts.push({
 
       id:uid(),
+
       name:"Ürün",
+
       amount:Number(price.amount),
-      contactOnly:!!price.contactOnly
+
+      contactOnly:
+        !!price.contactOnly
 
     });
 
@@ -966,7 +1552,8 @@ function normalizePrice(price){
   return{
 
     contactOnly:
-      !!price.contactOnly&&parts.length===0,
+      !!price.contactOnly&&
+      parts.length===0,
 
     amount:
       price.amount??null,
@@ -1007,9 +1594,11 @@ function normalizeItem(item){
       ?item.dims
       :"",
 
-    image:item.image||null,
+    image:
+      item.image||null,
 
-    price:normalizePrice(item.price)
+    price:
+      normalizePrice(item.price)
 
   };
 
@@ -1028,7 +1617,8 @@ function normalizeCategories(categories){
 
   return categories.map(category=>({
 
-    id:category.id||uid(),
+    id:
+      category.id||uid(),
 
     name:
       typeof category.name==="string"
@@ -1054,13 +1644,18 @@ function normalizeLogo(
   fallback=null
 ){
 
-  const source=logo||fallback||{};
+  const source=
+    logo||
+    fallback||
+    {};
 
   return{
 
-    src:source.src||null,
+    src:
+      source.src||null,
 
-    size:Number(source.size)||110,
+    size:
+      Number(source.size)||110,
 
     position:
       source.position==="right"
@@ -1085,14 +1680,16 @@ function normalizeStore(
 
   return{
 
-    logo:normalizeLogo(
-      store?.logo,
-      legacyLogo
-    ),
+    logo:
+      normalizeLogo(
+        store?.logo,
+        legacyLogo
+      ),
 
-    categories:normalizeCategories(
-      store?.categories
-    )
+    categories:
+      normalizeCategories(
+        store?.categories
+      )
 
   };
 
@@ -1105,7 +1702,8 @@ function normalizeStore(
 
 function normalizeData(input){
 
-  const base=defaultData();
+  const base=
+    defaultData();
 
   if(
     !input||
@@ -1140,38 +1738,52 @@ function normalizeData(input){
   ){
 
     const legacyLogo=
-      input.logo||base.logo;
+      input.logo||
+      base.logo;
 
     result.stores={
 
-      premium:normalizeStore(
-        input.stores.premium,
-        legacyLogo
-      ),
+      premium:
+        normalizeStore(
+          input.stores.premium,
+          legacyLogo
+        ),
 
-      outlet:normalizeStore(
-        input.stores.outlet,
-        legacyLogo
-      )
+      outlet:
+        normalizeStore(
+          input.stores.outlet,
+          legacyLogo
+        )
 
     };
 
   }
-  else if(Array.isArray(input.categories)){
+  else if(
+    Array.isArray(input.categories)
+  ){
 
     const legacyLogo=
-      input.logo||base.logo;
+      input.logo||
+      base.logo;
 
     result.stores={
 
       premium:{
-        logo:normalizeLogo(legacyLogo),
-        categories:normalizeCategories(
-          input.categories
-        )
+
+        logo:
+          normalizeLogo(
+            legacyLogo
+          ),
+
+        categories:
+          normalizeCategories(
+            input.categories
+          )
+
       },
 
-      outlet:createEmptyStore()
+      outlet:
+        createEmptyStore()
 
     };
 
@@ -1179,12 +1791,18 @@ function normalizeData(input){
   else{
 
     const legacyLogo=
-      input.logo||base.logo;
+      input.logo||
+      base.logo;
 
     result.stores={
 
-      premium:createEmptyStore(legacyLogo),
-      outlet:createEmptyStore()
+      premium:
+        createEmptyStore(
+          legacyLogo
+        ),
+
+      outlet:
+        createEmptyStore()
 
     };
 
@@ -1216,7 +1834,8 @@ function normalizeData(input){
     :"1234";
 
   result.cardImgSize=
-    Number(input.cardImgSize)||180;
+    Number(input.cardImgSize)||
+    180;
 
   result.stores.premium.logo=
     normalizeLogo(
@@ -1241,10 +1860,14 @@ function normalizeData(input){
 
 function dataUrlToBlob(dataUrl){
 
-  const parts=dataUrl.split(",");
+  const parts=
+    dataUrl.split(",");
 
-  const meta=parts[0]||"";
-  const data=parts[1]||"";
+  const meta=
+    parts[0]||"";
+
+  const data=
+    parts[1]||"";
 
   const mimeMatch=
     meta.match(/data:([^;]+)/);
@@ -1254,22 +1877,30 @@ function dataUrlToBlob(dataUrl){
     ?mimeMatch[1]
     :"image/jpeg";
 
-  const binary=atob(data);
+  const binary=
+    atob(data);
 
   const bytes=
-    new Uint8Array(binary.length);
+    new Uint8Array(
+      binary.length
+    );
 
   for(
     let i=0;
     i<binary.length;
     i++
   ){
-    bytes[i]=binary.charCodeAt(i);
+
+    bytes[i]=
+      binary.charCodeAt(i);
+
   }
 
   return new Blob(
     [bytes],
-    {type:mime}
+    {
+      type:mime
+    }
   );
 
 }
@@ -1281,83 +1912,113 @@ function resizeImg(
   quality=.70
 ){
 
-  return new Promise((resolve,reject)=>{
+  return new Promise(
+    (resolve,reject)=>{
 
-    const reader=new FileReader();
+      const reader=
+        new FileReader();
 
-    reader.onload=event=>{
+      reader.onload=
+        event=>{
 
-      const img=new Image();
+          const img=
+            new Image();
 
-      img.onload=()=>{
+          img.onload=()=>{
 
-        let width=img.width;
-        let height=img.height;
+            let width=
+              img.width;
 
-        if(width>maxWidth){
+            let height=
+              img.height;
 
-          const ratio=maxWidth/width;
+            if(width>maxWidth){
 
-          width=maxWidth;
-          height=Math.round(height*ratio);
+              const ratio=
+                maxWidth/width;
 
-        }
+              width=
+                maxWidth;
 
-        const canvas=
-          document.createElement("canvas");
+              height=
+                Math.round(
+                  height*ratio
+                );
 
-        canvas.width=width;
-        canvas.height=height;
+            }
 
-        const ctx=
-          canvas.getContext("2d");
+            const canvas=
+              document.createElement(
+                "canvas"
+              );
 
-        if(!ctx){
+            canvas.width=
+              width;
 
-          reject(
-            new Error("Canvas desteklenmiyor")
-          );
+            canvas.height=
+              height;
 
-          return;
+            const ctx=
+              canvas.getContext("2d");
 
-        }
+            if(!ctx){
 
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          width,
-          height
-        );
+              reject(
+                new Error(
+                  "Canvas desteklenmiyor"
+                )
+              );
 
-        resolve(
-          canvas.toDataURL(
-            "image/webp",
-            quality
+              return;
+
+            }
+
+            ctx.drawImage(
+              img,
+              0,
+              0,
+              width,
+              height
+            );
+
+            resolve(
+              canvas.toDataURL(
+                "image/webp",
+                quality
+              )
+            );
+
+          };
+
+          img.onerror=()=>{
+
+            reject(
+              new Error(
+                "Görsel okunamadı"
+              )
+            );
+
+          };
+
+          img.src=
+            event.target.result;
+
+        };
+
+      reader.onerror=()=>{
+
+        reject(
+          new Error(
+            "Dosya okunamadı"
           )
         );
 
       };
 
-      img.onerror=()=>{
-        reject(
-          new Error("Görsel okunamadı")
-        );
-      };
+      reader.readAsDataURL(file);
 
-      img.src=event.target.result;
-
-    };
-
-    reader.onerror=()=>{
-      reject(
-        new Error("Dosya okunamadı")
-      );
-    };
-
-    reader.readAsDataURL(file);
-
-  });
+    }
+  );
 
 }
 
@@ -1366,7 +2027,10 @@ function resizeImg(
    STORAGE
 ========================================================= */
 
-function storagePath(type,id){
+function storagePath(
+  type,
+  id
+){
 
   return(
     SITE_ID+
@@ -1394,8 +2058,12 @@ async function uploadBlobToStorage(
       path,
       blob,
       {
-        contentType:"image/webp",
-        cacheControl:"31536000",
+        contentType:
+          "image/webp",
+
+        cacheControl:
+          "31536000",
+
         upsert:false
       }
     );
@@ -1426,22 +2094,37 @@ function Icon({
 }){
 
   const props={
+
     width:size,
     height:size,
+
     viewBox:"0 0 24 24",
+
     fill:"none",
+
     stroke:"currentColor",
+
     strokeWidth:2,
+
     strokeLinecap:"round",
+
     strokeLinejoin:"round"
+
   };
 
   let content=null;
 
+
   if(type==="settings"){
 
     content=(<>
-      <circle cx="12" cy="12" r="3"/>
+
+      <circle
+        cx="12"
+        cy="12"
+        r="3"
+      />
+
       <path d="
         M19.4 15
         a1.7 1.7 0 0 0 .3 1.9
@@ -1465,98 +2148,150 @@ function Icon({
         1.7 1.7 0 0 0 1.9-.3
         l.1-.1 1.7 1.7-.1.1
         a1.7 1.7 0 0 0-.3 1.9
+        1.7 1.7 0 0 0-.3 1.9
         1.7 1.7 0 0 0 1.6 1.1
         1.7 1.7 0 0 0 1.6 1
         h.1V14h-.1
         a1.7 1.7 0 0 0-1.6 1z
       "/>
+
     </>);
 
   }
-  else if(type==="x"||type==="close"){
+
+  else if(
+    type==="x"||
+    type==="close"
+  ){
 
     content=(<>
+
       <path d="M6 6l12 12"/>
       <path d="M18 6L6 18"/>
+
     </>);
 
   }
+
   else if(type==="plus"){
 
     content=(<>
+
       <path d="M12 5v14"/>
       <path d="M5 12h14"/>
+
     </>);
 
   }
+
   else if(type==="trash"){
 
     content=(<>
+
       <path d="M3 6h18"/>
       <path d="M8 6V4h8v2"/>
       <path d="M19 6l-1 14H6L5 6"/>
       <path d="M10 11v5"/>
       <path d="M14 11v5"/>
+
     </>);
 
   }
+
   else if(type==="upload"){
 
     content=(<>
+
       <path d="M12 16V4"/>
       <path d="M7 9l5-5 5 5"/>
       <path d="M5 20h14"/>
+
     </>);
 
   }
+
   else if(type==="up"){
 
     content=
       <path d="m18 15-6-6-6 6"/>;
 
   }
+
   else if(type==="down"){
 
     content=
       <path d="m6 9 6 6 6-6"/>;
 
   }
+
   else if(type==="save"){
 
     content=(<>
+
       <path d="
         M19 21H5a2 2 0 0 1-2-2V5
         a2 2 0 0 1 2-2h11l5 5v11
         a2 2 0 0 1-2 2Z
       "/>
+
       <path d="M17 21v-8H7v8"/>
       <path d="M7 3v5h8"/>
+
     </>);
 
   }
+
   else if(type==="image"){
 
     content=(<>
-      <rect x="3" y="3" width="18" height="18" rx="2"/>
-      <circle cx="8.5" cy="8.5" r="1.5"/>
+
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="2"
+      />
+
+      <circle
+        cx="8.5"
+        cy="8.5"
+        r="1.5"
+      />
+
       <path d="m21 15-5-5L5 21"/>
+
     </>);
 
   }
+
   else if(type==="lock"){
 
     content=(<>
-      <rect x="4" y="10" width="16" height="10" rx="2"/>
-      <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+
+      <rect
+        x="4"
+        y="10"
+        width="16"
+        height="10"
+        rx="2"
+      />
+
+      <path
+        d="M8 10V7a4 4 0 0 1 8 0v3"
+      />
+
     </>);
 
   }
+
   else if(type==="check"){
 
     content=
       <path d="m5 12 4 4L19 6"/>;
 
   }
+
   else if(type==="phone"){
 
     content=(
@@ -1577,29 +2312,43 @@ function Icon({
     );
 
   }
+
   else if(type==="search"){
 
     content=(<>
-      <circle cx="11" cy="11" r="7"/>
+
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+      />
+
       <path d="m20 20-4-4"/>
+
     </>);
 
   }
+
   else if(type==="arrow"){
 
     content=(<>
+
       <path d="M5 12h14"/>
       <path d="m13 6 6 6-6 6"/>
+
     </>);
 
   }
+
   else if(type==="expand"){
 
     content=(<>
+
       <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
       <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
       <path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
       <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+
     </>);
 
   }
@@ -1619,16 +2368,26 @@ function Icon({
 
 function App(){
 
-  const [data,setData]=useState(null);
-  const [loading,setLoading]=useState(true);
+  const [data,setData]=
+    useState(null);
 
-  const [saving,setSaving]=useState(false);
-  const [saved,setSaved]=useState(false);
+  const [loading,setLoading]=
+    useState(true);
 
-  const [toast,setToast]=useState("");
+  const [saving,setSaving]=
+    useState(false);
 
-  const [store,setStore]=useState("premium");
-  const [activeCat,setActiveCat]=useState(null);
+  const [saved,setSaved]=
+    useState(false);
+
+  const [toast,setToast]=
+    useState("");
+
+  const [store,setStore]=
+    useState("premium");
+
+  const [activeCat,setActiveCat]=
+    useState(null);
 
   const [openCategories,setOpenCategories]=
     useState({});
@@ -1636,7 +2395,8 @@ function App(){
   const [currencyMenuOpen,setCurrencyMenuOpen]=
     useState(false);
 
-  const [search,setSearch]=useState("");
+  const [search,setSearch]=
+    useState("");
 
   const [selectedProduct,setSelectedProduct]=
     useState(null);
@@ -1665,20 +2425,24 @@ function App(){
   const [busy,setBusy]=
     useState(false);
 
-  /*
-    ÖNEMLİ:
-    dirtyRef true olduğu sürece değişiklikler sadece
-    local state'te tutulur.
-    Supabase'e yalnızca Kaydet ve Kapat basıldığında gider.
-  */
-  const dirtyRef=useRef(false);
 
-  const dataRef=useRef(null);
+  const dirtyRef=
+    useRef(false);
 
-  const logoRef=useRef(null);
-  const bgRef=useRef(null);
+  const dataRef=
+    useRef(null);
 
-  const itemRefs=useRef({});
+  const logoRef=
+    useRef(null);
+
+  const bgRef=
+    useRef(null);
+
+  const itemRefs=
+    useRef({});
+
+  const productGridRef=
+    useRef(null);
 
   const realtimeChannelRef=
     useRef(null);
@@ -1702,7 +2466,8 @@ function App(){
 
   useEffect(()=>{
 
-    dataRef.current=data;
+    dataRef.current=
+      data;
 
   },[data]);
 
@@ -1723,21 +2488,29 @@ function App(){
      TOAST
   ======================================================= */
 
-  const showToast=useCallback((message)=>{
+  const showToast=
+    useCallback(
+      message=>{
 
-    setToast(message);
+        setToast(message);
 
-    if(toastTimerRef.current){
-      clearTimeout(toastTimerRef.current);
-    }
+        if(toastTimerRef.current){
 
-    toastTimerRef.current=
-      setTimeout(
-        ()=>setToast(""),
-        2600
-      );
+          clearTimeout(
+            toastTimerRef.current
+          );
 
-  },[]);
+        }
+
+        toastTimerRef.current=
+          setTimeout(
+            ()=>setToast(""),
+            2600
+          );
+
+      },
+      []
+    );
 
 
   /* =======================================================
@@ -1749,10 +2522,16 @@ function App(){
     return()=>{
 
       if(toastTimerRef.current){
-        clearTimeout(toastTimerRef.current);
+
+        clearTimeout(
+          toastTimerRef.current
+        );
+
       }
 
-      if(realtimeChannelRef.current){
+      if(
+        realtimeChannelRef.current
+      ){
 
         supabase.removeChannel(
           realtimeChannelRef.current
@@ -1771,24 +2550,31 @@ function App(){
 
   function toggleCategory(id){
 
-    setOpenCategories(prev=>({
+    setOpenCategories(
+      previous=>({
 
-      ...prev,
-      [id]:!prev[id]
+        ...previous,
 
-    }));
+        [id]:
+          !previous[id]
+
+      })
+    );
 
   }
 
 
   function openCategory(id){
 
-    setOpenCategories(prev=>({
+    setOpenCategories(
+      previous=>({
 
-      ...prev,
-      [id]:true
+        ...previous,
 
-    }));
+        [id]:true
+
+      })
+    );
 
   }
 
@@ -1905,7 +2691,8 @@ function App(){
               event:"UPDATE",
               schema:"public",
               table:"site_data",
-              filter:"id=eq."+SITE_ID
+              filter:
+                "id=eq."+SITE_ID
             },
             payload=>{
 
@@ -1926,10 +2713,6 @@ function App(){
                   incomingData
                 );
 
-              /*
-                Kendi kaydımızın Realtime dönüşünü
-                ikinci kez uygulama.
-              */
               if(
                 incomingJson===
                 lastSavedJsonRef.current
@@ -1937,11 +2720,6 @@ function App(){
                 return;
               }
 
-              /*
-                Kullanıcı o anda düzenleme yapıyorsa
-                uzaktaki değişiklik onun local değişikliklerini
-                ezmesin.
-              */
               if(
                 dirtyRef.current
               ){
@@ -1957,27 +2735,36 @@ function App(){
               dataRef.current=
                 incomingData;
 
-              setData(incomingData);
+              setData(
+                incomingData
+              );
 
-              setActiveCat(current=>{
+              setActiveCat(
+                current=>{
 
-                const cats=
-                  incomingData
-                  .stores?.[store]
-                  ?.categories||[];
+                  const cats=
+                    incomingData
+                    .stores?.[store]
+                    ?.categories||[];
 
-                if(
-                  cats.some(
-                    category=>
-                      category.id===current
-                  )
-                ){
-                  return current;
+                  if(
+                    cats.some(
+                      category=>
+                        category.id===current
+                    )
+                  ){
+
+                    return current;
+
+                  }
+
+                  return(
+                    cats[0]?.id||
+                    null
+                  );
+
                 }
-
-                return cats[0]?.id||null;
-
-              });
+              );
 
               const selectedId=
                 selectedProductIdRef.current;
@@ -1988,25 +2775,32 @@ function App(){
 
                 Object.values(
                   incomingData.stores||{}
-                ).forEach(storeData=>{
+                ).forEach(
+                  storeData=>{
 
-                  (storeData.categories||[])
-                  .forEach(category=>{
+                    (
+                      storeData.categories||[]
+                    ).forEach(
+                      category=>{
 
-                    const product=
-                      (category.items||[])
-                      .find(
-                        item=>
-                          item.id===selectedId
-                      );
+                        const product=
+                          (
+                            category.items||[]
+                          ).find(
+                            item=>
+                              item.id===
+                              selectedId
+                          );
 
-                    if(product){
-                      found=product;
-                    }
+                        if(product){
+                          found=product;
+                        }
 
-                  });
+                      }
+                    );
 
-                });
+                  }
+                );
 
                 setSelectedProduct(
                   found||null
@@ -2016,14 +2810,16 @@ function App(){
 
             }
           )
-          .subscribe(status=>{
+          .subscribe(
+            status=>{
 
-            console.log(
-              "Ofischi Realtime:",
-              status
-            );
+              console.log(
+                "Ofischi Realtime:",
+                status
+              );
 
-          });
+            }
+          );
 
         realtimeChannelRef.current=
           channel;
@@ -2050,10 +2846,14 @@ function App(){
           fallback;
 
         savedSnapshotRef.current=
-          JSON.stringify(fallback);
+          JSON.stringify(
+            fallback
+          );
 
         lastSavedJsonRef.current=
-          JSON.stringify(fallback);
+          JSON.stringify(
+            fallback
+          );
 
         dirtyRef.current=false;
 
@@ -2077,7 +2877,9 @@ function App(){
       finally{
 
         if(!cancelled){
+
           setLoading(false);
+
         }
 
       }
@@ -2098,7 +2900,8 @@ function App(){
           realtimeChannelRef.current
         );
 
-        realtimeChannelRef.current=null;
+        realtimeChannelRef.current=
+          null;
 
       }
 
@@ -2114,7 +2917,9 @@ function App(){
   function changeStore(nextStore){
 
     setStore(nextStore);
+
     setSearch("");
+
     setCurrencyMenuOpen(false);
 
     const cats=
@@ -2128,6 +2933,7 @@ function App(){
     );
 
     setOpenCategories({});
+
     setSelectedProduct(null);
 
   }
@@ -2137,42 +2943,47 @@ function App(){
      UPDATE DATA
   ======================================================= */
 
-  const updateData=useCallback((callback)=>{
+  const updateData=
+    useCallback(
+      callback=>{
 
-    setData(previous=>{
+        setData(previous=>{
 
-      if(!previous){
-        return previous;
-      }
+          if(!previous){
+            return previous;
+          }
 
-      const copy={
-        ...previous
-      };
+          const copy={
+            ...previous
+          };
 
-      callback(copy);
+          callback(copy);
 
-      dataRef.current=
-        copy;
+          dataRef.current=
+            copy;
 
-      /*
-        ARTIK OTOMATİK KAYDETME YOK.
-      */
-      dirtyRef.current=true;
+          dirtyRef.current=
+            true;
 
-      setSaved(false);
+          setSaved(false);
 
-      return copy;
+          return copy;
 
-    });
+        });
 
-  },[]);
+      },
+      []
+    );
 
 
   /* =======================================================
      PATH
   ======================================================= */
 
-  function setPath(path,value){
+  function setPath(
+    path,
+    value
+  ){
 
     updateData(copy=>{
 
@@ -2184,13 +2995,15 @@ function App(){
         i++
       ){
 
-        const key=path[i];
+        const key=
+          path[i];
 
         target[key]={
           ...(target[key]||{})
         };
 
-        target=target[key];
+        target=
+          target[key];
 
       }
 
@@ -2311,6 +3124,7 @@ function App(){
         {
           minimumFractionDigits:
             decimals,
+
           maximumFractionDigits:
             decimals
         }
@@ -2362,6 +3176,7 @@ function App(){
     }
 
     let total=0;
+
     let hasAmount=false;
 
     for(
@@ -2414,110 +3229,111 @@ function App(){
      SAVE
   ======================================================= */
 
-  const save=useCallback(async()=>{
+  const save=
+    useCallback(
+      async()=>{
 
-    const current=
-      dataRef.current;
+        const current=
+          dataRef.current;
 
-    if(
-      !current||
-      saving||
-      busy
-    ){
-      return;
-    }
+        if(
+          !current||
+          saving||
+          busy
+        ){
+          return;
+        }
 
-    /*
-      Değişiklik yoksa direkt kapat.
-    */
-    if(!dirtyRef.current){
+        if(!dirtyRef.current){
 
-      setPanelOpen(false);
-      return;
+          setPanelOpen(false);
 
-    }
+          return;
 
-    const clean=
-      normalizeData(current);
+        }
 
-    const cleanJson=
-      JSON.stringify(clean);
+        const clean=
+          normalizeData(current);
 
-    setSaving(true);
+        const cleanJson=
+          JSON.stringify(clean);
 
-    try{
+        setSaving(true);
 
-      const result=
-        await supabase
-        .from("site_data")
-        .upsert(
-          {
-            id:SITE_ID,
-            data:clean,
-            updated_at:
-              new Date().toISOString()
-          },
-          {
-            onConflict:"id"
+        try{
+
+          const result=
+            await supabase
+            .from("site_data")
+            .upsert(
+              {
+                id:SITE_ID,
+                data:clean,
+                updated_at:
+                  new Date().toISOString()
+              },
+              {
+                onConflict:"id"
+              }
+            );
+
+          if(result.error){
+            throw result.error;
           }
-        );
 
-      if(result.error){
-        throw result.error;
-      }
+          lastSavedJsonRef.current=
+            cleanJson;
 
-      /*
-        Yeni kayıt snapshot'ı.
-      */
-      lastSavedJsonRef.current=
-        cleanJson;
+          savedSnapshotRef.current=
+            cleanJson;
 
-      savedSnapshotRef.current=
-        cleanJson;
+          dataRef.current=
+            clean;
 
-      dataRef.current=
-        clean;
+          dirtyRef.current=false;
 
-      dirtyRef.current=false;
+          setData(clean);
 
-      setData(clean);
-      setSaved(true);
+          setSaved(true);
 
-      showToast(
-        "Başarıyla kaydedildi"
-      );
+          showToast(
+            "Başarıyla kaydedildi"
+          );
 
-      /*
-        Kullanıcı istediği gibi:
-        kayıt başarılı -> panel kapanır.
-      */
-      setTimeout(()=>{
+          setTimeout(()=>{
 
-        setSaved(false);
-        setPanelOpen(false);
+            setSaved(false);
 
-      },550);
+            setPanelOpen(false);
 
-    }
-    catch(error){
+          },550);
 
-      console.error(
-        "KAYDETME HATASI:",
-        error
-      );
+        }
+        catch(error){
 
-      showToast(
-        "Kaydetme hatası"
-      );
+          console.error(
+            "KAYDETME HATASI:",
+            error
+          );
 
-    }
-    finally{
+          showToast(
+            "Kaydetme hatası"
+          );
 
-      setSaving(false);
+        }
+        finally{
 
-    }
+          setSaving(false);
 
-  },[saving,busy,showToast]);
+        }
+
+      },
+      [
+        saving,
+        busy,
+        showToast
+      ]
+    );
 
 
   /* =======================================================
@@ -2528,10 +3344,6 @@ function App(){
 
     if(unlocked){
 
-      /*
-        Paneli açarken mevcut kayıtlı snapshot'ı
-        başlangıç noktası olarak tut.
-      */
       if(!dirtyRef.current){
 
         savedSnapshotRef.current=
@@ -2542,12 +3354,15 @@ function App(){
       }
 
       setPanelOpen(true);
+
       return;
 
     }
 
     setPinInput("");
+
     setPinError(false);
+
     setPinModal(true);
 
   }
@@ -2559,10 +3374,6 @@ function App(){
 
   function closeAdminWithoutSave(){
 
-    /*
-      Panel kapanırken kaydedilmemiş değişiklik varsa
-      kayıtlı son snapshot'a geri dön.
-    */
     if(dirtyRef.current){
 
       const snapshot=
@@ -2583,6 +3394,7 @@ function App(){
       }
 
       dirtyRef.current=false;
+
       setSaved(false);
 
     }
@@ -2609,9 +3421,13 @@ function App(){
     ){
 
       setUnlocked(true);
+
       setPinModal(false);
+
       setPanelOpen(true);
+
       setPinInput("");
+
       setPinError(false);
 
       savedSnapshotRef.current=
@@ -2649,8 +3465,13 @@ function App(){
 
     });
 
-    setActiveCat(category.id);
-    openCategory(category.id);
+    setActiveCat(
+      category.id
+    );
+
+    openCategory(
+      category.id
+    );
 
   }
 
@@ -2778,9 +3599,13 @@ function App(){
     const item={
 
       id:uid(),
+
       name:"Yeni Ürün",
+
       desc:"",
+
       dims:"",
+
       image:null,
 
       price:{
@@ -2799,10 +3624,12 @@ function App(){
             category.id===categoryId
             ?{
               ...category,
+
               items:[
                 ...category.items,
                 item
               ]
+
             }
             :category
         );
@@ -2887,11 +3714,13 @@ function App(){
             category.id===categoryId
             ?{
               ...category,
+
               items:
                 category.items.filter(
                   item=>
                     item.id!==itemId
                 )
+
             }
             :category
         );
@@ -2952,8 +3781,11 @@ function App(){
             ];
 
             return{
+
               ...category,
+
               items:list
+
             };
 
           }
@@ -2976,8 +3808,11 @@ function App(){
     const part={
 
       id:uid(),
+
       name:"Yeni Parça",
+
       amount:null,
+
       contactOnly:false
 
     };
@@ -3241,11 +4076,6 @@ function App(){
           path
         );
 
-      /*
-        Görsel Storage'a hemen yüklenebilir.
-        Ancak site_data içindeki değişiklik
-        yalnızca Kaydet'e basılınca kalıcı olur.
-      */
       updateItem(
         categoryId,
         itemId,
@@ -3325,7 +4155,12 @@ function App(){
         );
 
       setPath(
-        ["stores",store,"logo","src"],
+        [
+          "stores",
+          store,
+          "logo",
+          "src"
+        ],
         url
       );
 
@@ -3445,8 +4280,11 @@ function App(){
         ...copy.theme,
 
         bg:theme.bg,
+
         card:theme.card,
+
         accent:theme.accent,
+
         text:theme.text
 
       };
@@ -3478,7 +4316,8 @@ function App(){
 
     setData(fresh);
 
-    dirtyRef.current=true;
+    dirtyRef.current=
+      true;
 
     setStore("premium");
 
@@ -3511,20 +4350,29 @@ function App(){
 
       <div
         style={{
+
           minHeight:"100vh",
+
           background:"#141416",
+
           color:"#aaa",
+
           display:"flex",
+
           alignItems:"center",
+
           justifyContent:"center",
+
           fontFamily:
             "Inter,system-ui,sans-serif"
+
         }}
       >
 
         <div
           style={{
-            animation:"fadeIn .4s ease"
+            animation:
+              "fadeIn .4s ease"
           }}
           className="text-sm"
         >
@@ -3548,12 +4396,19 @@ function App(){
 
       <div
         style={{
+
           minHeight:"100vh",
+
           background:"#141416",
+
           color:"#f87171",
+
           display:"flex",
+
           alignItems:"center",
+
           justifyContent:"center"
+
         }}
       >
         Site verileri yüklenemedi.
@@ -3595,6 +4450,7 @@ function App(){
           item=>({
 
             ...item,
+
             categoryName:
               category.name
 
@@ -3653,8 +4509,11 @@ function App(){
   }
 
 
-  const theme=data.theme;
-  const currency=getCurrency();
+  const theme=
+    data.theme;
+
+  const currency=
+    getCurrency();
 
   const currentLogo=
     data.stores?.[store]?.logo||
@@ -3675,7 +4534,7 @@ function App(){
       part.amount===""
     ){
 
-      return"Fiyat için iletişime geçin";
+      return "Fiyat için iletişime geçin";
 
     }
 
@@ -3700,10 +4559,17 @@ function App(){
 
     backgroundImage:
       theme.bgImage
-      ?`linear-gradient(${theme.bg}e8,${theme.bg}f3),url(${theme.bgImage})`
+      ?`
+        linear-gradient(
+          ${theme.bg}e8,
+          ${theme.bg}f3
+        ),
+        url(${theme.bgImage})
+      `
       :undefined,
 
     backgroundSize:"cover",
+
     backgroundPosition:"center",
 
     color:
@@ -3729,6 +4595,21 @@ function App(){
       style={rootStyle}
     >
 
+      <div
+        className="liquid-light-one"
+        aria-hidden="true"
+      />
+
+      <div
+        className="liquid-light-two"
+        aria-hidden="true"
+      />
+
+      <div
+        className="luxury-surface"
+        aria-hidden="true"
+      />
+
 
       {/* =================================================
           TOP MENU
@@ -3736,6 +4617,10 @@ function App(){
 
       <div
         className="fixed top-3 left-3 right-3 z-40"
+        style={{
+          animation:
+            "luxuryEnter .6s cubic-bezier(.2,.75,.2,1) both"
+        }}
       >
 
         <div
@@ -3792,7 +4677,6 @@ function App(){
             className="flex items-center gap-2"
           >
 
-
             {/* CURRENCY */}
 
             <div className="relative">
@@ -3836,7 +4720,12 @@ function App(){
                 <div
                   className="absolute right-0 mt-2 w-36 rounded-2xl overflow-hidden glass-strong"
                   style={{
-                    zIndex:1000
+
+                    zIndex:1000,
+
+                    animation:
+                      "pop .22s cubic-bezier(.22,1,.36,1) both"
+
                   }}
                 >
 
@@ -3858,7 +4747,10 @@ function App(){
                       onClick={()=>{
 
                         setPath(
-                          ["currency","selected"],
+                          [
+                            "currency",
+                            "selected"
+                          ],
                           c.id
                         );
 
@@ -3972,7 +4864,8 @@ function App(){
         <div
           className="fixed top-[64px] left-3 right-3 z-40"
           style={{
-            animation:"fadeIn .22s ease"
+            animation:
+              "fadeIn .22s ease"
           }}
         >
 
@@ -4009,9 +4902,7 @@ function App(){
       <header
         className="px-6 pb-7 max-w-5xl mx-auto"
         style={{
-          paddingTop:"106px",
-          animation:
-            "pageEnter .45s cubic-bezier(.22,1,.36,1)"
+          paddingTop:"106px"
         }}
       >
 
@@ -4019,6 +4910,7 @@ function App(){
           style={{
 
             width:"100%",
+
             display:"flex",
 
             justifyContent:
@@ -4043,11 +4935,20 @@ function App(){
               fetchPriority="high"
               style={{
 
-                width:currentLogo.size,
+                width:
+                  currentLogo.size,
+
                 maxWidth:"70vw",
-                maxHeight:currentLogo.size,
+
+                maxHeight:
+                  currentLogo.size,
+
                 objectFit:"contain",
-                display:"block"
+
+                display:"block",
+
+                animation:
+                  "pop .45s cubic-bezier(.22,1,.36,1) .12s both"
 
               }}
             />
@@ -4058,8 +4959,14 @@ function App(){
               style={{
 
                 fontSize:50,
+
                 fontWeight:800,
-                color:theme.accent
+
+                color:
+                  theme.accent,
+
+                animation:
+                  "pop .45s cubic-bezier(.22,1,.36,1) .12s both"
 
               }}
             >
@@ -4076,19 +4983,33 @@ function App(){
           <div
             className="text-[10px] font-bold tracking-[.28em] mb-2"
             style={{
-              color:theme.accent
+              color:theme.accent,
+              animation:
+                "fadeIn .4s ease .18s both"
             }}
           >
             {data.eyebrow}
           </div>
 
 
-          <h1 className="text-3xl font-bold leading-tight">
+          <h1
+            className="text-3xl font-bold leading-tight"
+            style={{
+              animation:
+                "fadeIn .5s ease .22s both"
+            }}
+          >
             {data.siteName}
           </h1>
 
 
-          <p className="text-sm opacity-60 mt-2">
+          <p
+            className="text-sm opacity-60 mt-2"
+            style={{
+              animation:
+                "fadeIn .5s ease .28s both"
+            }}
+          >
 
             {store==="premium"
               ?"Premium Ofis Mobilyaları"
@@ -4116,7 +5037,10 @@ function App(){
                 color:"#fff",
 
                 boxShadow:
-                  `0 8px 22px ${theme.accent}30`
+                  `0 8px 22px ${theme.accent}30`,
+
+                animation:
+                  "pop .4s cubic-bezier(.22,1,.36,1) .34s both"
 
               }}
             >
@@ -4143,6 +5067,10 @@ function App(){
 
       <div
         className="max-w-5xl mx-auto px-4 mb-1"
+        style={{
+          animation:
+            "fadeIn .45s ease .25s both"
+        }}
       >
 
         <div
@@ -4201,7 +5129,7 @@ function App(){
       {!search.trim()&&(
 
         <div
-          className="sticky top-[59px] z-20 px-4 pt-3 pb-2 category-bar"
+          className="px-4 pt-3 pb-2 category-bar"
         >
 
           <div
@@ -4213,6 +5141,7 @@ function App(){
 
                 <button
                   key={category.id}
+
                   onClick={()=>{
 
                     setActiveCat(
@@ -4221,7 +5150,24 @@ function App(){
 
                     setOpenCategories({});
 
+                    requestAnimationFrame(()=>{
+
+                      setTimeout(()=>{
+
+                        productGridRef.current?.scrollIntoView({
+
+                          behavior:"smooth",
+
+                          block:"start"
+
+                        });
+
+                      },30);
+
+                    });
+
                   }}
+
                   className={
                     "category-chip "+
                     (
@@ -4230,6 +5176,7 @@ function App(){
                       :""
                     )
                   }
+
                   style={{
 
                     background:
@@ -4252,10 +5199,8 @@ function App(){
                       ?1
                       :.78,
 
-                    boxShadow:
-                      category.id===activeCat
-                      ?`0 7px 20px ${theme.accent}28,inset 0 1px 0 rgba(255,255,255,.16)`
-                      :"none",
+                    "--accent":
+                      theme.accent,
 
                     animation:
                       `categoryEnter .3s cubic-bezier(.22,1,.36,1) ${Math.min(index,8)*25}ms both`
@@ -4282,11 +5227,14 @@ function App(){
       ================================================= */}
 
       <main
+        ref={productGridRef}
+
         key={
           search.trim()
           ?`search-${search}`
           :activeCat
         }
+
         className="product-grid px-4 pt-4 pb-28 max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3"
       >
 
@@ -4296,7 +5244,8 @@ function App(){
           <div
             className="col-span-full mb-1"
             style={{
-              animation:"fadeIn .25s ease"
+              animation:
+                "fadeIn .25s ease"
             }}
           >
 
@@ -4317,7 +5266,8 @@ function App(){
           <div
             className="col-span-full text-center py-16 opacity-50"
             style={{
-              animation:"fadeIn .3s ease"
+              animation:
+                "fadeIn .3s ease"
             }}
           >
 
@@ -4340,10 +5290,13 @@ function App(){
 
               <article
                 key={item.id}
+
                 onClick={()=>
                   setSelectedProduct(item)
                 }
+
                 className="product-card glass rounded-2xl cursor-pointer"
+
                 style={{
 
                   background:
@@ -4351,6 +5304,9 @@ function App(){
 
                   boxShadow:
                     "0 6px 22px rgba(0,0,0,.15)",
+
+                  border:
+                    "1px solid rgba(255,255,255,.06)",
 
                   animationDelay:
                     `${Math.min(index,10)*30}ms`
@@ -4365,7 +5321,8 @@ function App(){
                   className="product-image"
                   style={{
 
-                    height:data.cardImgSize,
+                    height:
+                      data.cardImgSize,
 
                     backgroundColor:
                       theme.accent+"12",
@@ -4376,7 +5333,9 @@ function App(){
                       :"flex",
 
                     alignItems:"center",
-                    justifyContent:"center"
+
+                    justifyContent:
+                      "center"
 
                   }}
                 >
@@ -4386,11 +5345,13 @@ function App(){
                     <img
                       src={item.image}
                       alt={item.name}
+
                       loading={
                         index<4
                         ?"eager"
                         :"lazy"
                       }
+
                       decoding="async"
                     />
 
@@ -4423,10 +5384,16 @@ function App(){
                       className="text-[11px] opacity-55 mt-1 leading-snug"
                       style={{
 
-                        display:"-webkit-box",
+                        display:
+                          "-webkit-box",
+
                         WebkitLineClamp:2,
-                        WebkitBoxOrient:"vertical",
-                        overflow:"hidden"
+
+                        WebkitBoxOrient:
+                          "vertical",
+
+                        overflow:
+                          "hidden"
 
                       }}
                     >
@@ -4452,7 +5419,8 @@ function App(){
                     <div
                       className="text-[12px] font-bold mt-2"
                       style={{
-                        color:theme.accent
+                        color:
+                          theme.accent
                       }}
                     >
                       Toplam: {totalText}
@@ -4494,6 +5462,7 @@ function App(){
 
         <div
           className="fixed inset-0 z-[100] modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-5"
+
           onClick={()=>
             setSelectedProduct(null)
           }
@@ -4501,6 +5470,7 @@ function App(){
 
           <div
             className="product-modal w-full sm:max-w-lg max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl glass-strong"
+
             style={{
 
               background:
@@ -4510,6 +5480,7 @@ function App(){
                 theme.text
 
             }}
+
             onClick={e=>
               e.stopPropagation()
             }
@@ -4521,12 +5492,14 @@ function App(){
 
               <div
                 className="product-detail-image"
+
                 onClick={()=>
                   selectedProduct.image&&
                   setImageViewer(
                     selectedProduct.image
                   )
                 }
+
                 style={{
 
                   height:300,
@@ -4540,7 +5513,9 @@ function App(){
                     :undefined,
 
                   backgroundSize:"cover",
-                  backgroundPosition:"center",
+
+                  backgroundPosition:
+                    "center",
 
                   display:
                     selectedProduct.image
@@ -4548,7 +5523,9 @@ function App(){
                     :"flex",
 
                   alignItems:"center",
-                  justifyContent:"center"
+
+                  justifyContent:
+                    "center"
 
                 }}
               >
@@ -4588,7 +5565,9 @@ function App(){
                 onClick={()=>
                   setSelectedProduct(null)
                 }
+
                 className="liquid-button absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center glass-dark"
+
                 style={{
                   color:"#fff"
                 }}
@@ -4611,7 +5590,8 @@ function App(){
               <div
                 className="text-[10px] uppercase tracking-widest font-bold mb-2"
                 style={{
-                  color:theme.accent
+                  color:
+                    theme.accent
                 }}
               >
 
@@ -4691,13 +5671,18 @@ function App(){
 
                         <div
                           key={part.id}
+
                           className="price-row rounded-xl p-3 flex items-center justify-between gap-3"
+
                           style={{
+
                             border:
                               "1px solid "+
                               theme.text+"0e",
+
                             background:
                               "rgba(0,0,0,.10)"
+
                           }}
                         >
 
@@ -4753,6 +5738,7 @@ function App(){
 
                 <div
                   className="mt-5 p-4 rounded-2xl text-center"
+
                   style={{
 
                     background:
@@ -4778,7 +5764,8 @@ function App(){
                   <div
                     className="text-2xl font-extrabold mt-1"
                     style={{
-                      color:theme.accent
+                      color:
+                        theme.accent
                     }}
                   >
 
@@ -4803,7 +5790,9 @@ function App(){
                       ""
                     )
                   }
+
                   className="liquid-button mt-5 w-full py-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm"
+
                   style={{
 
                     background:
@@ -4845,6 +5834,7 @@ function App(){
 
         <div
           className="fixed inset-0 z-[500] full-image-viewer flex items-center justify-center p-3"
+
           onClick={()=>
             setImageViewer(null)
           }
@@ -4854,6 +5844,7 @@ function App(){
             src={imageViewer}
             alt="Ürün görseli"
             decoding="async"
+
             onClick={e=>
               e.stopPropagation()
             }
@@ -4864,7 +5855,9 @@ function App(){
             onClick={()=>
               setImageViewer(null)
             }
+
             className="liquid-button absolute top-5 right-5 w-11 h-11 rounded-full flex items-center justify-center glass-dark"
+
             style={{
               color:"#fff"
             }}
@@ -4888,10 +5881,13 @@ function App(){
 
       <button
         onClick={openAdmin}
+
         className="liquid-button fixed bottom-5 right-[18px] z-30 rounded-full flex items-center justify-center glass-strong"
+
         style={{
 
           width:52,
+
           height:52,
 
           background:
@@ -4971,10 +5967,15 @@ function App(){
 
             <input
               autoFocus
+
               type="password"
+
               inputMode="numeric"
+
               maxLength={8}
+
               value={pinInput}
+
               onChange={e=>{
 
                 setPinInput(
@@ -4987,6 +5988,7 @@ function App(){
                 setPinError(false);
 
               }}
+
               onKeyDown={e=>{
 
                 if(e.key==="Enter"){
@@ -4994,7 +5996,9 @@ function App(){
                 }
 
               }}
+
               placeholder="PIN"
+
               className="admin-input tracking-[.3em]"
             />
 
@@ -5021,6 +6025,7 @@ function App(){
                 onClick={()=>
                   setPinModal(false)
                 }
+
                 className="liquid-button flex-1 py-2.5 rounded-xl text-sm text-neutral-300 glass"
               >
                 Vazgeç
@@ -5029,7 +6034,9 @@ function App(){
 
               <button
                 onClick={tryUnlock}
+
                 className="liquid-button flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+
                 style={{
                   background:
                     theme.accent
@@ -5059,12 +6066,15 @@ function App(){
 
           <div
             className="flex-1 bg-black/45"
-            onClick={closeAdminWithoutSave}
+            onClick={
+              closeAdminWithoutSave
+            }
           />
 
 
           <aside
             className="admin-aside w-full sm:w-[460px] h-full overflow-y-auto shadow-2xl"
+
             style={{
 
               background:
@@ -5089,6 +6099,7 @@ function App(){
 
             <div
               className="sticky top-0 z-20 px-5 pt-5 pb-3"
+
               style={{
 
                 background:
@@ -5130,7 +6141,10 @@ function App(){
 
 
                 <button
-                  onClick={closeAdminWithoutSave}
+                  onClick={
+                    closeAdminWithoutSave
+                  }
+
                   className="liquid-button w-9 h-9 rounded-full glass flex items-center justify-center text-neutral-400"
                 >
 
@@ -5153,6 +6167,7 @@ function App(){
 
               <div
                 className="flex gap-1 rounded-xl p-1"
+
                 style={{
                   background:
                     "rgba(255,255,255,.045)"
@@ -5163,10 +6178,13 @@ function App(){
 
                   <button
                     key={s.id}
+
                     onClick={()=>
                       changeStore(s.id)
                     }
+
                     className="liquid-button flex-1 py-2.5 rounded-lg text-xs font-bold"
+
                     style={{
 
                       background:
@@ -5191,6 +6209,7 @@ function App(){
 
               <div
                 className="flex gap-1 rounded-xl p-1 mt-2"
+
                 style={{
                   background:
                     "rgba(255,255,255,.045)"
@@ -5201,7 +6220,9 @@ function App(){
                   onClick={()=>
                     setTab("genel")
                   }
+
                   className="liquid-button flex-1 py-2 rounded-lg text-sm font-semibold"
+
                   style={{
 
                     background:
@@ -5224,7 +6245,9 @@ function App(){
                   onClick={()=>
                     setTab("icerik")
                   }
+
                   className="liquid-button flex-1 py-2 rounded-lg text-sm font-semibold"
+
                   style={{
 
                     background:
@@ -5263,7 +6286,6 @@ function App(){
                   }}
                 >
 
-
                   <label className="block mb-4">
 
                     <AdminLabel>
@@ -5272,7 +6294,11 @@ function App(){
 
                     <input
                       className="admin-input"
-                      value={data.siteName}
+
+                      value={
+                        data.siteName
+                      }
+
                       onChange={e=>
                         setPath(
                           ["siteName"],
@@ -5292,7 +6318,11 @@ function App(){
 
                     <input
                       className="admin-input"
-                      value={data.eyebrow}
+
+                      value={
+                        data.eyebrow
+                      }
+
                       onChange={e=>
                         setPath(
                           ["eyebrow"],
@@ -5312,13 +6342,18 @@ function App(){
 
                     <input
                       className="admin-input"
-                      value={data.phone||""}
+
+                      value={
+                        data.phone||""
+                      }
+
                       onChange={e=>
                         setPath(
                           ["phone"],
                           e.target.value
                         )
                       }
+
                       placeholder="+90 5xx xxx xx xx"
                     />
 
@@ -5331,7 +6366,8 @@ function App(){
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest mb-3"
                     style={{
-                      color:theme.accent
+                      color:
+                        theme.accent
                     }}
                   >
                     Para Birimi
@@ -5357,13 +6393,19 @@ function App(){
 
                         <button
                           key={c.id}
+
                           onClick={()=>
                             setPath(
-                              ["currency","selected"],
+                              [
+                                "currency",
+                                "selected"
+                              ],
                               c.id
                             )
                           }
+
                           className="liquid-button py-2.5 rounded-lg text-xs font-bold"
+
                           style={{
 
                             background:
@@ -5403,13 +6445,19 @@ function App(){
                       <input
                         type="number"
                         step="0.01"
+
                         className="admin-input"
+
                         value={
                           data.currency.usdRate
                         }
+
                         onChange={e=>
                           setPath(
-                            ["currency","usdRate"],
+                            [
+                              "currency",
+                              "usdRate"
+                            ],
                             e.target.value
                           )
                         }
@@ -5427,13 +6475,19 @@ function App(){
                       <input
                         type="number"
                         step="0.01"
+
                         className="admin-input"
+
                         value={
                           data.currency.eurRate
                         }
+
                         onChange={e=>
                           setPath(
-                            ["currency","eurRate"],
+                            [
+                              "currency",
+                              "eurRate"
+                            ],
                             e.target.value
                           )
                         }
@@ -5452,7 +6506,8 @@ function App(){
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest mb-3"
                     style={{
-                      color:theme.accent
+                      color:
+                        theme.accent
                     }}
                   >
 
@@ -5473,13 +6528,19 @@ function App(){
                         src={
                           data.stores[store].logo.src
                         }
+
                         alt="Logo"
+
                         loading="lazy"
+
                         decoding="async"
+
                         style={{
 
                           maxWidth:"100%",
+
                           maxHeight:100,
+
                           objectFit:"contain"
 
                         }}
@@ -5500,10 +6561,13 @@ function App(){
 
                     <button
                       disabled={busy}
+
                       onClick={()=>
                         logoRef.current?.click()
                       }
+
                       className="liquid-button flex-1 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
+
                       style={{
 
                         background:
@@ -5530,10 +6594,16 @@ function App(){
                       <button
                         onClick={()=>
                           setPath(
-                            ["stores",store,"logo","src"],
+                            [
+                              "stores",
+                              store,
+                              "logo",
+                              "src"
+                            ],
                             null
                           )
                         }
+
                         className="liquid-button px-3 bg-red-950 text-red-400 rounded-xl"
                       >
 
@@ -5549,9 +6619,13 @@ function App(){
 
                     <input
                       ref={logoRef}
+
                       type="file"
+
                       accept="image/png,image/jpeg,image/webp"
+
                       className="hidden"
+
                       onChange={uploadLogo}
                     />
 
@@ -5566,17 +6640,29 @@ function App(){
 
                   <input
                     type="range"
+
                     min="40"
+
                     max="260"
+
                     value={
                       data.stores[store]?.logo?.size||110
                     }
+
                     onChange={e=>
                       setPath(
-                        ["stores",store,"logo","size"],
-                        Number(e.target.value)
+                        [
+                          "stores",
+                          store,
+                          "logo",
+                          "size"
+                        ],
+                        Number(
+                          e.target.value
+                        )
                       )
                     }
+
                     className="w-full mb-4"
                   />
 
@@ -5597,13 +6683,21 @@ function App(){
 
                         <button
                           key={value}
+
                           onClick={()=>
                             setPath(
-                              ["stores",store,"logo","position"],
+                              [
+                                "stores",
+                                store,
+                                "logo",
+                                "position"
+                              ],
                               value
                             )
                           }
+
                           className="liquid-button flex-1 py-2 rounded-lg text-xs"
+
                           style={{
 
                             background:
@@ -5632,7 +6726,8 @@ function App(){
                   <div
                     className="text-[10px] font-bold uppercase tracking-widest mb-3"
                     style={{
-                      color:theme.accent
+                      color:
+                        theme.accent
                     }}
                   >
                     Hazır Temalar
@@ -5647,10 +6742,13 @@ function App(){
 
                       <button
                         key={item.id}
+
                         onClick={()=>
                           applyTheme(item)
                         }
+
                         className="liquid-button rounded-xl overflow-hidden border-2"
+
                         style={{
 
                           borderColor:
@@ -5666,10 +6764,17 @@ function App(){
                           style={{
 
                             height:35,
-                            background:item.bg,
+
+                            background:
+                              item.bg,
+
                             display:"flex",
-                            alignItems:"center",
-                            justifyContent:"center"
+
+                            alignItems:
+                              "center",
+
+                            justifyContent:
+                              "center"
 
                           }}
                         >
@@ -5678,9 +6783,14 @@ function App(){
                             style={{
 
                               width:15,
+
                               height:15,
-                              borderRadius:"50%",
-                              background:item.accent
+
+                              borderRadius:
+                                "50%",
+
+                              background:
+                                item.accent
 
                             }}
                           />
@@ -5703,7 +6813,11 @@ function App(){
 
                   <ColorInput
                     label="Arka Plan Rengi"
-                    value={theme.bg}
+
+                    value={
+                      theme.bg
+                    }
+
                     onChange={value=>
                       setPath(
                         ["theme","bg"],
@@ -5715,7 +6829,11 @@ function App(){
 
                   <ColorInput
                     label="Kart Rengi"
-                    value={theme.card}
+
+                    value={
+                      theme.card
+                    }
+
                     onChange={value=>
                       setPath(
                         ["theme","card"],
@@ -5727,7 +6845,11 @@ function App(){
 
                   <ColorInput
                     label="Vurgu Rengi"
-                    value={theme.accent}
+
+                    value={
+                      theme.accent
+                    }
+
                     onChange={value=>
                       setPath(
                         ["theme","accent"],
@@ -5739,7 +6861,11 @@ function App(){
 
                   <ColorInput
                     label="Yazı Rengi"
-                    value={theme.text}
+
+                    value={
+                      theme.text
+                    }
+
                     onChange={value=>
                       setPath(
                         ["theme","text"],
@@ -5753,10 +6879,13 @@ function App(){
 
                     <button
                       disabled={busy}
+
                       onClick={()=>
                         bgRef.current?.click()
                       }
+
                       className="liquid-button flex-1 py-2.5 rounded-xl text-xs"
+
                       style={{
 
                         background:
@@ -5776,10 +6905,14 @@ function App(){
                       <button
                         onClick={()=>
                           setPath(
-                            ["theme","bgImage"],
+                            [
+                              "theme",
+                              "bgImage"
+                            ],
                             null
                           )
                         }
+
                         className="liquid-button px-3 bg-red-950 text-red-400 rounded-xl"
                       >
 
@@ -5795,10 +6928,16 @@ function App(){
 
                     <input
                       ref={bgRef}
+
                       type="file"
+
                       accept="image/*"
+
                       className="hidden"
-                      onChange={uploadBackground}
+
+                      onChange={
+                        uploadBackground
+                      }
                     />
 
                   </div>
@@ -5812,15 +6951,24 @@ function App(){
 
                   <input
                     type="range"
+
                     min="100"
+
                     max="320"
-                    value={data.cardImgSize}
+
+                    value={
+                      data.cardImgSize
+                    }
+
                     onChange={e=>
                       setPath(
                         ["cardImgSize"],
-                        Number(e.target.value)
+                        Number(
+                          e.target.value
+                        )
                       )
                     }
+
                     className="w-full mb-5"
                   />
 
@@ -5832,9 +6980,15 @@ function App(){
 
                   <input
                     className="admin-input mb-5"
-                    value={data.pin||""}
+
+                    value={
+                      data.pin||""
+                    }
+
                     inputMode="numeric"
+
                     maxLength={8}
+
                     onChange={e=>
                       setPath(
                         ["pin"],
@@ -5844,15 +6998,21 @@ function App(){
                         )
                       )
                     }
+
                     style={{
-                      letterSpacing:".3em"
+                      letterSpacing:
+                        ".3em"
                     }}
                   />
 
 
                   <button
-                    onClick={resetDefault}
+                    onClick={
+                      resetDefault
+                    }
+
                     className="liquid-button w-full py-2.5 rounded-xl text-xs text-neutral-400"
+
                     style={{
 
                       background:
@@ -5887,6 +7047,7 @@ function App(){
 
                   <div
                     className="admin-section mb-4 rounded-2xl p-3"
+
                     style={{
 
                       background:
@@ -5909,7 +7070,8 @@ function App(){
                     <div
                       className="font-bold mt-1"
                       style={{
-                        color:theme.accent
+                        color:
+                          theme.accent
                       }}
                     >
                       {store==="premium"
@@ -5932,12 +7094,20 @@ function App(){
 
 
                   <button
-                    onClick={addCategory}
+                    onClick={
+                      addCategory
+                    }
+
                     className="liquid-button w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
+
                     style={{
-                      background:theme.accent,
+
+                      background:
+                        theme.accent,
+
                       boxShadow:
                         `0 8px 24px ${theme.accent}28`
+
                     }}
                   >
 
@@ -5952,14 +7122,19 @@ function App(){
 
 
                   {categories.map(
-                    (category,categoryIndex)=>(
+                    (
+                      category,
+                      categoryIndex
+                    )=>(
 
                       <div
                         key={category.id}
+
                         className="admin-section rounded-2xl mb-3 overflow-hidden"
+
                         style={{
                           animation:
-                            "fadeIn .25s ease"
+                            `fadeIn .25s ease ${Math.min(categoryIndex,10)*25}ms both`
                         }}
                       >
 
@@ -5969,18 +7144,26 @@ function App(){
                         >
 
                           <input
-                            value={category.name}
+                            value={
+                              category.name
+                            }
+
                             onChange={e=>
                               renameCategory(
                                 category.id,
                                 e.target.value
                               )
                             }
+
                             className="admin-input"
+
                             style={{
 
-                              padding:"9px 10px",
-                              fontSize:"13px"
+                              padding:
+                                "9px 10px",
+
+                              fontSize:
+                                "13px"
 
                             }}
                           />
@@ -5993,9 +7176,11 @@ function App(){
                                 -1
                               )
                             }
+
                             disabled={
                               categoryIndex===0
                             }
+
                             className="liquid-button p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
                           >
 
@@ -6014,10 +7199,12 @@ function App(){
                                 1
                               )
                             }
+
                             disabled={
                               categoryIndex===
                               categories.length-1
                             }
+
                             className="liquid-button p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
                           >
 
@@ -6035,6 +7222,7 @@ function App(){
                                 category.id
                               )
                             }
+
                             className="liquid-button p-2 bg-red-950 text-red-400 rounded-lg"
                           >
 
@@ -6052,16 +7240,22 @@ function App(){
                                 category.id
                               )
                             }
+
                             className="liquid-button px-3 py-2 rounded-lg text-[11px] whitespace-nowrap flex items-center gap-1.5 font-semibold"
+
                             style={{
 
                               background:
-                                openCategories[category.id]
+                                openCategories[
+                                  category.id
+                                ]
                                 ?theme.accent
                                 :"#262626",
 
                               color:
-                                openCategories[category.id]
+                                openCategories[
+                                  category.id
+                                ]
                                 ?" #fff"
                                 :"#aaa"
 
@@ -6072,10 +7266,13 @@ function App(){
 
                             <Icon
                               type={
-                                openCategories[category.id]
+                                openCategories[
+                                  category.id
+                                ]
                                 ?"up"
                                 :"down"
                               }
+
                               size={13}
                             />
 
@@ -6084,10 +7281,13 @@ function App(){
                         </div>
 
 
-                        {openCategories[category.id]&&(
+                        {openCategories[
+                          category.id
+                        ]&&(
 
                           <div
                             className="p-2 pt-0"
+
                             style={{
                               animation:
                                 "fadeIn .22s ease"
@@ -6107,15 +7307,23 @@ function App(){
 
 
                             {category.items.map(
-                              (item,itemIndex)=>(
+                              (
+                                item,
+                                itemIndex
+                              )=>(
 
                                 <div
                                   key={item.id}
+
                                   className="bg-neutral-800/80 rounded-xl p-3 mb-2"
+
                                   style={{
 
                                     border:
-                                      "1px solid rgba(255,255,255,.05)"
+                                      "1px solid rgba(255,255,255,.05)",
+
+                                    animation:
+                                      `fadeIn .25s ease ${Math.min(itemIndex,8)*20}ms both`
 
                                   }}
                                 >
@@ -6127,10 +7335,14 @@ function App(){
                                     <div
                                       onClick={()=>
                                         itemRefs
-                                        .current[item.id]
+                                        .current[
+                                          item.id
+                                        ]
                                         ?.click()
                                       }
+
                                       className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
+
                                       style={{
 
                                         backgroundImage:
@@ -6138,8 +7350,14 @@ function App(){
                                           ?`url(${item.image})`
                                           :undefined,
 
-                                        backgroundSize:"cover",
-                                        backgroundPosition:"center"
+                                        backgroundSize:
+                                          "cover",
+
+                                        backgroundPosition:
+                                          "center",
+
+                                        transition:
+                                          "transform .25s ease"
 
                                       }}
                                     >
@@ -6158,12 +7376,21 @@ function App(){
 
                                     <input
                                       type="file"
+
                                       accept="image/*"
+
                                       className="hidden"
+
                                       ref={element=>{
+
                                         itemRefs
-                                        .current[item.id]=element;
+                                        .current[
+                                          item.id
+                                        ]=
+                                          element;
+
                                       }}
+
                                       onChange={e=>
                                         uploadItemImage(
                                           category.id,
@@ -6177,7 +7404,10 @@ function App(){
                                     <div className="flex-1">
 
                                       <input
-                                        value={item.name}
+                                        value={
+                                          item.name
+                                        }
+
                                         onChange={e=>
                                           updateItem(
                                             category.id,
@@ -6186,20 +7416,31 @@ function App(){
                                             e.target.value
                                           )
                                         }
+
                                         placeholder="Ürün adı"
+
                                         className="admin-input"
+
                                         style={{
 
-                                          padding:"8px 9px",
-                                          fontSize:"12px",
-                                          marginBottom:"6px"
+                                          padding:
+                                            "8px 9px",
+
+                                          fontSize:
+                                            "12px",
+
+                                          marginBottom:
+                                            "6px"
 
                                         }}
                                       />
 
 
                                       <input
-                                        value={item.dims}
+                                        value={
+                                          item.dims
+                                        }
+
                                         onChange={e=>
                                           updateItem(
                                             category.id,
@@ -6208,12 +7449,18 @@ function App(){
                                             e.target.value
                                           )
                                         }
+
                                         placeholder="Ölçüler: 200x90x75 cm"
+
                                         className="admin-input"
+
                                         style={{
 
-                                          padding:"8px 9px",
-                                          fontSize:"12px"
+                                          padding:
+                                            "8px 9px",
+
+                                          fontSize:
+                                            "12px"
 
                                         }}
                                       />
@@ -6224,7 +7471,10 @@ function App(){
 
 
                                   <input
-                                    value={item.desc}
+                                    value={
+                                      item.desc
+                                    }
+
                                     onChange={e=>
                                       updateItem(
                                         category.id,
@@ -6233,13 +7483,21 @@ function App(){
                                         e.target.value
                                       )
                                     }
+
                                     placeholder="Ürün özellikleri"
+
                                     className="admin-input"
+
                                     style={{
 
-                                      padding:"8px 9px",
-                                      fontSize:"12px",
-                                      marginBottom:"10px"
+                                      padding:
+                                        "8px 9px",
+
+                                      fontSize:
+                                        "12px",
+
+                                      marginBottom:
+                                        "10px"
 
                                     }}
                                   />
@@ -6284,7 +7542,9 @@ function App(){
                                             item.id
                                           )
                                         }
+
                                         className="liquid-button px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
+
                                         style={{
                                           background:
                                             theme.accent
@@ -6323,13 +7583,22 @@ function App(){
 
                                         <div
                                           key={part.id}
+
                                           className="bg-neutral-800 rounded-lg p-2 mb-2"
+
+                                          style={{
+                                            animation:
+                                              "fadeIn .2s ease both"
+                                          }}
                                         >
 
                                           <div className="flex gap-2">
 
                                             <input
-                                              value={part.name}
+                                              value={
+                                                part.name
+                                              }
+
                                               onChange={e=>
                                                 updatePricePart(
                                                   category.id,
@@ -6339,12 +7608,18 @@ function App(){
                                                   e.target.value
                                                 )
                                               }
+
                                               placeholder="Örn: Masa"
+
                                               className="admin-input"
+
                                               style={{
 
-                                                padding:"8px",
-                                                fontSize:"11px"
+                                                padding:
+                                                  "8px",
+
+                                                fontSize:
+                                                  "11px"
 
                                               }}
                                             />
@@ -6352,12 +7627,15 @@ function App(){
 
                                             <input
                                               type="number"
+
                                               value={
                                                 part.amount??""
                                               }
+
                                               disabled={
                                                 part.contactOnly
                                               }
+
                                               onChange={e=>
                                                 updatePricePart(
                                                   category.id,
@@ -6371,13 +7649,22 @@ function App(){
                                                   )
                                                 )
                                               }
+
                                               placeholder="₺"
+
                                               className="admin-input"
+
                                               style={{
 
-                                                width:"105px",
-                                                padding:"8px",
-                                                fontSize:"11px",
+                                                width:
+                                                  "105px",
+
+                                                padding:
+                                                  "8px",
+
+                                                fontSize:
+                                                  "11px",
+
                                                 opacity:
                                                   part.contactOnly
                                                   ?.4
@@ -6395,6 +7682,7 @@ function App(){
                                                   part.id
                                                 )
                                               }
+
                                               className="liquid-button px-2 bg-red-950 text-red-400 rounded-lg"
                                             >
 
@@ -6414,9 +7702,11 @@ function App(){
 
                                             <input
                                               type="checkbox"
+
                                               checked={
                                                 !!part.contactOnly
                                               }
+
                                               onChange={e=>
                                                 updatePricePart(
                                                   category.id,
@@ -6444,10 +7734,14 @@ function App(){
 
                                       <div
                                         className="mt-2 rounded-lg px-3 py-2 flex items-center justify-between"
+
                                         style={{
 
                                           background:
-                                            theme.accent+"12"
+                                            theme.accent+"12",
+
+                                          animation:
+                                            "pop .25s ease both"
 
                                         }}
                                       >
@@ -6461,6 +7755,7 @@ function App(){
 
                                         <strong
                                           className="text-sm"
+
                                           style={{
                                             color:
                                               theme.accent
@@ -6491,6 +7786,7 @@ function App(){
                                             null
                                           )
                                         }
+
                                         className="liquid-button px-2 py-1 bg-neutral-700 rounded text-[10px]"
                                       >
                                         Görseli Sil
@@ -6507,9 +7803,11 @@ function App(){
                                           -1
                                         )
                                       }
+
                                       disabled={
                                         itemIndex===0
                                       }
+
                                       className="liquid-button p-1.5 bg-neutral-700 rounded disabled:opacity-20"
                                     >
 
@@ -6529,10 +7827,12 @@ function App(){
                                           1
                                         )
                                       }
+
                                       disabled={
                                         itemIndex===
                                         category.items.length-1
                                       }
+
                                       className="liquid-button p-1.5 bg-neutral-700 rounded disabled:opacity-20"
                                     >
 
@@ -6551,6 +7851,7 @@ function App(){
                                           item.id
                                         )
                                       }
+
                                       className="liquid-button p-1.5 bg-red-950 text-red-400 rounded"
                                     >
 
@@ -6575,6 +7876,7 @@ function App(){
                                   category.id
                                 )
                               }
+
                               className="liquid-button w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
                             >
 
@@ -6610,6 +7912,7 @@ function App(){
 
             <div
               className="sticky bottom-0 p-4"
+
               style={{
 
                 background:
@@ -6669,11 +7972,14 @@ function App(){
 
               <button
                 onClick={save}
+
                 disabled={
                   saving||
                   busy
                 }
+
                 className="liquid-button w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+
                 style={{
 
                   background:
@@ -6751,15 +8057,22 @@ function AdminLabel({
       style={{
 
         color:"#737373",
+
         fontSize:"10px",
+
         fontWeight:700,
+
         letterSpacing:".08em",
-        textTransform:"uppercase",
+
+        textTransform:
+          "uppercase",
+
         marginBottom:"6px"
 
       }}
     >
       {children}
+
     </div>
 
   );
@@ -6792,15 +8105,18 @@ function ColorInput({
 
       <input
         type="color"
+
         value={
           value||
           "#000000"
         }
+
         onChange={e=>
           onChange(
             e.target.value
           )
         }
+
         className="w-9 h-9 rounded-lg border border-neutral-700 bg-transparent cursor-pointer"
       />
 
