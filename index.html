@@ -2435,6 +2435,13 @@ function App(){
   const logoRef=
     useRef(null);
 
+  /* =======================================================
+     LOGO LONG PRESS
+  ======================================================= */
+
+  const logoLongPressTimerRef=
+    useRef(null);
+
   const bgRef=
     useRef(null);
 
@@ -2525,6 +2532,14 @@ function App(){
 
         clearTimeout(
           toastTimerRef.current
+        );
+
+      }
+
+      if(logoLongPressTimerRef.current){
+
+        clearTimeout(
+          logoLongPressTimerRef.current
         );
 
       }
@@ -3364,6 +3379,49 @@ function App(){
     setPinError(false);
 
     setPinModal(true);
+
+  }
+
+
+  /* =======================================================
+     LOGO LONG PRESS ADMIN
+  ======================================================= */
+
+  function startLogoLongPress(){
+
+    if(logoLongPressTimerRef.current){
+
+      clearTimeout(
+        logoLongPressTimerRef.current
+      );
+
+    }
+
+    logoLongPressTimerRef.current=
+      setTimeout(()=>{
+
+        logoLongPressTimerRef.current=
+          null;
+
+        openAdmin();
+
+      },3000);
+
+  }
+
+
+  function cancelLogoLongPress(){
+
+    if(logoLongPressTimerRef.current){
+
+      clearTimeout(
+        logoLongPressTimerRef.current
+      );
+
+      logoLongPressTimerRef.current=
+        null;
+
+    }
 
   }
 
@@ -4302,7 +4360,7 @@ function App(){
 
     if(
       !confirm(
-        "Tüm ayarlar varsayılana döndürülsün mü?"
+        "Tüm ayarlar varsılana döndürülsün mü?"
       )
     ){
       return;
@@ -4907,6 +4965,11 @@ function App(){
       >
 
         <div
+          onPointerDown={startLogoLongPress}
+          onPointerUp={cancelLogoLongPress}
+          onPointerCancel={cancelLogoLongPress}
+          onPointerLeave={cancelLogoLongPress}
+          onContextMenu={e=>e.preventDefault()}
           style={{
 
             width:"100%",
@@ -4920,7 +4983,15 @@ function App(){
               ?"flex-end"
               :"center",
 
-            marginBottom:16
+            marginBottom:16,
+
+            cursor:"pointer",
+
+            userSelect:"none",
+
+            WebkitUserSelect:"none",
+
+            WebkitTouchCallout:"none"
 
           }}
         >
@@ -4933,6 +5004,7 @@ function App(){
               loading="eager"
               decoding="async"
               fetchPriority="high"
+              draggable="false"
               style={{
 
                 width:
@@ -5873,41 +5945,6 @@ function App(){
         </div>
 
       )}
-
-
-      {/* =================================================
-          ADMIN BUTTON
-      ================================================= */}
-
-      <button
-        onClick={openAdmin}
-
-        className="liquid-button fixed bottom-5 right-[18px] z-30 rounded-full flex items-center justify-center glass-strong"
-
-        style={{
-
-          width:52,
-
-          height:52,
-
-          background:
-            theme.text,
-
-          color:
-            theme.bg,
-
-          animation:
-            "pulseGlass 3s ease-in-out infinite"
-
-        }}
-      >
-
-        <Icon
-          type="settings"
-          size={20}
-        />
-
-      </button>
 
 
       {/* =================================================
@@ -8072,7 +8109,6 @@ function AdminLabel({
       }}
     >
       {children}
-
     </div>
 
   );
