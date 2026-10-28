@@ -44,7 +44,7 @@ const hidden=new Set();let sel=null,query="";
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
 let W,H,dpr,cam={x:0,y:0,k:1};
 function resize(){dpr=window.devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr}
-addEventListener('resize',resize);resize();
+addEventListener("resize",resize);resize();cam.k=W<600?.55:.85;
 const r=n=>n.kind==='hub'?14:Math.min(5+Math.sqrt(n.deg)*2.2,13);
 let alpha=1;
 function tick(){
