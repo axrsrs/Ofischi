@@ -1,0 +1,1179 @@
+{
+ "types": [
+  {
+   "id": "hub",
+   "name": "Ana yapı",
+   "color": "#d4af37"
+  },
+  {
+   "id": "comp",
+   "name": "Bileşen",
+   "color": "#5ab0ff"
+  },
+  {
+   "id": "data",
+   "name": "Veri/Normalleştirme",
+   "color": "#5fcf8f"
+  },
+  {
+   "id": "price",
+   "name": "Fiyat/Para birimi",
+   "color": "#ff9f43"
+  },
+  {
+   "id": "admin",
+   "name": "Yönetici işlemleri",
+   "color": "#b58cff"
+  },
+  {
+   "id": "media",
+   "name": "Görsel/Depolama",
+   "color": "#e0a0c0"
+  },
+  {
+   "id": "util",
+   "name": "Yardımcı",
+   "color": "#7d8aa8"
+  },
+  {
+   "id": "ext",
+   "name": "Dış servis",
+   "color": "#e0655a"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "file",
+   "label": "index.html",
+   "type": "hub",
+   "desc": "Tek dosyalık uygulama (~8200 satır): Tailwind + React 18 + Babel + Supabase, tarayıcıda derlenir.",
+   "file": "index.html",
+   "kind": "hub"
+  },
+  {
+   "id": "app",
+   "label": "App()",
+   "type": "comp",
+   "desc": "Ana bileşen: menü, yönetici paneli, tema, kategori/ürün durumu.",
+   "file": "index.html",
+   "kind": "hub",
+   "line": 2369
+  },
+  {
+   "id": "sbclient",
+   "label": "Supabase istemcisi",
+   "type": "ext",
+   "desc": "createClient; site_data tablosu, Storage kovası, realtime kanalı."
+  },
+  {
+   "id": "site_data",
+   "label": "site_data tablosu",
+   "type": "ext",
+   "desc": "Menü verisinin kalıcı kaydı (3 okuma/yazma noktası)."
+  },
+  {
+   "id": "bucket",
+   "label": "Storage kovası",
+   "type": "ext",
+   "desc": "Ürün/logo/arka plan görselleri."
+  },
+  {
+   "id": "chan",
+   "label": "Realtime kanalı",
+   "type": "ext",
+   "desc": "Başka cihazdaki değişiklikleri canlı alır; removeChannel ile temizlenir."
+  },
+  {
+   "id": "tw",
+   "label": "Tailwind CDN",
+   "type": "ext",
+   "desc": "Stil"
+  },
+  {
+   "id": "react",
+   "label": "React 18 (unpkg)",
+   "type": "ext",
+   "desc": "UI"
+  },
+  {
+   "id": "babel",
+   "label": "Babel standalone",
+   "type": "ext",
+   "desc": "JSX derleme"
+  },
+  {
+   "id": "supabase_js",
+   "label": "supabase-js 2 (jsDelivr)",
+   "type": "ext",
+   "desc": "Veritabanı istemcisi"
+  },
+  {
+   "id": "c_STORES",
+   "label": "STORES",
+   "type": "data",
+   "desc": "Mağaza/şube listesi (sabit dizi).",
+   "file": "index.html"
+  },
+  {
+   "id": "c_CATS",
+   "label": "CATS",
+   "type": "data",
+   "desc": "Varsayılan kategoriler (sabit dizi).",
+   "file": "index.html"
+  },
+  {
+   "id": "c_THEMES",
+   "label": "THEMES",
+   "type": "data",
+   "desc": "Tema paletleri (sabit dizi).",
+   "file": "index.html"
+  },
+  {
+   "id": "c_CURRENCIES",
+   "label": "CURRENCIES",
+   "type": "data",
+   "desc": "Para birimleri (sabit dizi).",
+   "file": "index.html"
+  },
+  {
+   "id": "f_uid",
+   "label": "uid()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1374
+  },
+  {
+   "id": "f_createCategory",
+   "label": "createCategory()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1388
+  },
+  {
+   "id": "f_createDefaultCategories",
+   "label": "createDefaultCategories()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1399
+  },
+  {
+   "id": "f_createEmptyStore",
+   "label": "createEmptyStore()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1410
+  },
+  {
+   "id": "f_defaultData",
+   "label": "defaultData()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1438
+  },
+  {
+   "id": "f_normalizePrice",
+   "label": "normalizePrice()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1490
+  },
+  {
+   "id": "f_normalizeItem",
+   "label": "normalizeItem()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1572
+  },
+  {
+   "id": "f_normalizeCategories",
+   "label": "normalizeCategories()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1612
+  },
+  {
+   "id": "f_normalizeLogo",
+   "label": "normalizeLogo()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1642
+  },
+  {
+   "id": "f_normalizeStore",
+   "label": "normalizeStore()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1676
+  },
+  {
+   "id": "f_normalizeData",
+   "label": "normalizeData()",
+   "type": "data",
+   "desc": "",
+   "file": "index.html",
+   "line": 1703
+  },
+  {
+   "id": "f_dataUrlToBlob",
+   "label": "dataUrlToBlob()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 1861
+  },
+  {
+   "id": "f_resizeImg",
+   "label": "resizeImg()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 1909
+  },
+  {
+   "id": "f_storagePath",
+   "label": "storagePath()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 2030
+  },
+  {
+   "id": "f_uploadBlobToStorage",
+   "label": "uploadBlobToStorage()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 2049
+  },
+  {
+   "id": "f_Icon",
+   "label": "Icon",
+   "type": "comp",
+   "desc": "",
+   "file": "index.html",
+   "line": 2091
+  },
+  {
+   "id": "f_App",
+   "label": "App()",
+   "type": "util",
+   "desc": "",
+   "file": "index.html",
+   "line": 2369
+  },
+  {
+   "id": "f_toggleCategory",
+   "label": "toggleCategory()",
+   "type": "util",
+   "desc": "",
+   "file": "index.html",
+   "line": 2566
+  },
+  {
+   "id": "f_openCategory",
+   "label": "openCategory()",
+   "type": "util",
+   "desc": "",
+   "file": "index.html",
+   "line": 2582
+  },
+  {
+   "id": "f_load",
+   "label": "load()",
+   "type": "util",
+   "desc": "",
+   "file": "index.html",
+   "line": 2605
+  },
+  {
+   "id": "f_changeStore",
+   "label": "changeStore()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 2932
+  },
+  {
+   "id": "f_setPath",
+   "label": "setPath()",
+   "type": "util",
+   "desc": "",
+   "file": "index.html",
+   "line": 2998
+  },
+  {
+   "id": "f_getCurrency",
+   "label": "getCurrency()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3038
+  },
+  {
+   "id": "f_convertPrice",
+   "label": "convertPrice()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3059
+  },
+  {
+   "id": "f_formatAmount",
+   "label": "formatAmount()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3119
+  },
+  {
+   "id": "f_getProductTotal",
+   "label": "getProductTotal()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3165
+  },
+  {
+   "id": "f_productTotalText",
+   "label": "productTotalText()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3229
+  },
+  {
+   "id": "f_openAdmin",
+   "label": "openAdmin()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3358
+  },
+  {
+   "id": "f_startLogoLongPress",
+   "label": "startLogoLongPress()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3390
+  },
+  {
+   "id": "f_cancelLogoLongPress",
+   "label": "cancelLogoLongPress()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3413
+  },
+  {
+   "id": "f_closeAdminWithoutSave",
+   "label": "closeAdminWithoutSave()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3433
+  },
+  {
+   "id": "f_tryUnlock",
+   "label": "tryUnlock()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3469
+  },
+  {
+   "id": "f_addCategory",
+   "label": "addCategory()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3510
+  },
+  {
+   "id": "f_deleteCategory",
+   "label": "deleteCategory()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3541
+  },
+  {
+   "id": "f_renameCategory",
+   "label": "renameCategory()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3581
+  },
+  {
+   "id": "f_moveCategory",
+   "label": "moveCategory()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3608
+  },
+  {
+   "id": "f_addItem",
+   "label": "addItem()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3655
+  },
+  {
+   "id": "f_updateItem",
+   "label": "updateItem()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3706
+  },
+  {
+   "id": "f_deleteItem",
+   "label": "deleteItem()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3754
+  },
+  {
+   "id": "f_moveItem",
+   "label": "moveItem()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 3795
+  },
+  {
+   "id": "f_addPricePart",
+   "label": "addPricePart()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3861
+  },
+  {
+   "id": "f_updatePricePart",
+   "label": "updatePricePart()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 3945
+  },
+  {
+   "id": "f_deletePricePart",
+   "label": "deletePricePart()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 4024
+  },
+  {
+   "id": "f_uploadItemImage",
+   "label": "uploadItemImage()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 4096
+  },
+  {
+   "id": "f_uploadLogo",
+   "label": "uploadLogo()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 4178
+  },
+  {
+   "id": "f_uploadBackground",
+   "label": "uploadBackground()",
+   "type": "media",
+   "desc": "",
+   "file": "index.html",
+   "line": 4259
+  },
+  {
+   "id": "f_applyTheme",
+   "label": "applyTheme()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 4332
+  },
+  {
+   "id": "f_resetDefault",
+   "label": "resetDefault()",
+   "type": "admin",
+   "desc": "",
+   "file": "index.html",
+   "line": 4359
+  },
+  {
+   "id": "f_priceText",
+   "label": "priceText()",
+   "type": "price",
+   "desc": "",
+   "file": "index.html",
+   "line": 4585
+  },
+  {
+   "id": "f_AdminLabel",
+   "label": "AdminLabel",
+   "type": "comp",
+   "desc": "",
+   "file": "index.html",
+   "line": 8087
+  },
+  {
+   "id": "f_ColorInput",
+   "label": "ColorInput",
+   "type": "comp",
+   "desc": "",
+   "file": "index.html",
+   "line": 8123
+  }
+ ],
+ "edges": [
+  {
+   "from": "file",
+   "to": "tw",
+   "rel": "yükler"
+  },
+  {
+   "from": "file",
+   "to": "react",
+   "rel": "yükler"
+  },
+  {
+   "from": "file",
+   "to": "babel",
+   "rel": "yükler"
+  },
+  {
+   "from": "file",
+   "to": "supabase_js",
+   "rel": "yükler"
+  },
+  {
+   "from": "file",
+   "to": "app",
+   "rel": "render"
+  },
+  {
+   "from": "app",
+   "to": "sbclient",
+   "rel": "kullanır"
+  },
+  {
+   "from": "sbclient",
+   "to": "site_data",
+   "rel": "from(\"site_data\")"
+  },
+  {
+   "from": "sbclient",
+   "to": "bucket",
+   "rel": "storage"
+  },
+  {
+   "from": "sbclient",
+   "to": "chan",
+   "rel": "channel"
+  },
+  {
+   "from": "sbclient",
+   "to": "supabase_js",
+   "rel": "sağlayan"
+  },
+  {
+   "from": "app",
+   "to": "c_STORES",
+   "rel": "okur"
+  },
+  {
+   "from": "app",
+   "to": "c_CATS",
+   "rel": "okur"
+  },
+  {
+   "from": "app",
+   "to": "c_THEMES",
+   "rel": "okur"
+  },
+  {
+   "from": "app",
+   "to": "c_CURRENCIES",
+   "rel": "okur"
+  },
+  {
+   "from": "file",
+   "to": "f_uid",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_createCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_createDefaultCategories",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_createEmptyStore",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_defaultData",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizePrice",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizeItem",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizeCategories",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizeLogo",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizeStore",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_normalizeData",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_dataUrlToBlob",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_resizeImg",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_storagePath",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_uploadBlobToStorage",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_Icon",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_App",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_toggleCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_openCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_load",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_changeStore",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_setPath",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_getCurrency",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_convertPrice",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_formatAmount",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_getProductTotal",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_productTotalText",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_openAdmin",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_startLogoLongPress",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_cancelLogoLongPress",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_closeAdminWithoutSave",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_tryUnlock",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_addCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_deleteCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_renameCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_moveCategory",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_addItem",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_updateItem",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_deleteItem",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_moveItem",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_addPricePart",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_updatePricePart",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_deletePricePart",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_uploadItemImage",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_uploadLogo",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_uploadBackground",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_applyTheme",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_resetDefault",
+   "rel": "içerir"
+  },
+  {
+   "from": "app",
+   "to": "f_priceText",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_AdminLabel",
+   "rel": "içerir"
+  },
+  {
+   "from": "file",
+   "to": "f_ColorInput",
+   "rel": "içerir"
+  },
+  {
+   "from": "f_createCategory",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_createEmptyStore",
+   "to": "f_createDefaultCategories",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_defaultData",
+   "to": "f_createEmptyStore",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizePrice",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeItem",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeItem",
+   "to": "f_normalizePrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeCategories",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeCategories",
+   "to": "f_createDefaultCategories",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeStore",
+   "to": "f_normalizeCategories",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeStore",
+   "to": "f_normalizeLogo",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeData",
+   "to": "f_createEmptyStore",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeData",
+   "to": "f_defaultData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeData",
+   "to": "f_normalizeCategories",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeData",
+   "to": "f_normalizeLogo",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_normalizeData",
+   "to": "f_normalizeStore",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_load",
+   "to": "f_defaultData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_load",
+   "to": "f_normalizeData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_formatAmount",
+   "to": "f_getCurrency",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_formatAmount",
+   "to": "f_convertPrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_getProductTotal",
+   "to": "f_normalizePrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_productTotalText",
+   "to": "f_normalizeData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_productTotalText",
+   "to": "f_formatAmount",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_productTotalText",
+   "to": "f_getProductTotal",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_startLogoLongPress",
+   "to": "f_openAdmin",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_closeAdminWithoutSave",
+   "to": "f_normalizeData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addCategory",
+   "to": "f_createCategory",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addCategory",
+   "to": "f_openCategory",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addItem",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addItem",
+   "to": "f_openCategory",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addPricePart",
+   "to": "f_uid",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_addPricePart",
+   "to": "f_normalizePrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_updatePricePart",
+   "to": "f_normalizePrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_deletePricePart",
+   "to": "f_normalizePrice",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadItemImage",
+   "to": "f_dataUrlToBlob",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadItemImage",
+   "to": "f_resizeImg",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadItemImage",
+   "to": "f_storagePath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadItemImage",
+   "to": "f_uploadBlobToStorage",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadItemImage",
+   "to": "f_updateItem",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadLogo",
+   "to": "f_dataUrlToBlob",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadLogo",
+   "to": "f_resizeImg",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadLogo",
+   "to": "f_storagePath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadLogo",
+   "to": "f_uploadBlobToStorage",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadLogo",
+   "to": "f_setPath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBackground",
+   "to": "f_dataUrlToBlob",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBackground",
+   "to": "f_resizeImg",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBackground",
+   "to": "f_storagePath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBackground",
+   "to": "f_uploadBlobToStorage",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBackground",
+   "to": "f_setPath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_resetDefault",
+   "to": "f_defaultData",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_resetDefault",
+   "to": "f_normalizeLogo",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_resetDefault",
+   "to": "f_getCurrency",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_priceText",
+   "to": "f_changeStore",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_priceText",
+   "to": "f_setPath",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_priceText",
+   "to": "f_formatAmount",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_priceText",
+   "to": "f_productTotalText",
+   "rel": "çağırır"
+  },
+  {
+   "from": "f_uploadBlobToStorage",
+   "to": "bucket",
+   "rel": "yükler"
+  },
+  {
+   "from": "f_uploadBlobToStorage",
+   "to": "sbclient",
+   "rel": "storage"
+  },
+  {
+   "from": "app",
+   "to": "chan",
+   "rel": "abone"
+  },
+  {
+   "from": "app",
+   "to": "f_Icon",
+   "rel": "çizer"
+  },
+  {
+   "from": "app",
+   "to": "f_AdminLabel",
+   "rel": "çizer"
+  },
+  {
+   "from": "app",
+   "to": "f_ColorInput",
+   "rel": "çizer"
+  }
+ ]
+}
