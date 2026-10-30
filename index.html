@@ -7,11 +7,12 @@
 <meta name="color-scheme" content="dark">
 <title>Ofischi</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Kütüphaneler projeyle birlikte yayınlanır (sabit sürüm, harici CDN yok) -->
+<script src="./vendor/tailwindcss-play-3.4.17.js"></script>
+<script src="./vendor/react-18.3.1.production.min.js"></script>
+<script src="./vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="./vendor/babel-standalone-7.26.4.min.js"></script>
+<script src="./vendor/supabase-js-2.45.4.js"></script>
 
 <style>
 
@@ -1265,6 +1266,28 @@ const STORAGE_BUCKET="catalog-images";
    STORES
 ========================================================= */
 
+const PRIVACY_DEFAULT=
+`Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında bu katalog sitesinin ziyaretçilerini bilgilendirmek amacıyla hazırlanmıştır.
+
+Veri sorumlusu
+OFISCHI, İnegöl / Bursa.
+
+Hangi veriler işlenir?
+Bu sitede üyelik veya form bulunmaz; ziyaretçilerden ad, telefon veya e-posta gibi bilgiler toplanmaz. Bizimle telefon, WhatsApp veya e-posta üzerinden iletişime geçtiğinizde paylaştığınız bilgiler yalnızca talebinize yanıt vermek ve teklif hazırlamak amacıyla kullanılır.
+
+Çerezler ve tarayıcı kaydı
+Site reklam, takip veya analiz çerezi kullanmaz.
+
+Hizmet sağlayıcılar
+Katalog içeriği ve ürün görselleri Supabase (İrlanda) sunucularında saklanır. Site harici yazı tipi, analiz veya takip betiği yüklemez. Sitenin barındırıldığı sunucu, teknik zorunluluk olarak bağlantı kayıtları (IP adresi, tarih ve saat) tutabilir.
+
+Aktarım
+Kişisel verileriniz satılmaz ve pazarlama amacıyla üçüncü kişilerle paylaşılmaz; yalnızca yasal zorunluluk hâlinde yetkili kurumlara aktarılabilir.
+
+Haklarınız
+KVKK'nın 11. maddesi uyarınca verilerinizin işlenip işlenmediğini öğrenme, düzeltilmesini veya silinmesini isteme ve işlemeye itiraz etme haklarına sahipsiniz. Taleplerinizi sitedeki iletişim kanallarından bize iletebilirsiniz.`;
+
+
 const STORES=[
   {
     id:"premium",
@@ -1443,7 +1466,7 @@ function defaultData(){
     subtitle:"Ofis Mobilyaları",
     eyebrow:"İNEGÖL ÜRETİM",
     phone:"+90 500 000 00 00",
-    pin:"1234",
+    privacyText:"",
 
     logo:{
       src:"./ofischi_logo_transparent.png",
@@ -1828,10 +1851,10 @@ function normalizeData(input){
     ?input.phone
     :"";
 
-  result.pin=
-    typeof input.pin==="string"
-    ?input.pin
-    :"1234";
+  result.privacyText=
+    typeof input.privacyText==="string"
+    ?input.privacyText.slice(0,8000)
+    :"";
 
   result.cardImgSize=
     Number(input.cardImgSize)||
@@ -2413,10 +2436,22 @@ function App(){
   const [pinModal,setPinModal]=
     useState(false);
 
+  const [loginEmail,setLoginEmail]=
+    useState("");
+
   const [pinInput,setPinInput]=
     useState("");
 
   const [pinError,setPinError]=
+    useState("");
+
+  const [loginBusy,setLoginBusy]=
+    useState(false);
+
+  const [adminEmail,setAdminEmail]=
+    useState("");
+
+  const [privacyOpen,setPrivacyOpen]=
     useState(false);
 
   const [tab,setTab]=
@@ -3331,8 +3366,21 @@ function App(){
             error
           );
 
+          const denied=
+            error?.code==="42501"||
+            error?.status===401||
+            error?.status===403;
+
+          if(denied){
+
+            setUnlocked(false);
+
+          }
+
           showToast(
-            "Kaydetme hatası"
+            denied
+            ?"Oturum süresi doldu. Tekrar giriş yapıp kaydedin."
+            :"Kaydetme hatası"
           );
 
         }
@@ -3376,7 +3424,7 @@ function App(){
 
     setPinInput("");
 
-    setPinError(false);
+    setPinError("");
 
     setPinModal(true);
 
@@ -3466,17 +3514,73 @@ function App(){
      PIN
   ======================================================= */
 
-  function tryUnlock(){
+  async function tryUnlock(){
 
-    const correct=
-      String(
-        data?.pin||"1234"
-      );
+    if(loginBusy){
+      return;
+    }
+
+    const email=
+      loginEmail.trim().toLowerCase();
 
     if(
-      pinInput===
-      correct
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||
+      !pinInput
     ){
+
+      setPinError(
+        "E-posta ve şifreyi girin."
+      );
+
+      return;
+
+    }
+
+    setLoginBusy(true);
+
+    setPinError("");
+
+    try{
+
+      const login=
+        await supabase.auth.signInWithPassword({
+          email,
+          password:pinInput
+        });
+
+      if(login.error){
+
+        const status=
+          login.error.status;
+
+        setPinError(
+          status===429
+          ?"Çok fazla deneme yapıldı. Birkaç dakika sonra tekrar deneyin."
+          :status===400
+          ?"E-posta veya şifre hatalı."
+          :"Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin."
+        );
+
+        return;
+
+      }
+
+      const check=
+        await supabase.rpc("am_i_super");
+
+      if(check.error||check.data!==true){
+
+        await supabase.auth.signOut();
+
+        setPinError(
+          "Bu hesabın yönetim yetkisi yok."
+        );
+
+        return;
+
+      }
+
+      setAdminEmail(email);
 
       setUnlocked(true);
 
@@ -3486,21 +3590,93 @@ function App(){
 
       setPinInput("");
 
-      setPinError(false);
-
       savedSnapshotRef.current=
         JSON.stringify(
           dataRef.current
         );
 
     }
-    else{
+    catch(error){
 
-      setPinError(true);
+      setPinError(
+        "Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin."
+      );
+
+    }
+    finally{
+
+      setLoginBusy(false);
 
     }
 
   }
+
+
+  async function logout(){
+
+    closeAdminWithoutSave();
+
+    try{
+      await supabase.auth.signOut();
+    }
+    catch(error){}
+
+    setUnlocked(false);
+
+    setAdminEmail("");
+
+    showToast(
+      "Çıkış yapıldı"
+    );
+
+  }
+
+
+  /* Önceki oturum geçerliyse logoya basılı tutunca panel doğrudan açılır */
+  useEffect(()=>{
+
+    let alive=true;
+
+    (async()=>{
+
+      try{
+
+        const session=
+          await supabase.auth.getSession();
+
+        const user=
+          session.data?.session?.user;
+
+        if(!user){
+          return;
+        }
+
+        const check=
+          await supabase.rpc("am_i_super");
+
+        if(
+          alive&&
+          check.data===true
+        ){
+
+          setAdminEmail(
+            user.email||""
+          );
+
+          setUnlocked(true);
+
+        }
+
+      }
+      catch(error){}
+
+    })();
+
+    return()=>{
+      alive=false;
+    };
+
+  },[]);
 
 
   /* =======================================================
@@ -5526,6 +5702,124 @@ function App(){
       </main>
 
 
+      <footer
+        className="relative z-10 flex justify-center px-4 pt-2 pb-10"
+      >
+
+        <button
+          type="button"
+
+          onClick={()=>
+            setPrivacyOpen(true)
+          }
+
+          className="text-[11px] tracking-wide opacity-55 hover:opacity-90 underline underline-offset-4 py-3 px-2"
+        >
+          KVKK ve Gizlilik
+        </button>
+
+      </footer>
+
+
+      {privacyOpen&&(
+
+        <div
+          className="fixed inset-0 z-[520] modal-backdrop flex items-center justify-center p-4"
+
+          onClick={()=>
+            setPrivacyOpen(false)
+          }
+
+          role="dialog"
+
+          aria-modal="true"
+
+          aria-label="KVKK ve Gizlilik"
+        >
+
+          <div
+            className="product-modal w-full max-w-lg max-h-[85vh] overflow-y-auto glass-strong rounded-3xl p-6"
+
+            style={{
+              color:"#fff"
+            }}
+
+            onClick={e=>
+              e.stopPropagation()
+            }
+          >
+
+            <div className="flex items-start gap-3 mb-4">
+
+              <h2 className="flex-1 font-bold text-lg">
+                KVKK ve Gizlilik
+              </h2>
+
+              <button
+                type="button"
+
+                onClick={()=>
+                  setPrivacyOpen(false)
+                }
+
+                className="liquid-button w-10 h-10 rounded-full flex items-center justify-center glass-dark"
+
+                aria-label="Kapat"
+              >
+
+                <Icon
+                  type="x"
+                  size={18}
+                />
+
+              </button>
+
+            </div>
+
+            {String(
+              (data.privacyText||"").trim()||
+              PRIVACY_DEFAULT
+            )
+            .split(/\n\s*\n/)
+            .map((block,i)=>{
+
+              const lines=
+                block.split("\n");
+
+              return(
+
+                <div
+                  key={i}
+                  className="mb-4 text-sm leading-relaxed text-neutral-200"
+                >
+
+                  {lines.length>1&&lines[0].length<60
+                    ?<>
+                      <div className="font-semibold text-white mb-1">
+                        {lines[0]}
+                      </div>
+                      <div className="whitespace-pre-line">
+                        {lines.slice(1).join("\n")}
+                      </div>
+                    </>
+                    :<div className="whitespace-pre-line">
+                      {block}
+                    </div>
+                  }
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        </div>
+
+      )}
+
+
       {/* =================================================
           PRODUCT DETAIL
       ================================================= */}
@@ -6002,63 +6296,89 @@ function App(){
             </div>
 
 
-            <input
-              autoFocus
-
-              type="password"
-
-              inputMode="numeric"
-
-              maxLength={8}
-
-              value={pinInput}
-
-              onChange={e=>{
-
-                setPinInput(
-                  e.target.value.replace(
-                    /\D/g,
-                    ""
-                  )
-                );
-
-                setPinError(false);
-
+            <form
+              onSubmit={e=>{
+                e.preventDefault();
+                tryUnlock();
               }}
+            >
 
-              onKeyDown={e=>{
+            <label className="block mb-3">
 
-                if(e.key==="Enter"){
-                  tryUnlock();
-                }
+              <span className="block text-[11px] text-neutral-400 mb-1">
+                E-posta
+              </span>
 
-              }}
+              <input
+                autoFocus
 
-              placeholder="PIN"
+                type="email"
 
-              className="admin-input tracking-[.3em]"
-            />
+                autoComplete="username"
+
+                inputMode="email"
+
+                maxLength={120}
+
+                value={loginEmail}
+
+                onChange={e=>{
+                  setLoginEmail(e.target.value);
+                  setPinError("");
+                }}
+
+                className="admin-input"
+              />
+
+            </label>
+
+
+            <label className="block">
+
+              <span className="block text-[11px] text-neutral-400 mb-1">
+                Şifre
+              </span>
+
+              <input
+                type="password"
+
+                autoComplete="current-password"
+
+                maxLength={72}
+
+                value={pinInput}
+
+                onChange={e=>{
+                  setPinInput(e.target.value);
+                  setPinError("");
+                }}
+
+                className="admin-input"
+              />
+
+            </label>
 
 
             {pinError&&(
 
-              <div className="text-xs text-red-400 mt-2">
-                Hatalı PIN.
+              <div
+                className="text-xs text-red-400 mt-2"
+                role="alert"
+              >
+                {pinError}
               </div>
 
             )}
 
 
-            <div
-              className="text-[11px] text-neutral-500 mt-2 mb-4"
-            >
-              Varsayılan PIN: 1234
-            </div>
+            <div className="h-4"/>
 
 
             <div className="flex gap-2">
 
               <button
+                type="button"
+
                 onClick={()=>
                   setPinModal(false)
                 }
@@ -6070,19 +6390,23 @@ function App(){
 
 
               <button
-                onClick={tryUnlock}
+                type="submit"
 
-                className="liquid-button flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+                disabled={loginBusy}
+
+                className="liquid-button flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60"
 
                 style={{
                   background:
                     theme.accent
                 }}
               >
-                Giriş Yap
+                {loginBusy?"Giriş yapılıyor…":"Giriş Yap"}
               </button>
 
             </div>
+
+            </form>
 
           </div>
 
@@ -7011,36 +7335,57 @@ function App(){
 
 
                   <AdminLabel>
-                    Yönetim PIN
+                    KVKK ve Gizlilik Metni
                   </AdminLabel>
 
 
-                  <input
-                    className="admin-input mb-5"
+                  <textarea
+                    className="admin-input mb-1"
+
+                    rows={6}
+
+                    maxLength={8000}
 
                     value={
-                      data.pin||""
+                      data.privacyText||""
                     }
-
-                    inputMode="numeric"
-
-                    maxLength={8}
 
                     onChange={e=>
                       setPath(
-                        ["pin"],
-                        e.target.value.replace(
-                          /\D/g,
-                          ""
-                        )
+                        ["privacyText"],
+                        e.target.value
                       )
                     }
 
-                    style={{
-                      letterSpacing:
-                        ".3em"
-                    }}
+                    placeholder={PRIVACY_DEFAULT}
                   />
+
+
+                  <div className="text-[11px] text-neutral-500 mb-5">
+                    Boş bırakılırsa varsayılan metin gösterilir. Metin, sayfanın altındaki "KVKK ve Gizlilik" bağlantısında açılır.
+                  </div>
+
+
+                  <AdminLabel>
+                    Oturum
+                  </AdminLabel>
+
+
+                  <div className="flex items-center gap-2 mb-5">
+
+                    <div className="flex-1 min-w-0 text-xs text-neutral-300 truncate">
+                      {adminEmail||"Yönetici"}
+                    </div>
+
+                    <button
+                      onClick={logout}
+
+                      className="liquid-button px-4 py-2.5 rounded-xl text-xs text-neutral-300 glass"
+                    >
+                      Çıkış yap
+                    </button>
+
+                  </div>
 
 
                   <button
