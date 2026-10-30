@@ -3632,51 +3632,6 @@ function App(){
   }
 
 
-  /* Önceki oturum geçerliyse logoya basılı tutunca panel doğrudan açılır */
-  useEffect(()=>{
-
-    let alive=true;
-
-    (async()=>{
-
-      try{
-
-        const session=
-          await supabase.auth.getSession();
-
-        const user=
-          session.data?.session?.user;
-
-        if(!user){
-          return;
-        }
-
-        const check=
-          await supabase.rpc("am_i_super");
-
-        if(
-          alive&&
-          check.data===true
-        ){
-
-          setAdminEmail(
-            user.email||""
-          );
-
-          setUnlocked(true);
-
-        }
-
-      }
-      catch(error){}
-
-    })();
-
-    return()=>{
-      alive=false;
-    };
-
-  },[]);
 
 
   /* =======================================================
