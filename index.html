@@ -1067,6 +1067,16 @@ button:disabled{
     transform .2s ease;
 }
 
+.admin-input[type=number]::-webkit-outer-spin-button,
+.admin-input[type=number]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+.admin-input[type=number]{
+  -moz-appearance:textfield;
+}
+
 .admin-input:focus{
   border-color:rgba(255,255,255,.28);
 
@@ -2363,6 +2373,37 @@ function Icon({
 
   }
 
+  else if(type==="copy"){
+    content=(<>
+      <rect x="9" y="9" width="12" height="12" rx="2"/>
+      <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+    </>);
+  }
+  else if(type==="left"){
+    content=
+      <path d="m15 6-6 6 6 6"/>;
+  }
+  else if(type==="right"){
+    content=
+      <path d="m9 6 6 6-6 6"/>;
+  }
+  else if(type==="grid"){
+    content=(<>
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+    </>);
+  }
+  else if(type==="palette"){
+    content=(<>
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="8" cy="10" r="1.2"/>
+      <circle cx="12" cy="7.5" r="1.2"/>
+      <circle cx="16" cy="10" r="1.2"/>
+      <path d="M12 21a2.5 2.5 0 0 1 0-5h2a3 3 0 0 0 3-3"/>
+    </>);
+  }
   else if(type==="expand"){
 
     content=(<>
@@ -2455,7 +2496,25 @@ function App(){
     useState(false);
 
   const [tab,setTab]=
-    useState("genel");
+    useState("urunler");
+
+  const [editItemId,setEditItemId]=
+    useState(null);
+
+  const [adminCatId,setAdminCatId]=
+    useState(null);
+
+  const [adminSearch,setAdminSearch]=
+    useState("");
+
+  const editImageRef=
+    useRef(null);
+
+  const adminAsideRef=
+    useRef(null);
+
+  const adminListScrollRef=
+    useRef(0);
 
   const [busy,setBusy]=
     useState(false);
@@ -2986,6 +3045,12 @@ function App(){
 
     setSelectedProduct(null);
 
+    setEditItemId(null);
+
+    setAdminCatId(null);
+
+    setAdminSearch("");
+
   }
 
 
@@ -3281,7 +3346,10 @@ function App(){
 
   const save=
     useCallback(
-      async()=>{
+      async(options={})=>{
+
+        const closeAfter=
+          options?.close!==false;
 
         const current=
           dataRef.current;
@@ -3291,14 +3359,16 @@ function App(){
           saving||
           busy
         ){
-          return;
+          return false;
         }
 
         if(!dirtyRef.current){
 
-          setPanelOpen(false);
+          if(closeAfter){
+            setPanelOpen(false);
+          }
 
-          return;
+          return true;
 
         }
 
@@ -3354,9 +3424,13 @@ function App(){
 
             setSaved(false);
 
-            setPanelOpen(false);
+            if(closeAfter){
+              setPanelOpen(false);
+            }
 
-          },550);
+          },closeAfter?550:1800);
+
+          return true;
 
         }
         catch(error){
@@ -3382,6 +3456,8 @@ function App(){
             ?"Oturum süresi doldu. Tekrar giriş yapıp kaydedin."
             :"Kaydetme hatası"
           );
+
+          return false;
 
         }
         finally{
@@ -3662,6 +3738,8 @@ function App(){
       category.id
     );
 
+    return category.id;
+
   }
 
 
@@ -3676,7 +3754,7 @@ function App(){
         "Bu kategori ve içindeki ürünler silinsin mi?"
       )
     ){
-      return;
+      return false;
     }
 
     updateData(copy=>{
@@ -3701,6 +3779,9 @@ function App(){
     setActiveCat(
       remaining[0]?.id||null
     );
+
+
+    return true;
 
   }
 
@@ -3827,6 +3908,8 @@ function App(){
 
     openCategory(categoryId);
 
+    return item.id;
+
   }
 
 
@@ -3892,7 +3975,7 @@ function App(){
         "Bu ürün silinsin mi?"
       )
     ){
-      return;
+      return false;
     }
 
     updateData(copy=>{
@@ -3915,6 +3998,9 @@ function App(){
         );
 
     });
+
+
+    return true;
 
   }
 
@@ -3981,6 +4067,242 @@ function App(){
         );
 
     });
+
+  }
+
+
+  /* =======================================================
+     ITEM DUPLICATE
+  ======================================================= */
+
+  function duplicateItem(
+    categoryId,
+    itemId
+  ){
+
+    const newId=
+      uid();
+
+    updateData(copy=>{
+
+      copy.stores[store].categories=
+        copy.stores[store].categories.map(
+          category=>{
+
+            if(
+              category.id!==categoryId
+            ){
+              return category;
+            }
+
+            const index=
+              category.items.findIndex(
+                x=>x.id===itemId
+              );
+
+            if(index<0){
+              return category;
+            }
+
+            const source=
+              category.items[index];
+
+            const price=
+              normalizePrice(
+                source.price
+              );
+
+            const clone={
+              ...source,
+              id:newId,
+              name:
+                (source.name||"Ürün")+
+                " (kopya)",
+              price:{
+                ...price,
+                parts:
+                  price.parts.map(
+                    part=>({
+                      ...part,
+                      id:uid()
+                    })
+                  )
+              }
+            };
+
+            const items=[
+              ...category.items
+            ];
+
+            items.splice(
+              index+1,
+              0,
+              clone
+            );
+
+            return{
+              ...category,
+              items
+            };
+
+          }
+        );
+
+    });
+
+    return newId;
+
+  }
+
+
+  /* =======================================================
+     ITEM CHANGE CATEGORY
+  ======================================================= */
+
+  function moveItemToCategory(
+    fromId,
+    itemId,
+    toId
+  ){
+
+    if(fromId===toId){
+      return;
+    }
+
+    updateData(copy=>{
+
+      const list=
+        copy.stores[store].categories;
+
+      const item=
+        list
+        .find(
+          category=>
+            category.id===fromId
+        )
+        ?.items
+        .find(
+          x=>x.id===itemId
+        );
+
+      if(!item){
+        return;
+      }
+
+      copy.stores[store].categories=
+        list.map(
+          category=>
+            category.id===fromId
+            ?{
+              ...category,
+              items:
+                category.items.filter(
+                  x=>x.id!==itemId
+                )
+            }
+            :category.id===toId
+            ?{
+              ...category,
+              items:[
+                ...category.items,
+                item
+              ]
+            }
+            :category
+        );
+
+    });
+
+  }
+
+
+  /* =======================================================
+     ADMIN CLOSE (ASK IF DIRTY)
+  ======================================================= */
+
+  function requestCloseAdmin(){
+
+    if(
+      dirtyRef.current&&
+      !confirm(
+        "Kaydedilmemiş değişiklikler var. Kaydetmeden çıkılsın mı?"
+      )
+    ){
+      return;
+    }
+
+    setEditItemId(null);
+
+    closeAdminWithoutSave();
+
+  }
+
+
+  function openEdit(id){
+
+    if(adminAsideRef.current){
+      adminListScrollRef.current=
+        adminAsideRef.current.scrollTop;
+    }
+
+    setEditItemId(id);
+
+    requestAnimationFrame(()=>{
+      if(adminAsideRef.current){
+        adminAsideRef.current.scrollTop=0;
+      }
+    });
+
+  }
+
+
+  function closeEdit(){
+
+    setEditItemId(null);
+
+    requestAnimationFrame(()=>{
+      if(adminAsideRef.current){
+        adminAsideRef.current.scrollTop=
+          adminListScrollRef.current;
+      }
+    });
+
+  }
+
+
+  async function saveAndBack(){
+
+    const ok=
+      await save({
+        close:false
+      });
+
+    if(ok){
+      closeEdit();
+    }
+
+  }
+
+
+  function formatTL(amount){
+
+    if(
+      amount===null||
+      amount===undefined||
+      !Number.isFinite(Number(amount))
+    ){
+      return null;
+    }
+
+    return(
+      Number(amount).toLocaleString(
+        "tr-TR",
+        {
+          maximumFractionDigits:2
+        }
+      )+
+      " ₺"
+    );
 
   }
 
@@ -6374,7 +6696,181 @@ function App(){
           ADMIN PANEL
       ================================================= */}
 
-      {panelOpen&&unlocked&&(
+      {panelOpen&&unlocked&&(()=>{
+
+        const adminCategory=
+          categories.find(
+            category=>
+              category.id===adminCatId
+          )||
+          categories[0]||
+          null;
+
+        const adminCategoryIndex=
+          adminCategory
+          ?categories.findIndex(
+            category=>
+              category.id===adminCategory.id
+          )
+          :-1;
+
+        const adminQuery=
+          adminSearch
+          .trim()
+          .toLocaleLowerCase("tr-TR");
+
+        const adminRows=
+          adminQuery
+          ?categories.flatMap(
+            category=>
+              (category.items||[])
+              .filter(
+                item=>
+                  (
+                    (item.name||"")+" "+
+                    (item.desc||"")+" "+
+                    (item.dims||"")
+                  )
+                  .toLocaleLowerCase("tr-TR")
+                  .includes(adminQuery)
+              )
+              .map(
+                item=>({
+                  item,
+                  category
+                })
+              )
+          )
+          :(adminCategory?.items||[])
+          .map(
+            item=>({
+              item,
+              category:adminCategory
+            })
+          );
+
+        let editItem=null;
+        let editCategory=null;
+
+        if(editItemId){
+          for(const category of categories){
+            const found=
+              (category.items||[])
+              .find(
+                item=>
+                  item.id===editItemId
+              );
+            if(found){
+              editItem=found;
+              editCategory=category;
+              break;
+            }
+          }
+        }
+
+        const editIndex=
+          editItem
+          ?editCategory.items.findIndex(
+            item=>
+              item.id===editItem.id
+          )
+          :-1;
+
+        const editPrice=
+          editItem
+          ?normalizePrice(editItem.price)
+          :null;
+
+        const editTotal=
+          editItem
+          ?getProductTotal(editItem)
+          :null;
+
+        const isDirty=
+          dirtyRef.current;
+
+        const tabTitle=
+          tab==="gorunum"
+          ?"Görünüm"
+          :tab==="ayarlar"
+          ?"Ayarlar"
+          :"Ürünler";
+
+        const statusPill=(
+
+          <span
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 h-8 rounded-full whitespace-nowrap"
+            style={{
+              color:
+                saving
+                ?"#D4D4D8"
+                :isDirty
+                ?"#FBBF24"
+                :"#4ADE80",
+              background:
+                saving
+                ?"rgba(255,255,255,.07)"
+                :isDirty
+                ?"rgba(251,191,36,.12)"
+                :"rgba(74,222,128,.10)"
+            }}
+          >
+            {!saving&&!isDirty&&(
+              <Icon type="check" size={14}/>
+            )}
+            {saving
+              ?"Kaydediliyor…"
+              :isDirty
+              ?"Kaydedilmedi"
+              :"Kaydedildi"}
+          </span>
+
+        );
+
+        const storeSwitch=(
+
+          <div
+            className="grid grid-cols-2 gap-1 rounded-xl p-1"
+            style={{
+              background:
+                "rgba(255,255,255,.05)"
+            }}
+          >
+            {STORES.map(s=>(
+              <button
+                key={s.id}
+                onClick={()=>
+                  changeStore(s.id)
+                }
+                className="liquid-button h-10 rounded-lg text-sm font-bold"
+                style={{
+                  background:
+                    store===s.id
+                    ?theme.accent
+                    :"transparent",
+                  color:
+                    store===s.id
+                    ?"#fff"
+                    :"#A1A1AA"
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+
+        );
+
+        const glassBar={
+          background:
+            "rgba(14,14,16,.94)",
+          backdropFilter:
+            "blur(20px)",
+          WebkitBackdropFilter:
+            "blur(20px)"
+        };
+
+        return(
 
         <div
           className="admin-panel fixed inset-0 z-[180] flex justify-end"
@@ -6383,439 +6879,1036 @@ function App(){
           <div
             className="flex-1 bg-black/45"
             onClick={
-              closeAdminWithoutSave
+              requestCloseAdmin
             }
           />
 
 
           <aside
-            className="admin-aside w-full sm:w-[460px] h-full overflow-y-auto shadow-2xl"
+            ref={adminAsideRef}
+            className="admin-aside w-full sm:w-[460px] h-full overflow-y-auto overflow-x-hidden shadow-2xl flex flex-col"
 
             style={{
-
               background:
-                "rgba(10,10,12,.86)",
-
+                "#121214",
               color:"#fff",
-
               borderLeft:
                 "1px solid rgba(255,255,255,.10)",
-
               backdropFilter:
                 "blur(24px) saturate(130%)",
-
               WebkitBackdropFilter:
                 "blur(24px) saturate(130%)"
-
             }}
           >
 
+            {editItem?(
 
-            {/* ADMIN HEADER */}
+              <>
 
-            <div
-              className="sticky top-0 z-20 px-5 pt-5 pb-3"
+                {/* =========================================
+                    PRODUCT EDIT · HEADER
+                ========================================= */}
 
-              style={{
+                <div
+                  className="sticky top-0 z-20 px-3 py-3 flex items-center gap-2"
+                  style={{
+                    ...glassBar,
+                    borderBottom:
+                      "1px solid rgba(255,255,255,.08)"
+                  }}
+                >
 
-                background:
-                  "rgba(10,10,12,.78)",
-
-                borderBottom:
-                  "1px solid rgba(255,255,255,.08)",
-
-                backdropFilter:
-                  "blur(20px)",
-
-                WebkitBackdropFilter:
-                  "blur(20px)"
-
-              }}
-            >
-
-              <div
-                className="flex items-center justify-between mb-4"
-              >
-
-                <div>
-
-                  <h2 className="font-bold text-[17px]">
-                    Yönetim Paneli
-                  </h2>
-
-                  <div
-                    className="text-[10px] text-neutral-500 mt-1"
+                  <button
+                    onClick={
+                      closeEdit
+                    }
+                    aria-label="Listeye dön"
+                    className="liquid-button w-11 h-11 rounded-xl flex items-center justify-center"
+                    style={{
+                      background:
+                        "rgba(255,255,255,.06)"
+                    }}
                   >
+                    <Icon type="left" size={20}/>
+                  </button>
 
-                    {dirtyRef.current
-                      ?"Kaydedilmemiş değişiklikler var"
-                      :"Tüm değişiklikler kayıtlı"}
-
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-[17px] truncate">
+                      Ürünü Düzenle
+                    </div>
+                    <div className="text-xs text-neutral-400 truncate">
+                      {editCategory.name}
+                    </div>
                   </div>
+
+                  <button
+                    onClick={()=>{
+                      const newId=
+                        duplicateItem(
+                          editCategory.id,
+                          editItem.id
+                        );
+                      setEditItemId(newId);
+                      showToast(
+                        "Ürün kopyalandı"
+                      );
+                    }}
+                    aria-label="Ürünü kopyala"
+                    title="Kopyala"
+                    className="liquid-button w-11 h-11 rounded-xl flex items-center justify-center text-neutral-300"
+                    style={{
+                      background:
+                        "rgba(255,255,255,.06)"
+                    }}
+                  >
+                    <Icon type="copy" size={18}/>
+                  </button>
+
+                  <button
+                    onClick={()=>{
+                      if(
+                        deleteItem(
+                          editCategory.id,
+                          editItem.id
+                        )
+                      ){
+                        closeEdit();
+                      }
+                    }}
+                    aria-label="Ürünü sil"
+                    title="Sil"
+                    className="liquid-button w-11 h-11 rounded-xl flex items-center justify-center text-red-400"
+                    style={{
+                      background:
+                        "rgba(248,113,113,.12)"
+                    }}
+                  >
+                    <Icon type="trash" size={18}/>
+                  </button>
 
                 </div>
 
 
-                <button
-                  onClick={
-                    closeAdminWithoutSave
-                  }
-
-                  className="liquid-button w-9 h-9 rounded-full glass flex items-center justify-center text-neutral-400"
-                >
-
-                  <Icon
-                    type="x"
-                    size={19}
-                  />
-
-                </button>
-
-              </div>
-
-
-              <div
-                className="text-[10px] uppercase tracking-widest text-neutral-500 mb-2"
-              >
-                Düzenlenen Mağaza
-              </div>
-
-
-              <div
-                className="flex gap-1 rounded-xl p-1"
-
-                style={{
-                  background:
-                    "rgba(255,255,255,.045)"
-                }}
-              >
-
-                {STORES.map(s=>(
-
-                  <button
-                    key={s.id}
-
-                    onClick={()=>
-                      changeStore(s.id)
-                    }
-
-                    className="liquid-button flex-1 py-2.5 rounded-lg text-xs font-bold"
-
-                    style={{
-
-                      background:
-                        store===s.id
-                        ?theme.accent
-                        :"transparent",
-
-                      color:
-                        store===s.id
-                        ?" #fff"
-                        :"#999"
-
-                    }}
-                  >
-                    {s.name}
-                  </button>
-
-                ))}
-
-              </div>
-
-
-              <div
-                className="flex gap-1 rounded-xl p-1 mt-2"
-
-                style={{
-                  background:
-                    "rgba(255,255,255,.045)"
-                }}
-              >
-
-                <button
-                  onClick={()=>
-                    setTab("genel")
-                  }
-
-                  className="liquid-button flex-1 py-2 rounded-lg text-sm font-semibold"
-
-                  style={{
-
-                    background:
-                      tab==="genel"
-                      ?theme.accent
-                      :"transparent",
-
-                    color:
-                      tab==="genel"
-                      ?" #fff"
-                      :"#999"
-
-                  }}
-                >
-                  Genel
-                </button>
-
-
-                <button
-                  onClick={()=>
-                    setTab("icerik")
-                  }
-
-                  className="liquid-button flex-1 py-2 rounded-lg text-sm font-semibold"
-
-                  style={{
-
-                    background:
-                      tab==="icerik"
-                      ?theme.accent
-                      :"transparent",
-
-                    color:
-                      tab==="icerik"
-                      ?" #fff"
-                      :"#999"
-
-                  }}
-                >
-                  Ürün Kataloğu
-                </button>
-
-              </div>
-
-            </div>
-
-
-            <div className="p-5">
-
-
-              {/* =========================================
-                  GENERAL
-              ========================================= */}
-
-              {tab==="genel"&&(
+                {/* =========================================
+                    PRODUCT EDIT · BODY
+                ========================================= */}
 
                 <div
+                  className="flex-1 px-4 pt-4 pb-6 flex flex-col gap-4"
                   style={{
                     animation:
-                      "fadeIn .25s ease"
+                      "fadeIn .22s ease"
                   }}
                 >
 
-                  <label className="block mb-4">
+                  <div>
 
-                    <AdminLabel>
-                      Site Adı
-                    </AdminLabel>
+                    <button
+                      disabled={busy}
+                      onClick={()=>
+                        editImageRef.current?.click()
+                      }
+                      className="liquid-button relative w-full rounded-2xl overflow-hidden flex flex-col items-center justify-center gap-2 text-sm text-neutral-400 disabled:opacity-60"
+                      style={{
+                        aspectRatio:"4 / 3",
+                        maxHeight:300,
+                        background:
+                          "rgba(255,255,255,.04)",
+                        border:
+                          editItem.image
+                          ?"1px solid rgba(255,255,255,.08)"
+                          :"1.5px dashed rgba(255,255,255,.18)"
+                      }}
+                    >
+
+                      {editItem.image?(
+
+                        <>
+                          <img
+                            src={editItem.image}
+                            alt={editItem.name||"Ürün"}
+                            className="absolute inset-0 w-full h-full object-contain"
+                            decoding="async"
+                          />
+                          <span
+                            className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 h-10 rounded-full text-sm font-semibold text-white flex items-center gap-2 whitespace-nowrap"
+                            style={{
+                              background:
+                                "rgba(0,0,0,.62)"
+                            }}
+                          >
+                            <Icon type="upload" size={15}/>
+                            {busy
+                              ?"Yükleniyor…"
+                              :"Fotoğrafı değiştir"}
+                          </span>
+                        </>
+
+                      ):(
+
+                        <>
+                          <span style={{color:theme.accent}}>
+                            <Icon type="image" size={32}/>
+                          </span>
+                          <span className="font-medium text-neutral-200">
+                            {busy
+                              ?"Yükleniyor…"
+                              :"Fotoğraf çek veya seç"}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            Otomatik küçültülür
+                          </span>
+                        </>
+
+                      )}
+
+                    </button>
 
                     <input
-                      className="admin-input"
-
-                      value={
-                        data.siteName
-                      }
-
+                      ref={editImageRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
                       onChange={e=>
-                        setPath(
-                          ["siteName"],
-                          e.target.value
+                        uploadItemImage(
+                          editCategory.id,
+                          editItem.id,
+                          e
                         )
                       }
                     />
 
-                  </label>
+                    {editItem.image&&(
+                      <button
+                        onClick={()=>
+                          updateItem(
+                            editCategory.id,
+                            editItem.id,
+                            "image",
+                            null
+                          )
+                        }
+                        className="liquid-button mt-2 h-10 px-3 rounded-xl text-xs text-neutral-400"
+                        style={{
+                          background:
+                            "rgba(255,255,255,.04)"
+                        }}
+                      >
+                        Fotoğrafı kaldır
+                      </button>
+                    )}
 
-
-                  <label className="block mb-4">
-
-                    <AdminLabel>
-                      Üst Etiket
-                    </AdminLabel>
-
-                    <input
-                      className="admin-input"
-
-                      value={
-                        data.eyebrow
-                      }
-
-                      onChange={e=>
-                        setPath(
-                          ["eyebrow"],
-                          e.target.value
-                        )
-                      }
-                    />
-
-                  </label>
-
-
-                  <label className="block mb-5">
-
-                    <AdminLabel>
-                      Telefon
-                    </AdminLabel>
-
-                    <input
-                      className="admin-input"
-
-                      value={
-                        data.phone||""
-                      }
-
-                      onChange={e=>
-                        setPath(
-                          ["phone"],
-                          e.target.value
-                        )
-                      }
-
-                      placeholder="+90 5xx xxx xx xx"
-                    />
-
-                  </label>
-
-
-                  <div className="h-px bg-neutral-800 my-5"/>
-
-
-                  <div
-                    className="text-[10px] font-bold uppercase tracking-widest mb-3"
-                    style={{
-                      color:
-                        theme.accent
-                    }}
-                  >
-                    Para Birimi
                   </div>
 
 
-                  <div
-                    className="admin-section rounded-2xl p-4 mb-5"
-                  >
+                  <label className="block">
+                    <AdminLabel>
+                      Ürün Adı
+                    </AdminLabel>
+                    <input
+                      className="admin-input"
+                      style={{
+                        padding:"13px 14px",
+                        fontSize:"15px"
+                      }}
+                      value={
+                        editItem.name||""
+                      }
+                      maxLength={120}
+                      onChange={e=>
+                        updateItem(
+                          editCategory.id,
+                          editItem.id,
+                          "name",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Ürün adı"
+                    />
+                  </label>
 
-                    <div
-                      className="text-xs text-neutral-400 mb-3"
-                    >
-                      Sitedeki fiyatlar TL olarak girilir.
+
+                  <div className="grid grid-cols-2 gap-3">
+
+                    <label className="block min-w-0">
+                      <AdminLabel>
+                        Kategori
+                      </AdminLabel>
+                      <select
+                        className="admin-input"
+                        style={{
+                          padding:"13px 10px",
+                          fontSize:"14px"
+                        }}
+                        value={
+                          editCategory.id
+                        }
+                        onChange={e=>{
+                          moveItemToCategory(
+                            editCategory.id,
+                            editItem.id,
+                            e.target.value
+                          );
+                          setAdminCatId(
+                            e.target.value
+                          );
+                        }}
+                      >
+                        {categories.map(category=>(
+                          <option
+                            key={category.id}
+                            value={category.id}
+                            style={{
+                              background:"#1D1E21"
+                            }}
+                          >
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block min-w-0">
+                      <AdminLabel>
+                        Ölçü
+                      </AdminLabel>
+                      <input
+                        className="admin-input"
+                        style={{
+                          padding:"13px 12px",
+                          fontSize:"14px"
+                        }}
+                        value={
+                          editItem.dims||""
+                        }
+                        maxLength={120}
+                        onChange={e=>
+                          updateItem(
+                            editCategory.id,
+                            editItem.id,
+                            "dims",
+                            e.target.value
+                          )
+                        }
+                        placeholder="200x90x75 cm"
+                      />
+                    </label>
+
+                  </div>
+
+
+                  <label className="block">
+                    <AdminLabel>
+                      Özellikler
+                    </AdminLabel>
+                    <textarea
+                      className="admin-input"
+                      rows={3}
+                      maxLength={1000}
+                      style={{
+                        fontSize:"14px",
+                        resize:"vertical"
+                      }}
+                      value={
+                        editItem.desc||""
+                      }
+                      onChange={e=>
+                        updateItem(
+                          editCategory.id,
+                          editItem.id,
+                          "desc",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Malzeme, renk, garanti vb."
+                    />
+                  </label>
+
+
+                  {/* PRICE */}
+
+                  <div className="admin-section rounded-2xl p-4">
+
+                    <div className="flex items-center justify-between gap-3 mb-3">
+
+                      <div className="min-w-0">
+                        <div className="text-[15px] font-semibold">
+                          Fiyat
+                        </div>
+                        <div className="text-xs text-neutral-400">
+                          TL olarak girilir
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={()=>
+                          addPricePart(
+                            editCategory.id,
+                            editItem.id
+                          )
+                        }
+                        className="liquid-button h-10 px-4 rounded-xl text-sm font-bold flex items-center gap-1.5 whitespace-nowrap"
+                        style={{
+                          color:theme.accent,
+                          border:
+                            "1px solid "+theme.accent
+                        }}
+                      >
+                        <Icon type="plus" size={15}/>
+                        Parça
+                      </button>
+
                     </div>
 
 
-                    <div
-                      className="grid grid-cols-3 gap-2 mb-4"
-                    >
+                    {editPrice.parts.length===0&&(
+                      <div className="text-xs text-neutral-400 py-3 text-center leading-relaxed">
+                        Parça eklemezsen sitede "Fiyat için iletişime geçin" yazar.
+                      </div>
+                    )}
 
-                      {CURRENCIES.map(c=>(
 
-                        <button
-                          key={c.id}
+                    <div className="flex flex-col gap-3">
 
-                          onClick={()=>
-                            setPath(
-                              [
-                                "currency",
-                                "selected"
-                              ],
-                              c.id
-                            )
-                          }
+                      {editPrice.parts.map(part=>(
 
-                          className="liquid-button py-2.5 rounded-lg text-xs font-bold"
-
+                        <div
+                          key={part.id}
+                          className="rounded-xl p-2.5"
                           style={{
-
                             background:
-                              currency.id===c.id
-                              ?theme.accent
-                              :"rgba(255,255,255,.04)",
-
-                            color:
-                              currency.id===c.id
-                              ?" #fff"
-                              :"#999",
-
-                            border:
-                              "1px solid "+
-                              (
-                                currency.id===c.id
-                                ?theme.accent
-                                :"#333"
-                              )
-
+                              "rgba(0,0,0,.25)"
                           }}
                         >
-                          {c.symbol} {c.name}
-                        </button>
+
+                          <div className="flex gap-2">
+
+                            <input
+                              aria-label="Parça adı"
+                              className="admin-input flex-1 min-w-0"
+                              style={{
+                                padding:"11px 10px",
+                                fontSize:"14px"
+                              }}
+                              value={part.name}
+                              maxLength={60}
+                              onChange={e=>
+                                updatePricePart(
+                                  editCategory.id,
+                                  editItem.id,
+                                  part.id,
+                                  "name",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Örn: Masa"
+                            />
+
+                            <input
+                              aria-label="Parça fiyatı (TL)"
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              className="admin-input text-right"
+                              style={{
+                                width:"118px",
+                                flexShrink:0,
+                                padding:"11px 10px",
+                                fontSize:"14px",
+                                fontWeight:600,
+                                opacity:
+                                  part.contactOnly
+                                  ?.4
+                                  :1
+                              }}
+                              value={
+                                part.amount??""
+                              }
+                              disabled={
+                                part.contactOnly
+                              }
+                              onChange={e=>{
+                                const value=
+                                  e.target.value===""
+                                  ?null
+                                  :Math.max(
+                                    0,
+                                    Number(e.target.value)
+                                  );
+                                updatePricePart(
+                                  editCategory.id,
+                                  editItem.id,
+                                  part.id,
+                                  "amount",
+                                  Number.isFinite(value)||value===null
+                                  ?value
+                                  :null
+                                );
+                              }}
+                              placeholder="₺"
+                            />
+
+                            <button
+                              onClick={()=>
+                                deletePricePart(
+                                  editCategory.id,
+                                  editItem.id,
+                                  part.id
+                                )
+                              }
+                              aria-label="Parçayı sil"
+                              className="liquid-button w-11 flex-shrink-0 rounded-xl flex items-center justify-center text-red-400"
+                              style={{
+                                background:
+                                  "rgba(248,113,113,.10)"
+                              }}
+                            >
+                              <Icon type="trash" size={15}/>
+                            </button>
+
+                          </div>
+
+                          <label className="flex items-center gap-2.5 mt-2 min-h-[36px] text-sm text-neutral-300">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5"
+                              style={{
+                                accentColor:
+                                  theme.accent
+                              }}
+                              checked={
+                                !!part.contactOnly
+                              }
+                              onChange={e=>
+                                updatePricePart(
+                                  editCategory.id,
+                                  editItem.id,
+                                  part.id,
+                                  "contactOnly",
+                                  e.target.checked
+                                )
+                              }
+                            />
+                            Bu parça için "Fiyat sor" göster
+                          </label>
+
+                        </div>
 
                       ))}
 
                     </div>
 
 
-                    <label className="block mb-3">
+                    {editTotal!==null&&(
 
-                      <AdminLabel>
-                        1 USD = Kaç TL?
-                      </AdminLabel>
+                      <div
+                        className="mt-3 pt-3 flex items-center justify-between gap-3"
+                        style={{
+                          borderTop:
+                            "1px solid rgba(255,255,255,.08)"
+                        }}
+                      >
+                        <span className="text-sm text-neutral-400">
+                          Toplam
+                        </span>
+                        <span className="text-right">
+                          <strong
+                            className="text-lg"
+                            style={{
+                              color:theme.accent
+                            }}
+                          >
+                            {formatTL(editTotal)}
+                          </strong>
+                          {currency.id!=="TRY"&&formatAmount(editTotal)&&(
+                            <span className="block text-xs text-neutral-500">
+                              Sitede: {formatAmount(editTotal)}
+                            </span>
+                          )}
+                        </span>
+                      </div>
 
-                      <input
-                        type="number"
-                        step="0.01"
-
-                        className="admin-input"
-
-                        value={
-                          data.currency.usdRate
-                        }
-
-                        onChange={e=>
-                          setPath(
-                            [
-                              "currency",
-                              "usdRate"
-                            ],
-                            e.target.value
-                          )
-                        }
-                      />
-
-                    </label>
-
-
-                    <label className="block">
-
-                      <AdminLabel>
-                        1 EUR = Kaç TL?
-                      </AdminLabel>
-
-                      <input
-                        type="number"
-                        step="0.01"
-
-                        className="admin-input"
-
-                        value={
-                          data.currency.eurRate
-                        }
-
-                        onChange={e=>
-                          setPath(
-                            [
-                              "currency",
-                              "eurRate"
-                            ],
-                            e.target.value
-                          )
-                        }
-                      />
-
-                    </label>
+                    )}
 
                   </div>
 
 
-                  <div className="h-px bg-neutral-800 my-5"/>
+                  {/* ORDER */}
 
+                  <div className="admin-section rounded-2xl p-3 flex items-center gap-2">
+
+                    <div className="flex-1 min-w-0 text-sm text-neutral-300">
+                      Sıra: {editIndex+1} / {editCategory.items.length}
+                    </div>
+
+                    <button
+                      onClick={()=>
+                        moveItem(
+                          editCategory.id,
+                          editItem.id,
+                          -1
+                        )
+                      }
+                      disabled={editIndex<=0}
+                      className="liquid-button h-11 px-3 rounded-xl text-sm flex items-center gap-1 disabled:opacity-25"
+                      style={{
+                        background:
+                          "rgba(255,255,255,.06)"
+                      }}
+                    >
+                      <Icon type="up" size={15}/>
+                      Yukarı
+                    </button>
+
+                    <button
+                      onClick={()=>
+                        moveItem(
+                          editCategory.id,
+                          editItem.id,
+                          1
+                        )
+                      }
+                      disabled={
+                        editIndex>=
+                        editCategory.items.length-1
+                      }
+                      className="liquid-button h-11 px-3 rounded-xl text-sm flex items-center gap-1 disabled:opacity-25"
+                      style={{
+                        background:
+                          "rgba(255,255,255,.06)"
+                      }}
+                    >
+                      <Icon type="down" size={15}/>
+                      Aşağı
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+                {/* =========================================
+                    PRODUCT EDIT · SAVE
+                ========================================= */}
+
+                <div
+                  className="sticky bottom-0 z-20 px-4 pt-3"
+                  style={{
+                    ...glassBar,
+                    borderTop:
+                      "1px solid rgba(255,255,255,.08)",
+                    paddingBottom:
+                      "max(16px, env(safe-area-inset-bottom))"
+                  }}
+                >
+                  <button
+                    onClick={saveAndBack}
+                    disabled={
+                      saving||
+                      busy
+                    }
+                    className="liquid-button w-full h-14 rounded-2xl text-base font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+                    style={{
+                      background:
+                        theme.accent,
+                      boxShadow:
+                        `0 8px 25px ${theme.accent}32`
+                    }}
+                  >
+                    <Icon
+                      type={
+                        isDirty
+                        ?"save"
+                        :"check"
+                      }
+                      size={18}
+                    />
+                    {saving
+                      ?"Kaydediliyor…"
+                      :busy
+                      ?"Fotoğraf yükleniyor…"
+                      :isDirty
+                      ?"Kaydet"
+                      :"Bitti"}
+                  </button>
+                </div>
+
+              </>
+
+            ):(
+
+              <>
+
+                {/* =========================================
+                    ADMIN HEADER
+                ========================================= */}
+
+                <div
+                  className="sticky top-0 z-20 px-4 pt-4 pb-3"
+                  style={{
+                    ...glassBar,
+                    borderBottom:
+                      "1px solid rgba(255,255,255,.08)"
+                  }}
+                >
+
+                  <div className="flex items-center justify-between gap-3">
+
+                    <div className="min-w-0">
+                      <div
+                        className="text-[11px] font-semibold tracking-[.18em]"
+                        style={{
+                          color:theme.accent
+                        }}
+                      >
+                        YÖNETİM
+                      </div>
+                      <h2 className="font-bold text-[22px] leading-tight">
+                        {tabTitle}
+                      </h2>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {statusPill}
+                      <button
+                        onClick={
+                          requestCloseAdmin
+                        }
+                        aria-label="Paneli kapat"
+                        className="liquid-button w-11 h-11 rounded-full glass flex items-center justify-center text-neutral-300"
+                      >
+                        <Icon type="x" size={19}/>
+                      </button>
+                    </div>
+
+                  </div>
+
+                  {tab!=="ayarlar"&&(
+                    <div className="mt-3">
+                      {storeSwitch}
+                    </div>
+                  )}
+
+                </div>
+
+
+                <div
+                  className="flex-1 px-4 pt-4 pb-4"
+                >
+
+                  {/* =========================================
+                      PRODUCTS
+                  ========================================= */}
+
+                  {tab==="urunler"&&(
+
+                    <div
+                      style={{
+                        animation:
+                          "fadeIn .22s ease"
+                      }}
+                    >
+
+                      <label
+                        className="flex items-center gap-2.5 h-12 rounded-xl px-3.5 mb-3 text-neutral-400"
+                        style={{
+                          background:
+                            "rgba(255,255,255,.05)",
+                          border:
+                            "1px solid rgba(255,255,255,.08)"
+                        }}
+                      >
+                        <Icon type="search" size={18}/>
+                        <input
+                          value={adminSearch}
+                          onChange={e=>
+                            setAdminSearch(
+                              e.target.value
+                            )
+                          }
+                          placeholder="Ürün ara"
+                          aria-label="Ürün ara"
+                          className="flex-1 min-w-0 bg-transparent outline-none text-[15px] text-white"
+                        />
+                        {adminSearch&&(
+                          <button
+                            onClick={()=>
+                              setAdminSearch("")
+                            }
+                            aria-label="Aramayı temizle"
+                            className="w-9 h-9 flex items-center justify-center"
+                          >
+                            <Icon type="x" size={16}/>
+                          </button>
+                        )}
+                      </label>
+
+
+                      {!adminQuery&&(
+
+                        <>
+
+                          <div
+                            className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1 mb-3"
+                          >
+
+                            {categories.map(category=>{
+
+                              const active=
+                                adminCategory?.id===category.id;
+
+                              return(
+                                <button
+                                  key={category.id}
+                                  onClick={()=>
+                                    setAdminCatId(
+                                      category.id
+                                    )
+                                  }
+                                  className="liquid-button flex-shrink-0 h-10 px-4 rounded-full text-[13px] whitespace-nowrap"
+                                  style={{
+                                    fontWeight:
+                                      active?700:500,
+                                    color:
+                                      active
+                                      ?theme.accent
+                                      :"#C4C4CC",
+                                    background:
+                                      active
+                                      ?theme.accent+"1F"
+                                      :"transparent",
+                                    border:
+                                      "1px solid "+
+                                      (
+                                        active
+                                        ?theme.accent
+                                        :"rgba(255,255,255,.12)"
+                                      )
+                                  }}
+                                >
+                                  {category.name||"Adsız"} · {(category.items||[]).length}
+                                </button>
+                              );
+
+                            })}
+
+                            <button
+                              onClick={()=>{
+                                const id=
+                                  addCategory();
+                                if(id){
+                                  setAdminCatId(id);
+                                }
+                              }}
+                              className="liquid-button flex-shrink-0 h-10 px-4 rounded-full text-[13px] font-semibold whitespace-nowrap flex items-center gap-1.5 text-neutral-300"
+                              style={{
+                                border:
+                                  "1px dashed rgba(255,255,255,.25)"
+                              }}
+                            >
+                              <Icon type="plus" size={14}/>
+                              Kategori
+                            </button>
+
+                          </div>
+
+
+                          {adminCategory&&(
+
+                            <div className="admin-section rounded-2xl p-2 mb-4 flex items-center gap-1.5">
+
+                              <input
+                                aria-label="Kategori adı"
+                                className="admin-input flex-1 min-w-0"
+                                style={{
+                                  padding:"10px 12px",
+                                  fontSize:"14px",
+                                  fontWeight:600
+                                }}
+                                value={
+                                  adminCategory.name
+                                }
+                                maxLength={60}
+                                onChange={e=>
+                                  renameCategory(
+                                    adminCategory.id,
+                                    e.target.value
+                                  )
+                                }
+                              />
+
+                              <button
+                                onClick={()=>
+                                  moveCategory(
+                                    adminCategory.id,
+                                    -1
+                                  )
+                                }
+                                disabled={
+                                  adminCategoryIndex<=0
+                                }
+                                aria-label="Kategoriyi öne al"
+                                className="liquid-button w-10 h-10 flex-shrink-0 rounded-lg flex items-center justify-center bg-neutral-800 disabled:opacity-20"
+                              >
+                                <Icon type="left" size={16}/>
+                              </button>
+
+                              <button
+                                onClick={()=>
+                                  moveCategory(
+                                    adminCategory.id,
+                                    1
+                                  )
+                                }
+                                disabled={
+                                  adminCategoryIndex>=
+                                  categories.length-1
+                                }
+                                aria-label="Kategoriyi geriye al"
+                                className="liquid-button w-10 h-10 flex-shrink-0 rounded-lg flex items-center justify-center bg-neutral-800 disabled:opacity-20"
+                              >
+                                <Icon type="right" size={16}/>
+                              </button>
+
+                              <button
+                                onClick={()=>{
+                                  if(
+                                    deleteCategory(
+                                      adminCategory.id
+                                    )
+                                  ){
+                                    setAdminCatId(null);
+                                  }
+                                }}
+                                aria-label="Kategoriyi sil"
+                                className="liquid-button w-10 h-10 flex-shrink-0 rounded-lg flex items-center justify-center bg-red-950 text-red-400"
+                              >
+                                <Icon type="trash" size={15}/>
+                              </button>
+
+                            </div>
+
+                          )}
+
+                        </>
+
+                      )}
+
+
+                      {adminQuery&&(
+                        <div className="text-xs text-neutral-400 mb-2">
+                          {adminRows.length} sonuç
+                        </div>
+                      )}
+
+
+                      {adminRows.length===0&&(
+                        <div className="admin-section rounded-2xl p-6 text-center text-sm text-neutral-400">
+                          {adminQuery
+                            ?"Aramaya uyan ürün yok."
+                            :categories.length===0
+                            ?"Önce bir kategori ekle."
+                            :"Bu kategoride henüz ürün yok."}
+                        </div>
+                      )}
+
+
+                      <div className="flex flex-col gap-2">
+
+                        {adminRows.map(({item,category})=>{
+
+                          const total=
+                            getProductTotal(item);
+
+                          const parts=
+                            normalizePrice(item.price)
+                            .parts
+                            .map(part=>part.name)
+                            .filter(Boolean)
+                            .join(" + ");
+
+                          return(
+                            <button
+                              key={item.id}
+                              onClick={()=>
+                                openEdit(item.id)
+                              }
+                              className="liquid-button admin-section w-full rounded-2xl p-2.5 flex items-center gap-3 text-left min-h-[72px]"
+                            >
+
+                              <span
+                                className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-neutral-500 overflow-hidden"
+                                style={{
+                                  background:
+                                    "rgba(255,255,255,.06)"
+                                }}
+                              >
+                                {item.image?(
+                                  <img
+                                    src={item.image}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ):(
+                                  <Icon type="image" size={20}/>
+                                )}
+                              </span>
+
+                              <span className="flex-1 min-w-0">
+                                <span className="block text-[15px] font-semibold truncate">
+                                  {item.name||"Adsız ürün"}
+                                </span>
+                                <span className="block text-xs text-neutral-400 truncate mt-0.5">
+                                  {adminQuery
+                                    ?category.name
+                                    :item.dims||parts||"Ayrıntı yok"}
+                                </span>
+                              </span>
+
+                              <span
+                                className="text-sm font-semibold whitespace-nowrap"
+                                style={{
+                                  color:
+                                    total===null
+                                    ?"#A1A1AA"
+                                    :theme.accent
+                                }}
+                              >
+                                {total===null
+                                  ?"Fiyat sor"
+                                  :formatTL(total)}
+                              </span>
+
+                              <span className="text-neutral-500 flex-shrink-0">
+                                <Icon type="right" size={18}/>
+                              </span>
+
+                            </button>
+                          );
+
+                        })}
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+
+                  {/* =========================================
+                      APPEARANCE
+                  ========================================= */}
+
+                  {tab==="gorunum"&&(
+
+                    <div
+                      style={{
+                        animation:
+                          "fadeIn .22s ease"
+                      }}
+                    >
 
                   {/* LOGO */}
 
@@ -7288,6 +8381,237 @@ function App(){
                     className="w-full mb-5"
                   />
 
+                    </div>
+
+                  )}
+
+
+                  {/* =========================================
+                      SETTINGS
+                  ========================================= */}
+
+                  {tab==="ayarlar"&&(
+
+                    <div
+                      style={{
+                        animation:
+                          "fadeIn .22s ease"
+                      }}
+                    >
+
+                  <label className="block mb-4">
+
+                    <AdminLabel>
+                      Site Adı
+                    </AdminLabel>
+
+                    <input
+                      className="admin-input"
+
+                      value={
+                        data.siteName
+                      }
+
+                      onChange={e=>
+                        setPath(
+                          ["siteName"],
+                          e.target.value
+                        )
+                      }
+                    />
+
+                  </label>
+
+
+                  <label className="block mb-4">
+
+                    <AdminLabel>
+                      Üst Etiket
+                    </AdminLabel>
+
+                    <input
+                      className="admin-input"
+
+                      value={
+                        data.eyebrow
+                      }
+
+                      onChange={e=>
+                        setPath(
+                          ["eyebrow"],
+                          e.target.value
+                        )
+                      }
+                    />
+
+                  </label>
+
+
+                  <label className="block mb-5">
+
+                    <AdminLabel>
+                      Telefon
+                    </AdminLabel>
+
+                    <input
+                      className="admin-input"
+
+                      value={
+                        data.phone||""
+                      }
+
+                      onChange={e=>
+                        setPath(
+                          ["phone"],
+                          e.target.value
+                        )
+                      }
+
+                      placeholder="+90 5xx xxx xx xx"
+                    />
+
+                  </label>
+
+
+                  <div className="h-px bg-neutral-800 my-5"/>
+
+
+                  <div
+                    className="text-[10px] font-bold uppercase tracking-widest mb-3"
+                    style={{
+                      color:
+                        theme.accent
+                    }}
+                  >
+                    Para Birimi
+                  </div>
+
+
+                  <div
+                    className="admin-section rounded-2xl p-4 mb-5"
+                  >
+
+                    <div
+                      className="text-xs text-neutral-400 mb-3"
+                    >
+                      Sitedeki fiyatlar TL olarak girilir.
+                    </div>
+
+
+                    <div
+                      className="grid grid-cols-3 gap-2 mb-4"
+                    >
+
+                      {CURRENCIES.map(c=>(
+
+                        <button
+                          key={c.id}
+
+                          onClick={()=>
+                            setPath(
+                              [
+                                "currency",
+                                "selected"
+                              ],
+                              c.id
+                            )
+                          }
+
+                          className="liquid-button py-2.5 rounded-lg text-xs font-bold"
+
+                          style={{
+
+                            background:
+                              currency.id===c.id
+                              ?theme.accent
+                              :"rgba(255,255,255,.04)",
+
+                            color:
+                              currency.id===c.id
+                              ?" #fff"
+                              :"#999",
+
+                            border:
+                              "1px solid "+
+                              (
+                                currency.id===c.id
+                                ?theme.accent
+                                :"#333"
+                              )
+
+                          }}
+                        >
+                          {c.symbol} {c.name}
+                        </button>
+
+                      ))}
+
+                    </div>
+
+
+                    <label className="block mb-3">
+
+                      <AdminLabel>
+                        1 USD = Kaç TL?
+                      </AdminLabel>
+
+                      <input
+                        type="number"
+                        step="0.01"
+
+                        className="admin-input"
+
+                        value={
+                          data.currency.usdRate
+                        }
+
+                        onChange={e=>
+                          setPath(
+                            [
+                              "currency",
+                              "usdRate"
+                            ],
+                            e.target.value
+                          )
+                        }
+                      />
+
+                    </label>
+
+
+                    <label className="block">
+
+                      <AdminLabel>
+                        1 EUR = Kaç TL?
+                      </AdminLabel>
+
+                      <input
+                        type="number"
+                        step="0.01"
+
+                        className="admin-input"
+
+                        value={
+                          data.currency.eurRate
+                        }
+
+                        onChange={e=>
+                          setPath(
+                            [
+                              "currency",
+                              "eurRate"
+                            ],
+                            e.target.value
+                          )
+                        }
+                      />
+
+                    </label>
+
+                  </div>
+
+
+                  <div className="h-px bg-neutral-800 my-5"/>
 
                   <AdminLabel>
                     KVKK ve Gizlilik Metni
@@ -7363,1015 +8687,141 @@ function App(){
                     Varsayılan Ayarlara Dön
                   </button>
 
-
-                </div>
-
-              )}
-
-
-              {/* =========================================
-                  CATALOG
-              ========================================= */}
-
-              {tab==="icerik"&&(
-
-                <div
-                  style={{
-                    animation:
-                      "fadeIn .25s ease"
-                  }}
-                >
-
-                  <div
-                    className="admin-section mb-4 rounded-2xl p-3"
-
-                    style={{
-
-                      background:
-                        theme.accent+"12",
-
-                      border:
-                        "1px solid "+
-                        theme.accent+"25"
-
-                    }}
-                  >
-
-                    <div
-                      className="text-[10px] uppercase tracking-widest opacity-50"
-                    >
-                      Şu anda düzenleniyor
                     </div>
 
-
-                    <div
-                      className="font-bold mt-1"
-                      style={{
-                        color:
-                          theme.accent
-                      }}
-                    >
-                      {store==="premium"
-                        ?"Premium Mağaza"
-                        :"Outlet Mağaza"}
-                    </div>
-
-
-                    <div
-                      className="text-[10px] opacity-40 mt-1"
-                    >
-
-                      Değişiklikler otomatik kaydedilmez.
-                      Kaydet ve Kapat butonuna bastığında
-                      diğer cihazlara gönderilir.
-
-                    </div>
-
-                  </div>
-
-
-                  <button
-                    onClick={
-                      addCategory
-                    }
-
-                    className="liquid-button w-full py-3 rounded-xl text-sm font-bold text-white mb-4 flex items-center justify-center gap-2"
-
-                    style={{
-
-                      background:
-                        theme.accent,
-
-                      boxShadow:
-                        `0 8px 24px ${theme.accent}28`
-
-                    }}
-                  >
-
-                    <Icon
-                      type="plus"
-                      size={17}
-                    />
-
-                    Yeni Kategori
-
-                  </button>
-
-
-                  {categories.map(
-                    (
-                      category,
-                      categoryIndex
-                    )=>(
-
-                      <div
-                        key={category.id}
-
-                        className="admin-section rounded-2xl mb-3 overflow-hidden"
-
-                        style={{
-                          animation:
-                            `fadeIn .25s ease ${Math.min(categoryIndex,10)*25}ms both`
-                        }}
-                      >
-
-
-                        <div
-                          className="p-2 flex items-center gap-1.5"
-                        >
-
-                          <input
-                            value={
-                              category.name
-                            }
-
-                            onChange={e=>
-                              renameCategory(
-                                category.id,
-                                e.target.value
-                              )
-                            }
-
-                            className="admin-input"
-
-                            style={{
-
-                              padding:
-                                "9px 10px",
-
-                              fontSize:
-                                "13px"
-
-                            }}
-                          />
-
-
-                          <button
-                            onClick={()=>
-                              moveCategory(
-                                category.id,
-                                -1
-                              )
-                            }
-
-                            disabled={
-                              categoryIndex===0
-                            }
-
-                            className="liquid-button p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
-                          >
-
-                            <Icon
-                              type="up"
-                              size={14}
-                            />
-
-                          </button>
-
-
-                          <button
-                            onClick={()=>
-                              moveCategory(
-                                category.id,
-                                1
-                              )
-                            }
-
-                            disabled={
-                              categoryIndex===
-                              categories.length-1
-                            }
-
-                            className="liquid-button p-2 bg-neutral-800 rounded-lg disabled:opacity-20"
-                          >
-
-                            <Icon
-                              type="down"
-                              size={14}
-                            />
-
-                          </button>
-
-
-                          <button
-                            onClick={()=>
-                              deleteCategory(
-                                category.id
-                              )
-                            }
-
-                            className="liquid-button p-2 bg-red-950 text-red-400 rounded-lg"
-                          >
-
-                            <Icon
-                              type="trash"
-                              size={14}
-                            />
-
-                          </button>
-
-
-                          <button
-                            onClick={()=>
-                              toggleCategory(
-                                category.id
-                              )
-                            }
-
-                            className="liquid-button px-3 py-2 rounded-lg text-[11px] whitespace-nowrap flex items-center gap-1.5 font-semibold"
-
-                            style={{
-
-                              background:
-                                openCategories[
-                                  category.id
-                                ]
-                                ?theme.accent
-                                :"#262626",
-
-                              color:
-                                openCategories[
-                                  category.id
-                                ]
-                                ?" #fff"
-                                :"#aaa"
-
-                            }}
-                          >
-
-                            Ürünler
-
-                            <Icon
-                              type={
-                                openCategories[
-                                  category.id
-                                ]
-                                ?"up"
-                                :"down"
-                              }
-
-                              size={13}
-                            />
-
-                          </button>
-
-                        </div>
-
-
-                        {openCategories[
-                          category.id
-                        ]&&(
-
-                          <div
-                            className="p-2 pt-0"
-
-                            style={{
-                              animation:
-                                "fadeIn .22s ease"
-                            }}
-                          >
-
-
-                            {category.items.length===0&&(
-
-                              <div
-                                className="bg-neutral-800 rounded-xl p-4 mb-2 text-center text-xs text-neutral-500"
-                              >
-                                Bu kategoride henüz ürün yok.
-                              </div>
-
-                            )}
-
-
-                            {category.items.map(
-                              (
-                                item,
-                                itemIndex
-                              )=>(
-
-                                <div
-                                  key={item.id}
-
-                                  className="bg-neutral-800/80 rounded-xl p-3 mb-2"
-
-                                  style={{
-
-                                    border:
-                                      "1px solid rgba(255,255,255,.05)",
-
-                                    animation:
-                                      `fadeIn .25s ease ${Math.min(itemIndex,8)*20}ms both`
-
-                                  }}
-                                >
-
-
-                                  <div className="flex gap-2 mb-2">
-
-
-                                    <div
-                                      onClick={()=>
-                                        itemRefs
-                                        .current[
-                                          item.id
-                                        ]
-                                        ?.click()
-                                      }
-
-                                      className="w-16 h-16 rounded-lg bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center cursor-pointer"
-
-                                      style={{
-
-                                        backgroundImage:
-                                          item.image
-                                          ?`url(${item.image})`
-                                          :undefined,
-
-                                        backgroundSize:
-                                          "cover",
-
-                                        backgroundPosition:
-                                          "center",
-
-                                        transition:
-                                          "transform .25s ease"
-
-                                      }}
-                                    >
-
-                                      {!item.image&&(
-
-                                        <Icon
-                                          type="image"
-                                          size={18}
-                                        />
-
-                                      )}
-
-                                    </div>
-
-
-                                    <input
-                                      type="file"
-
-                                      accept="image/*"
-
-                                      className="hidden"
-
-                                      ref={element=>{
-
-                                        itemRefs
-                                        .current[
-                                          item.id
-                                        ]=
-                                          element;
-
-                                      }}
-
-                                      onChange={e=>
-                                        uploadItemImage(
-                                          category.id,
-                                          item.id,
-                                          e
-                                        )
-                                      }
-                                    />
-
-
-                                    <div className="flex-1">
-
-                                      <input
-                                        value={
-                                          item.name
-                                        }
-
-                                        onChange={e=>
-                                          updateItem(
-                                            category.id,
-                                            item.id,
-                                            "name",
-                                            e.target.value
-                                          )
-                                        }
-
-                                        placeholder="Ürün adı"
-
-                                        className="admin-input"
-
-                                        style={{
-
-                                          padding:
-                                            "8px 9px",
-
-                                          fontSize:
-                                            "12px",
-
-                                          marginBottom:
-                                            "6px"
-
-                                        }}
-                                      />
-
-
-                                      <input
-                                        value={
-                                          item.dims
-                                        }
-
-                                        onChange={e=>
-                                          updateItem(
-                                            category.id,
-                                            item.id,
-                                            "dims",
-                                            e.target.value
-                                          )
-                                        }
-
-                                        placeholder="Ölçüler: 200x90x75 cm"
-
-                                        className="admin-input"
-
-                                        style={{
-
-                                          padding:
-                                            "8px 9px",
-
-                                          fontSize:
-                                            "12px"
-
-                                        }}
-                                      />
-
-                                    </div>
-
-                                  </div>
-
-
-                                  <input
-                                    value={
-                                      item.desc
-                                    }
-
-                                    onChange={e=>
-                                      updateItem(
-                                        category.id,
-                                        item.id,
-                                        "desc",
-                                        e.target.value
-                                      )
-                                    }
-
-                                    placeholder="Ürün özellikleri"
-
-                                    className="admin-input"
-
-                                    style={{
-
-                                      padding:
-                                        "8px 9px",
-
-                                      fontSize:
-                                        "12px",
-
-                                      marginBottom:
-                                        "10px"
-
-                                    }}
-                                  />
-
-
-                                  {/* PRICE */}
-
-                                  <div
-                                    className="rounded-xl border border-neutral-700 bg-neutral-900/70 p-3 mb-2"
-                                  >
-
-                                    <div
-                                      className="flex items-center justify-between mb-3"
-                                    >
-
-                                      <div>
-
-                                        <div
-                                          className="text-[10px] uppercase tracking-widest font-bold"
-                                          style={{
-                                            color:
-                                              theme.accent
-                                          }}
-                                        >
-                                          Ayrı Fiyatlar
-                                        </div>
-
-
-                                        <div
-                                          className="text-[9px] text-neutral-500 mt-1"
-                                        >
-                                          Ürünün parçalarını ayrı ayrı fiyatlandır.
-                                        </div>
-
-                                      </div>
-
-
-                                      <button
-                                        onClick={()=>
-                                          addPricePart(
-                                            category.id,
-                                            item.id
-                                          )
-                                        }
-
-                                        className="liquid-button px-3 py-1.5 rounded-lg text-[10px] font-bold text-white flex items-center gap-1"
-
-                                        style={{
-                                          background:
-                                            theme.accent
-                                        }}
-                                      >
-
-                                        <Icon
-                                          type="plus"
-                                          size={12}
-                                        />
-
-                                        Fiyat Ekle
-
-                                      </button>
-
-                                    </div>
-
-
-                                    {normalizePrice(
-                                      item.price
-                                    ).parts.length===0&&(
-
-                                      <div
-                                        className="text-[10px] text-neutral-500 py-2 text-center"
-                                      >
-                                        Henüz fiyat kalemi eklenmedi.
-                                      </div>
-
-                                    )}
-
-
-                                    {normalizePrice(
-                                      item.price
-                                    ).parts.map(
-                                      part=>(
-
-                                        <div
-                                          key={part.id}
-
-                                          className="bg-neutral-800 rounded-lg p-2 mb-2"
-
-                                          style={{
-                                            animation:
-                                              "fadeIn .2s ease both"
-                                          }}
-                                        >
-
-                                          <div className="flex gap-2">
-
-                                            <input
-                                              value={
-                                                part.name
-                                              }
-
-                                              onChange={e=>
-                                                updatePricePart(
-                                                  category.id,
-                                                  item.id,
-                                                  part.id,
-                                                  "name",
-                                                  e.target.value
-                                                )
-                                              }
-
-                                              placeholder="Örn: Masa"
-
-                                              className="admin-input"
-
-                                              style={{
-
-                                                padding:
-                                                  "8px",
-
-                                                fontSize:
-                                                  "11px"
-
-                                              }}
-                                            />
-
-
-                                            <input
-                                              type="number"
-
-                                              value={
-                                                part.amount??""
-                                              }
-
-                                              disabled={
-                                                part.contactOnly
-                                              }
-
-                                              onChange={e=>
-                                                updatePricePart(
-                                                  category.id,
-                                                  item.id,
-                                                  part.id,
-                                                  "amount",
-                                                  e.target.value===""
-                                                  ?null
-                                                  :Number(
-                                                    e.target.value
-                                                  )
-                                                )
-                                              }
-
-                                              placeholder="₺"
-
-                                              className="admin-input"
-
-                                              style={{
-
-                                                width:
-                                                  "105px",
-
-                                                padding:
-                                                  "8px",
-
-                                                fontSize:
-                                                  "11px",
-
-                                                opacity:
-                                                  part.contactOnly
-                                                  ?.4
-                                                  :1
-
-                                              }}
-                                            />
-
-
-                                            <button
-                                              onClick={()=>
-                                                deletePricePart(
-                                                  category.id,
-                                                  item.id,
-                                                  part.id
-                                                )
-                                              }
-
-                                              className="liquid-button px-2 bg-red-950 text-red-400 rounded-lg"
-                                            >
-
-                                              <Icon
-                                                type="trash"
-                                                size={13}
-                                              />
-
-                                            </button>
-
-                                          </div>
-
-
-                                          <label
-                                            className="flex items-center gap-2 mt-2 text-[10px] text-neutral-400"
-                                          >
-
-                                            <input
-                                              type="checkbox"
-
-                                              checked={
-                                                !!part.contactOnly
-                                              }
-
-                                              onChange={e=>
-                                                updatePricePart(
-                                                  category.id,
-                                                  item.id,
-                                                  part.id,
-                                                  "contactOnly",
-                                                  e.target.checked
-                                                )
-                                              }
-                                            />
-
-                                            Fiyat için iletişime geçin
-
-                                          </label>
-
-                                        </div>
-
-                                      )
-                                    )}
-
-
-                                    {/* TOTAL PREVIEW */}
-
-                                    {productTotalText(item)&&(
-
-                                      <div
-                                        className="mt-2 rounded-lg px-3 py-2 flex items-center justify-between"
-
-                                        style={{
-
-                                          background:
-                                            theme.accent+"12",
-
-                                          animation:
-                                            "pop .25s ease both"
-
-                                        }}
-                                      >
-
-                                        <span
-                                          className="text-[10px] opacity-50"
-                                        >
-                                          Toplam
-                                        </span>
-
-
-                                        <strong
-                                          className="text-sm"
-
-                                          style={{
-                                            color:
-                                              theme.accent
-                                          }}
-                                        >
-                                          {productTotalText(item)}
-                                        </strong>
-
-                                      </div>
-
-                                    )}
-
-                                  </div>
-
-
-                                  <div
-                                    className="flex justify-end gap-1"
-                                  >
-
-                                    {item.image&&(
-
-                                      <button
-                                        onClick={()=>
-                                          updateItem(
-                                            category.id,
-                                            item.id,
-                                            "image",
-                                            null
-                                          )
-                                        }
-
-                                        className="liquid-button px-2 py-1 bg-neutral-700 rounded text-[10px]"
-                                      >
-                                        Görseli Sil
-                                      </button>
-
-                                    )}
-
-
-                                    <button
-                                      onClick={()=>
-                                        moveItem(
-                                          category.id,
-                                          item.id,
-                                          -1
-                                        )
-                                      }
-
-                                      disabled={
-                                        itemIndex===0
-                                      }
-
-                                      className="liquid-button p-1.5 bg-neutral-700 rounded disabled:opacity-20"
-                                    >
-
-                                      <Icon
-                                        type="up"
-                                        size={12}
-                                      />
-
-                                    </button>
-
-
-                                    <button
-                                      onClick={()=>
-                                        moveItem(
-                                          category.id,
-                                          item.id,
-                                          1
-                                        )
-                                      }
-
-                                      disabled={
-                                        itemIndex===
-                                        category.items.length-1
-                                      }
-
-                                      className="liquid-button p-1.5 bg-neutral-700 rounded disabled:opacity-20"
-                                    >
-
-                                      <Icon
-                                        type="down"
-                                        size={12}
-                                      />
-
-                                    </button>
-
-
-                                    <button
-                                      onClick={()=>
-                                        deleteItem(
-                                          category.id,
-                                          item.id
-                                        )
-                                      }
-
-                                      className="liquid-button p-1.5 bg-red-950 text-red-400 rounded"
-                                    >
-
-                                      <Icon
-                                        type="trash"
-                                        size={12}
-                                      />
-
-                                    </button>
-
-                                  </div>
-
-                                </div>
-
-                              )
-                            )}
-
-
-                            <button
-                              onClick={()=>
-                                addItem(
-                                  category.id
-                                )
-                              }
-
-                              className="liquid-button w-full py-2.5 bg-neutral-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
-                            >
-
-                              <Icon
-                                type="plus"
-                                size={14}
-                              />
-
-                              Ürün Ekle
-
-                            </button>
-
-
-                          </div>
-
-                        )}
-
-                      </div>
-
-                    )
                   )}
 
                 </div>
 
-              )}
 
-            </div>
+                {/* =========================================
+                    BOTTOM: ADD · SAVE · NAV
+                ========================================= */}
+
+                <div className="sticky bottom-0 z-20">
+
+                  {tab==="urunler"&&!adminQuery&&adminCategory&&(
+
+                    <div className="flex justify-end px-4 pb-3 pointer-events-none">
+                      <button
+                        onClick={()=>{
+                          const id=
+                            addItem(
+                              adminCategory.id
+                            );
+                          openEdit(id);
+                        }}
+                        className="liquid-button pointer-events-auto h-14 px-5 rounded-full text-[15px] font-bold text-white flex items-center gap-2"
+                        style={{
+                          background:
+                            theme.accent,
+                          boxShadow:
+                            "0 10px 26px rgba(0,0,0,.45)"
+                        }}
+                      >
+                        <Icon type="plus" size={20}/>
+                        Ürün Ekle
+                      </button>
+                    </div>
+
+                  )}
 
 
-            {/* =================================================
-                SAVE BAR
-            ================================================= */}
+                  {isDirty&&(
 
-            <div
-              className="sticky bottom-0 p-4"
+                    <div
+                      className="mx-3 mb-2 rounded-2xl pl-4 pr-2 py-2 flex items-center gap-3"
+                      style={{
+                        background:
+                          "rgba(36,30,12,.94)",
+                        border:
+                          "1px solid rgba(251,191,36,.35)"
+                      }}
+                    >
+                      <span className="flex-1 min-w-0 text-sm text-amber-300">
+                        Kaydedilmemiş değişiklikler var
+                      </span>
+                      <button
+                        onClick={()=>
+                          save({
+                            close:false
+                          })
+                        }
+                        disabled={
+                          saving||
+                          busy
+                        }
+                        className="liquid-button h-11 px-5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                        style={{
+                          background:
+                            theme.accent
+                        }}
+                      >
+                        {saving
+                          ?"Kaydediliyor…"
+                          :"Kaydet"}
+                      </button>
+                    </div>
 
-              style={{
+                  )}
 
-                background:
-                  "rgba(10,10,12,.88)",
 
-                borderTop:
-                  "1px solid rgba(255,255,255,.08)",
-
-                backdropFilter:
-                  "blur(20px)",
-
-                WebkitBackdropFilter:
-                  "blur(20px)"
-
-              }}
-            >
-
-              <div
-                className="flex items-center justify-center mb-2 h-4"
-              >
-
-                {dirtyRef.current&&!saving&&(
-
-                  <span
-                    className="text-[10px] text-amber-400"
-                  >
-                    Kaydedilmemiş değişiklikler var
-                  </span>
-
-                )}
-
-                {saving&&(
-
-                  <span
-                    className="text-[10px] text-neutral-400"
-                  >
-                    Kaydediliyor...
-                  </span>
-
-                )}
-
-                {!dirtyRef.current&&saved&&(
-
-                  <span
-                    className="text-[10px]"
+                  <nav
+                    className="grid grid-cols-3"
                     style={{
-                      color:"#12B76A"
+                      ...glassBar,
+                      borderTop:
+                        "1px solid rgba(255,255,255,.08)",
+                      paddingBottom:
+                        "env(safe-area-inset-bottom)"
                     }}
                   >
-                    ✓ Kaydedildi
-                  </span>
+                    {[
+                      ["urunler","Ürünler","grid"],
+                      ["gorunum","Görünüm","palette"],
+                      ["ayarlar","Ayarlar","settings"]
+                    ].map(([id,label,icon])=>(
+                      <button
+                        key={id}
+                        onClick={()=>
+                          setTab(id)
+                        }
+                        aria-current={
+                          tab===id
+                          ?"page"
+                          :undefined
+                        }
+                        className="h-16 flex flex-col items-center justify-center gap-1 text-xs"
+                        style={{
+                          color:
+                            tab===id
+                            ?theme.accent
+                            :"#A1A1AA",
+                          fontWeight:
+                            tab===id
+                            ?700
+                            :500
+                        }}
+                      >
+                        <Icon type={icon} size={21}/>
+                        {label}
+                      </button>
+                    ))}
+                  </nav>
 
-                )}
+                </div>
 
-              </div>
+              </>
 
-
-              <button
-                onClick={save}
-
-                disabled={
-                  saving||
-                  busy
-                }
-
-                className="liquid-button w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-
-                style={{
-
-                  background:
-                    saved
-                    ?" #12B76A"
-                    :theme.accent,
-
-                  boxShadow:
-                    saved
-                    ?"0 8px 25px rgba(18,183,106,.20)"
-                    :`0 8px 25px ${theme.accent}32`
-
-                }}
-              >
-
-                {saved?(
-
-                  <Icon
-                    type="check"
-                    size={17}
-                  />
-
-                ):(
-
-                  <Icon
-                    type="save"
-                    size={17}
-                  />
-
-                )}
-
-
-                {saved
-                  ?"Kaydedildi!"
-                  :saving
-                  ?"Kaydediliyor..."
-                  :"Kaydet ve Kapat"}
-
-              </button>
-
-
-              <div
-                className="text-center text-[9px] text-neutral-600 mt-2"
-              >
-                Kaydetmeden paneli kapatırsan yaptığın değişiklikler iptal edilir.
-              </div>
-
-            </div>
-
+            )}
 
           </aside>
 
         </div>
 
-      )}
+        );
+
+      })()}
 
     </div>
 
